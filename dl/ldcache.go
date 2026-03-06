@@ -67,8 +67,8 @@ func parseCache(path string) (*ldCache, error) {
 		return nil, err
 	}
 
-	// Minimum size check: header (128 bytes) + at least one entry (24 bytes)
-	if len(data) < int(unsafe.Sizeof(cacheHeader{}))+int(unsafe.Sizeof(cacheEntry{})) {
+	// Minimum size check: at least header size
+	if len(data) < int(unsafe.Sizeof(cacheHeader{})) {
 		return nil, fmt.Errorf("ld.so.cache: file too small")
 	}
 

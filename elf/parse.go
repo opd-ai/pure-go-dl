@@ -62,20 +62,11 @@ func calculateMemoryLayout(obj *ParsedObject, minVAddr, maxVAddr uint64) error {
 }
 
 func Parse(path string) (*ParsedObject, error) {
-	f, err := os.Open(path)
+	f, ef, err := openAndValidateELF(path)
 	if err != nil {
-		return nil, fmt.Errorf("elf parse: open %q: %w", path, err)
-	}
-	defer f.Close()
-
-	ef, err := elf.NewFile(f)
-	if err != nil {
-		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
-	}
-
-	if err := validateELFHeader(ef, path); err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
 	obj := &ParsedObject{
 		Path:       path,
@@ -83,24 +74,54 @@ func Parse(path string) (*ParsedObject, error) {
 		DynEntries: make(map[elf.DynTag]uint64),
 	}
 
-	minVAddr, maxVAddr, err := collectProgramHeaders(ef, obj)
-	if err != nil {
-		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
-	}
-
-	if err := calculateMemoryLayout(obj, minVAddr, maxVAddr); err != nil {
+	if err := parseHeadersAndLayout(f, ef, obj); err != nil {
 		return nil, err
 	}
 
+	return obj, nil
+}
+
+// openAndValidateELF opens the ELF file and validates the header.
+func openAndValidateELF(path string) (*os.File, *elf.File, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, nil, fmt.Errorf("elf parse: open %q: %w", path, err)
+	}
+
+	ef, err := elf.NewFile(f)
+	if err != nil {
+		f.Close()
+		return nil, nil, fmt.Errorf("elf parse: %q: %w", path, err)
+	}
+
+	if err := validateELFHeader(ef, path); err != nil {
+		f.Close()
+		return nil, nil, err
+	}
+
+	return f, ef, nil
+}
+
+// parseHeadersAndLayout processes program headers, memory layout, and dynamic sections.
+func parseHeadersAndLayout(f *os.File, ef *elf.File, obj *ParsedObject) error {
+	minVAddr, maxVAddr, err := collectProgramHeaders(ef, obj)
+	if err != nil {
+		return fmt.Errorf("elf parse: %q: %w", obj.Path, err)
+	}
+
+	if err := calculateMemoryLayout(obj, minVAddr, maxVAddr); err != nil {
+		return err
+	}
+
 	if err := readDynamicSection(f, obj); err != nil {
-		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
+		return fmt.Errorf("elf parse: %q: %w", obj.Path, err)
 	}
 
 	if err := resolveStringReferences(f, ef, obj); err != nil {
-		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
+		return fmt.Errorf("elf parse: %q: %w", obj.Path, err)
 	}
 
-	return obj, nil
+	return nil
 }
 
 // validateELFHeader checks that the ELF file is a 64-bit x86-64 shared object.

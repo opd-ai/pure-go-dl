@@ -100,43 +100,54 @@ func (vt *VersionTable) ParseVersionTables(
 func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uintptr, strtabSize uint64) error {
 	current := unsafe.Pointer(addr)
 	for i := uint64(0); i < count; i++ {
-		// Read Verneed header (16 bytes).
-		vnVersion := *(*uint16)(current)
-		vnCnt := *(*uint16)(unsafe.Add(current, 2))
-		_ = *(*uint32)(unsafe.Add(current, 4)) // vn_file (library name, not used for index)
-		vnAux := *(*uint32)(unsafe.Add(current, 8))
-		vnNext := *(*uint32)(unsafe.Add(current, 12))
-
-		if vnVersion != 1 {
-			return fmt.Errorf("unsupported verneed version %d", vnVersion)
-		}
-
-		// Walk the Vernaux chain.
-		auxCurrent := unsafe.Add(current, uintptr(vnAux))
-		for j := uint16(0); j < vnCnt; j++ {
-			// Read Vernaux (20 bytes).
-			_ = *(*uint32)(auxCurrent)                // vna_hash
-			_ = *(*uint16)(unsafe.Add(auxCurrent, 4)) // vna_flags
-			vnaOther := *(*uint16)(unsafe.Add(auxCurrent, 6))
-			vnaName := *(*uint32)(unsafe.Add(auxCurrent, 8))
-			vnaNext := *(*uint32)(unsafe.Add(auxCurrent, 12))
-
-			name := ReadCStringMem(strtabAddr, uintptr(vnaName), uintptr(strtabSize))
-			vt.Requirements[vnaOther] = &VersionRequirement{
-				Name:  name,
-				Index: vnaOther,
-			}
-
-			if vnaNext == 0 {
-				break
-			}
-			auxCurrent = unsafe.Add(auxCurrent, uintptr(vnaNext))
+		vnNext, err := vt.parseVerneedEntry(current, strtabAddr, strtabSize)
+		if err != nil {
+			return err
 		}
 
 		if vnNext == 0 {
 			break
 		}
 		current = unsafe.Add(current, uintptr(vnNext))
+	}
+	return nil
+}
+
+// parseVerneedEntry parses a single Verneed entry and its auxiliary entries.
+func (vt *VersionTable) parseVerneedEntry(current unsafe.Pointer, strtabAddr uintptr, strtabSize uint64) (uint32, error) {
+	vnVersion := *(*uint16)(current)
+	vnCnt := *(*uint16)(unsafe.Add(current, 2))
+	vnAux := *(*uint32)(unsafe.Add(current, 8))
+	vnNext := *(*uint32)(unsafe.Add(current, 12))
+
+	if vnVersion != 1 {
+		return 0, fmt.Errorf("unsupported verneed version %d", vnVersion)
+	}
+
+	if err := vt.parseVernauxChain(unsafe.Add(current, uintptr(vnAux)), vnCnt, strtabAddr, strtabSize); err != nil {
+		return 0, err
+	}
+
+	return vnNext, nil
+}
+
+// parseVernauxChain walks the Vernaux chain and populates version requirements.
+func (vt *VersionTable) parseVernauxChain(auxCurrent unsafe.Pointer, count uint16, strtabAddr uintptr, strtabSize uint64) error {
+	for j := uint16(0); j < count; j++ {
+		vnaOther := *(*uint16)(unsafe.Add(auxCurrent, 6))
+		vnaName := *(*uint32)(unsafe.Add(auxCurrent, 8))
+		vnaNext := *(*uint32)(unsafe.Add(auxCurrent, 12))
+
+		name := ReadCStringMem(strtabAddr, uintptr(vnaName), uintptr(strtabSize))
+		vt.Requirements[vnaOther] = &VersionRequirement{
+			Name:  name,
+			Index: vnaOther,
+		}
+
+		if vnaNext == 0 {
+			break
+		}
+		auxCurrent = unsafe.Add(auxCurrent, uintptr(vnaNext))
 	}
 	return nil
 }

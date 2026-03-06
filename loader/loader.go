@@ -103,17 +103,42 @@ func pageUp(v uint64) uint64 {
 // Load maps the shared object at path into memory and applies relocations.
 // resolver is used to look up symbols from already-loaded libraries.
 func Load(path string, resolver SymbolResolver) (*Object, error) {
-	parsed, err := goelf.Parse(path)
+	parsed, f, err := parseAndOpen(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	obj, err := createAndMapObject(parsed, int(f.Fd()))
 	if err != nil {
 		return nil, err
 	}
 
+	if err := finalizeObject(obj, parsed, resolver); err != nil {
+		_ = mmap.Unmap(obj.Base, uintptr(parsed.MemSize))
+		return nil, err
+	}
+
+	return obj, nil
+}
+
+// parseAndOpen parses the ELF file and opens it for reading.
+func parseAndOpen(path string) (*goelf.ParsedObject, *os.File, error) {
+	parsed, err := goelf.Parse(path)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("loader: open %q: %w", path, err)
+		return nil, nil, fmt.Errorf("loader: open %q: %w", path, err)
 	}
-	defer f.Close()
 
+	return parsed, f, nil
+}
+
+// createAndMapObject reserves memory, creates the Object, and maps segments.
+func createAndMapObject(parsed *goelf.ParsedObject, fd int) (*Object, error) {
 	base, err := mmap.MapAnon(uintptr(parsed.MemSize), mmap.ProtNone)
 	if err != nil {
 		return nil, fmt.Errorf("loader: reserve address space: %w", err)
@@ -126,17 +151,12 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 		RefCount: 1,
 	}
 
-	if err := mapSegments(obj, parsed, int(f.Fd())); err != nil {
+	if err := mapSegments(obj, parsed, fd); err != nil {
 		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
 		return nil, err
 	}
 
 	if err := populateObject(obj, parsed); err != nil {
-		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
-		return nil, err
-	}
-
-	if err := finalizeObject(obj, parsed, resolver); err != nil {
 		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
 		return nil, err
 	}
@@ -322,17 +342,27 @@ func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs fu
 }
 
 func populateInitFiniTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
+	populateInitTags(obj, dynTags, toAbs)
+	populateFiniTags(obj, dynTags, toAbs)
+}
+
+// populateInitTags sets initialization-related addresses.
+func populateInitTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
 	if v, ok := dynTags[elf.DT_INIT]; ok {
 		obj.InitAddr = toAbs(v)
-	}
-	if v, ok := dynTags[elf.DT_FINI]; ok {
-		obj.FiniAddr = toAbs(v)
 	}
 	if v, ok := dynTags[elf.DT_INIT_ARRAY]; ok {
 		obj.InitArray = toAbs(v)
 	}
 	if v, ok := dynTags[elf.DT_INIT_ARRAYSZ]; ok {
 		obj.InitArraySz = v
+	}
+}
+
+// populateFiniTags sets finalization-related addresses.
+func populateFiniTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
+	if v, ok := dynTags[elf.DT_FINI]; ok {
+		obj.FiniAddr = toAbs(v)
 	}
 	if v, ok := dynTags[elf.DT_FINI_ARRAY]; ok {
 		obj.FiniArray = toAbs(v)
@@ -394,22 +424,7 @@ func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uint
 // It locates the TLS initialization data within the mapped segments.
 func setupTLS(obj *Object, parsed *goelf.ParsedObject) error {
 	if tlsSeg := parsed.TLSSeg; tlsSeg != nil {
-		var tlsInitData uintptr
-		if tlsSeg.Filesz > 0 {
-			for i := range obj.Segments {
-				seg := &obj.Segments[i]
-				loadSeg := &parsed.LoadSegments[i]
-				segStart := parsed.BaseVAddr + loadSeg.Vaddr
-				segEnd := segStart + loadSeg.Memsz
-				if tlsSeg.Vaddr >= segStart && tlsSeg.Vaddr < segEnd {
-					alignedVAddr := pageDown(loadSeg.Vaddr)
-					leading := loadSeg.Vaddr - alignedVAddr
-					offset := tlsSeg.Vaddr - loadSeg.Vaddr
-					tlsInitData = seg.Addr + uintptr(leading) + uintptr(offset)
-					break
-				}
-			}
-		}
+		tlsInitData := findTLSInitData(obj, parsed, tlsSeg)
 
 		tlsModule, err := tls.GlobalManager().RegisterModule(
 			tlsSeg.Memsz,
@@ -423,6 +438,33 @@ func setupTLS(obj *Object, parsed *goelf.ParsedObject) error {
 		obj.TLSModule = tlsModule
 	}
 	return nil
+}
+
+// findTLSInitData locates the TLS initialization data in mapped segments.
+func findTLSInitData(obj *Object, parsed *goelf.ParsedObject, tlsSeg *elf.ProgHeader) uintptr {
+	if tlsSeg.Filesz == 0 {
+		return 0
+	}
+
+	for i := range obj.Segments {
+		seg := &obj.Segments[i]
+		loadSeg := &parsed.LoadSegments[i]
+		segStart := parsed.BaseVAddr + loadSeg.Vaddr
+		segEnd := segStart + loadSeg.Memsz
+
+		if tlsSeg.Vaddr >= segStart && tlsSeg.Vaddr < segEnd {
+			return calculateTLSDataAddress(seg, loadSeg, tlsSeg)
+		}
+	}
+	return 0
+}
+
+// calculateTLSDataAddress computes the TLS data address from segment offsets.
+func calculateTLSDataAddress(seg *Segment, loadSeg *elf.ProgHeader, tlsSeg *elf.ProgHeader) uintptr {
+	alignedVAddr := pageDown(loadSeg.Vaddr)
+	leading := loadSeg.Vaddr - alignedVAddr
+	offset := tlsSeg.Vaddr - loadSeg.Vaddr
+	return seg.Addr + uintptr(leading) + uintptr(offset)
 }
 
 // populateObject fills in Object fields from parsed ELF data.
@@ -596,30 +638,43 @@ func applyDTPOff64(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Po
 	if obj.TLSModule == nil {
 		return fmt.Errorf("relocDTPOff64 relocation at %#x but library has no PT_TLS segment", r.Offset)
 	}
-	// For DTPOFF, we use the symbol value (if present) + addend.
-	// If no symbol, just use addend as the offset.
-	var symValue uint64
-	if symIdx != 0 {
-		S, err := resolveSymForReloc(obj, symIdx, resolver)
-		if err != nil {
-			// For TLS, if symbol not found, it might be module-local.
-			// Use the symbol from our own symbol table if available.
-			name := symName(obj, symIdx)
-			if name != "" {
-				if sym, ok := obj.Symbols.Lookup(name); ok {
-					// Symbol value is relative to module base.
-					// For TLS symbols, st_value is the offset within the TLS block.
-					symValue = uint64(sym.Value - obj.Base)
-				} else {
-					return fmt.Errorf("relocDTPOff64: TLS symbol %q not found", name)
-				}
-			}
-		} else {
-			symValue = uint64(S - obj.Base)
-		}
+
+	symValue, err := resolveTLSSymbolValue(obj, symIdx, resolver, "relocDTPOff64")
+	if err != nil {
+		return err
 	}
+
 	*(*int64)(offsetPtr) = int64(symValue) + addend
 	return nil
+}
+
+// resolveTLSSymbolValue resolves a TLS symbol value for relocation.
+func resolveTLSSymbolValue(obj *Object, symIdx uint32, resolver SymbolResolver, relocType string) (uint64, error) {
+	if symIdx == 0 {
+		return 0, nil
+	}
+
+	S, err := resolveSymForReloc(obj, symIdx, resolver)
+	if err != nil {
+		return resolveTLSSymbolLocal(obj, symIdx, relocType)
+	}
+
+	return uint64(S - obj.Base), nil
+}
+
+// resolveTLSSymbolLocal attempts to resolve a TLS symbol from the local symbol table.
+func resolveTLSSymbolLocal(obj *Object, symIdx uint32, relocType string) (uint64, error) {
+	name := symName(obj, symIdx)
+	if name == "" {
+		return 0, nil
+	}
+
+	sym, ok := obj.Symbols.Lookup(name)
+	if !ok {
+		return 0, fmt.Errorf("%s: TLS symbol %q not found", relocType, name)
+	}
+
+	return uint64(sym.Value - obj.Base), nil
 }
 
 // applyTPOff64 applies a TPOFF64 TLS relocation (thread pointer relative offset).
@@ -693,22 +748,12 @@ func applyDTPOff32(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Po
 	if obj.TLSModule == nil {
 		return fmt.Errorf("relocDTPOff32 relocation at %#x but library has no PT_TLS segment", r.Offset)
 	}
-	var symValue uint64
-	if symIdx != 0 {
-		S, err := resolveSymForReloc(obj, symIdx, resolver)
-		if err != nil {
-			name := symName(obj, symIdx)
-			if name != "" {
-				if sym, ok := obj.Symbols.Lookup(name); ok {
-					symValue = uint64(sym.Value - obj.Base)
-				} else {
-					return fmt.Errorf("relocDTPOff32: TLS symbol %q not found", name)
-				}
-			}
-		} else {
-			symValue = uint64(S - obj.Base)
-		}
+
+	symValue, err := resolveTLSSymbolValue(obj, symIdx, resolver, "relocDTPOff32")
+	if err != nil {
+		return err
 	}
+
 	*(*int32)(offsetPtr) = int32(int64(symValue) + addend)
 	return nil
 }
@@ -824,43 +869,67 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 		return nil
 	}
 
-	// Validate that relocation table size is properly aligned to entry size
-	if tableSize%relaEntSize != 0 {
-		return fmt.Errorf("relocation table size %d is not aligned to entry size %d", tableSize, relaEntSize)
+	if err := validateRelaTableSize(tableSize); err != nil {
+		return err
 	}
 
 	n := tableSize / relaEntSize
 	rels := unsafe.Slice((*relaEntry)(unsafe.Pointer(tableAddr)), n)
 
 	for i := uint64(0); i < n; i++ {
-		r := &rels[i]
-		// Validate relocation offset is within mapped memory range
-		maxOffset := obj.Parsed.BaseVAddr + obj.Parsed.MemSize
-		if r.Offset < obj.Parsed.BaseVAddr || r.Offset >= maxOffset {
-			return fmt.Errorf("relocation offset %#x out of range [%#x, %#x)", r.Offset, obj.Parsed.BaseVAddr, maxOffset)
-		}
-
-		ctx := &relocContext{
-			obj:      obj,
-			r:        r,
-			symIdx:   relaSymIdx(r.Info),
-			offset:   obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr),
-			addend:   r.Addend,
-			resolver: resolver,
-		}
-		ctx.offsetPtr = unsafe.Pointer(ctx.offset)
-
-		relocType := relaType(r.Info)
-		handler, ok := relocHandlers[relocType]
-		if !ok {
-			return fmt.Errorf("unknown relocation type %d at offset %#x", relocType, r.Offset)
-		}
-
-		if err := handler(ctx); err != nil {
+		if err := applyRelocation(obj, &rels[i], resolver); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// validateRelaTableSize validates that relocation table size is aligned.
+func validateRelaTableSize(tableSize uint64) error {
+	if tableSize%relaEntSize != 0 {
+		return fmt.Errorf("relocation table size %d is not aligned to entry size %d", tableSize, relaEntSize)
+	}
+	return nil
+}
+
+// applyRelocation validates and applies a single relocation entry.
+func applyRelocation(obj *Object, r *relaEntry, resolver SymbolResolver) error {
+	if err := validateRelocationOffset(obj, r); err != nil {
+		return err
+	}
+
+	ctx := buildRelocContext(obj, r, resolver)
+
+	relocType := relaType(r.Info)
+	handler, ok := relocHandlers[relocType]
+	if !ok {
+		return fmt.Errorf("unknown relocation type %d at offset %#x", relocType, r.Offset)
+	}
+
+	return handler(ctx)
+}
+
+// validateRelocationOffset checks that relocation offset is within mapped memory.
+func validateRelocationOffset(obj *Object, r *relaEntry) error {
+	maxOffset := obj.Parsed.BaseVAddr + obj.Parsed.MemSize
+	if r.Offset < obj.Parsed.BaseVAddr || r.Offset >= maxOffset {
+		return fmt.Errorf("relocation offset %#x out of range [%#x, %#x)", r.Offset, obj.Parsed.BaseVAddr, maxOffset)
+	}
+	return nil
+}
+
+// buildRelocContext constructs a relocation context from the entry.
+func buildRelocContext(obj *Object, r *relaEntry, resolver SymbolResolver) *relocContext {
+	ctx := &relocContext{
+		obj:      obj,
+		r:        r,
+		symIdx:   relaSymIdx(r.Info),
+		offset:   obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr),
+		addend:   r.Addend,
+		resolver: resolver,
+	}
+	ctx.offsetPtr = unsafe.Pointer(ctx.offset)
+	return ctx
 }
 
 // applyGottpoff handles relocGOTTPOff relocations (PC-relative GOT reference for Initial Exec TLS).

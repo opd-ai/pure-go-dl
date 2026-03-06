@@ -1,110 +1,116 @@
 # Complexity Refactoring Summary
 
 ## Overview
-Successfully refactored **9 complex functions** to meet professional complexity thresholds.
+Successfully refactored the top 9 most complex functions in the pure-go-dl project, reducing all functions below the professional complexity thresholds (complexity ≤ 9.0, length ≤ 40 lines).
 
-## Results
+## Refactored Functions
 
-| Function | File | Old Complexity | New Complexity | Reduction | Old Lines | New Lines |
-|----------|------|----------------|----------------|-----------|-----------|-----------|
-| validateDynEntries | elf/parse.go | 17.9 | 3.1 | 82.7% | 67 | 6 |
-| Unload | loader/loader.go | 16.3 | 3.1 | 81.0% | 50 | 6 |
-| mapSegments | loader/loader.go | 16.3 | 4.9 | 69.9% | 62 | 10 |
-| LoadFromDynamic | symbol/symbol.go | 15.8 | 6.2 | 60.8% | 64 | 14 |
-| findLibrary | dl/search.go | 15.3 | 4.4 | 71.2% | 49 | 13 |
-| collectProgramHeaders | elf/parse.go | 15.0 | 6.7 | 55.3% | 49 | 28 |
-| finalizeObject | loader/loader.go | 15.0 | 3.1 | 79.3% | 40 | 8 |
-| ResolveWithLibrary | dl/dl.go | 15.0 | 3.1 | 79.3% | 37 | 8 |
-| Resolve | dl/dl.go | 15.0 | 4.4 | 70.7% | 35 | 8 |
+### 1. elf.Parse (elf/parse.go)
+**Before:** Overall: 10.9, Cyclomatic: 8, Lines: 31
+**After:** Overall: 4.4, Cyclomatic: 3, Lines: 16
+**Reduction:** 59.6% improvement
+**Extracted helpers:**
+- `openAndValidateELF()` - Opens ELF file and validates header
+- `parseHeadersAndLayout()` - Processes program headers, memory layout, and dynamic sections
 
-## Key Achievements
+### 2. loader.applyRelaTable (loader/loader.go)
+**Before:** Overall: 10.1, Cyclomatic: 7, Lines: 33
+**After:** Overall: 7.5, Cyclomatic: 5, Lines: 18
+**Reduction:** 25.7% improvement
+**Extracted helpers:**
+- `validateRelaTableSize()` - Validates relocation table size alignment
+- `applyRelocation()` - Validates and applies single relocation entry
+- `validateRelocationOffset()` - Checks relocation offset within mapped memory
+- `buildRelocContext()` - Constructs relocation context from entry
 
-✅ **All 9 target functions** now have complexity ≤ 9.0 (professional threshold)  
-✅ **Average complexity reduction**: 72.3%  
-✅ **Zero test failures** - all functionality preserved  
-✅ **31 new helper functions** extracted with clear, single-purpose logic
+### 3. loader.setupTLS (loader/loader.go)
+**Before:** Overall: 9.8, Cyclomatic: 6, Lines: 29
+**After:** Overall: 4.9, Cyclomatic: 3, Lines: 14
+**Reduction:** 50.0% improvement
+**Extracted helpers:**
+- `findTLSInitData()` - Locates TLS initialization data in mapped segments
+- `calculateTLSDataAddress()` - Computes TLS data address from segment offsets
 
-## Extracted Helpers (31 total)
+### 4. loader.applyDTPOff64 (loader/loader.go)
+**Before:** Overall: 9.8, Cyclomatic: 6, Lines: 21
+**After:** Overall: 4.4, Cyclomatic: 3, Lines: 9
+**Reduction:** 55.1% improvement
+**Extracted helpers:**
+- `resolveTLSSymbolValue()` - Resolves TLS symbol value for relocation
+- `resolveTLSSymbolLocal()` - Attempts to resolve TLS symbol from local symbol table
 
-### elf/parse.go (8 helpers)
-- `validateAddressTags` - validates address-type dynamic tags
-- `validateAddressTag` - checks a single address tag
-- `validateSizeTags` - validates size-related tags
-- `validateSizeTag` - checks a single size tag
-- `validatePTLoad` - validates PT_LOAD segment
-- `updateAddressRange` - updates min/max address range
-- `validateRequiredSegments` - checks required segments present
+### 5. loader.applyDTPOff32 (loader/loader.go)
+**Before:** Overall: 9.8, Cyclomatic: 6, Lines: 21
+**After:** Overall: 4.4, Cyclomatic: 3, Lines: 11
+**Reduction:** 55.1% improvement
+**Extracted helpers:**
+- Reused `resolveTLSSymbolValue()` and `resolveTLSSymbolLocal()` from applyDTPOff64
 
-### loader/loader.go (12 helpers)
-- `mapSegment` - maps a single PT_LOAD segment
-- `computeMapProt` - returns effective protection flags
-- `mapFileRegion` - maps file-backed portion
-- `mapBSSRegion` - maps BSS (zero-initialized) portion
-- `runFiniCallbacks` - executes DT_FINI callbacks
-- `runFiniArray` - executes DT_FINI_ARRAY in reverse
-- `runFiniFunction` - executes DT_FINI with recovery
-- `adjustFunctionAddr` - converts virtual to absolute addresses
-- `callFuncSafe` - calls function with panic recovery
-- `unmapGOTPages` - unmaps GOT pages
-- `applyRELROProtection` - applies read-only protection
-- `runConstructors` - executes DT_INIT callbacks
-- `runInitArray` - executes DT_INIT_ARRAY
+### 6. dl.searchInPaths (dl/search.go)
+**Before:** Overall: 9.8, Cyclomatic: 6, Lines: 14
+**After:** Overall: 4.9, Cyclomatic: 3, Lines: 8
+**Reduction:** 50.0% improvement
+**Extracted helpers:**
+- `searchInSearchPath()` - Searches for library in a single search path
+- `searchInCacheIfExists()` - Looks up library in cache and verifies existence
 
-### symbol/symbol.go (4 helpers)
-- `computeSymtabSize` - returns symbol table size
-- `loadSymbolEntry` - processes single symbol entry
-- `shouldProcessSymbol` - checks if symbol should be processed
-- `buildSymbol` - constructs Symbol from Elf64Sym
+### 7. loader.populateInitFiniTags (loader/loader.go)
+**Before:** Overall: 9.6, Cyclomatic: 7, Lines: 18
+**After:** Overall: 1.3, Cyclomatic: 1, Lines: 3
+**Reduction:** 86.5% improvement
+**Extracted helpers:**
+- `populateInitTags()` - Sets initialization-related addresses
+- `populateFiniTags()` - Sets finalization-related addresses
 
-### dl/search.go (4 helpers)
-- `checkDirectPath` - checks for absolute/relative paths
-- `buildSearchPaths` - constructs ordered search directories
-- `searchInPaths` - searches ordered locations
-- `searchInDirs` - searches directory list
+### 8. loader.Load (loader/loader.go)
+**Before:** Overall: 9.6, Cyclomatic: 7, Lines: 32
+**After:** Overall: 5.7, Cyclomatic: 4, Lines: 18
+**Reduction:** 40.6% improvement
+**Extracted helpers:**
+- `parseAndOpen()` - Parses ELF file and opens for reading
+- `createAndMapObject()` - Reserves memory, creates Object, maps segments
 
-### dl/dl.go (3 helpers)
-- `searchGlobalsForSymbol` - searches global libraries for symbol
-- `searchGlobalsWithLibrary` - searches and returns library
-- `resolveSymbolAddr` - resolves symbol address (handles IFUNC)
+### 9. symbol.parseVerneed (symbol/version.go)
+**Before:** Overall: 9.3, Cyclomatic: 6, Lines: 33
+**After:** Overall: 6.2, Cyclomatic: 4, Lines: 11
+**Reduction:** 33.3% improvement
+**Extracted helpers:**
+- `parseVerneedEntry()` - Parses single Verneed entry and auxiliary entries
+- `parseVernauxChain()` - Walks Vernaux chain and populates version requirements
 
-## Refactoring Patterns Applied
+## Summary Statistics
 
-1. **Extract Method** - Move cohesive blocks into named helpers
-2. **Decompose Conditional** - Replace complex boolean chains with predicates
-3. **Replace Loop Body** - Extract inner loop logic into functions
-4. **Consolidate Error Handling** - Merge repeated error patterns
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| Functions > 9.0 complexity | 9 | 0 | 100% |
+| Average complexity (refactored) | 9.9 | 4.9 | 50.5% |
+| New helper functions | 0 | 18 | - |
+| All tests passing | ✅ | ✅ | - |
+
+## Refactoring Principles Applied
+
+1. **Extract Method** - Moved cohesive blocks into named helpers
+2. **Decompose Conditional** - Replaced complex boolean chains with predicate functions
+3. **Replace Loop Body** - Extracted inner loop logic into functions
+4. **Consolidate Error Handling** - Merged repeated error patterns into shared helpers
 
 ## Code Quality Improvements
 
-- **Cyclomatic complexity**: Average reduction from 10.7 → 2.9 (73% ↓)
-- **Overall complexity**: Average reduction from 15.7 → 4.5 (71% ↓)
-- **Function length**: Reduced from 50.2 → 11.4 lines average (77% ↓)
-- **Readability**: Each extracted helper has ≤ 20 lines, cyclomatic ≤ 8
+- **Maintainability:** All functions now under 20 lines, easier to understand and modify
+- **Testability:** Smaller functions are easier to unit test in isolation
+- **Reusability:** Helper functions like `resolveTLSSymbolValue()` are shared across multiple relocations
+- **Documentation:** All helper functions have GoDoc comments following project conventions
 
 ## Testing
 
-✅ All 9 refactored functions pass existing test suites  
-✅ No behavioral changes - pure extract-method refactoring  
-✅ Tests run: `go test ./...` (100% pass rate)
-
-## Complexity Formula Used
-```
-Overall = (Cyclomatic × 0.3) + (Lines × 0.2) + (Nesting × 0.2) + (Cognitive × 0.15) + (Signature × 0.15)
-```
-
-## Verification
+All tests pass without race detector:
 ```bash
-# Baseline analysis
-go-stats-generator analyze . --skip-tests --output baseline.json
-
-# Post-refactoring analysis
-go-stats-generator analyze . --skip-tests --output final.json
-
-# Diff report
-go-stats-generator diff baseline.json final.json
+go test ./...
+ok  github.com/opd-ai/pure-go-dl/cmd/pgldd1.595s
+ok  github.com/opd-ai/pure-go-dl/dl2.017s
+ok  github.com/opd-ai/pure-go-dl/elf(cached)
+ok  github.com/opd-ai/pure-go-dl/loader(cached)
+ok  github.com/opd-ai/pure-go-dl/symbol(cached)
 ```
 
----
-**Date**: 2026-03-06  
-**Tool**: go-stats-generator v1.0.0  
-**Go Version**: 1.24.13
+Note: Race detector tests fail on bounds_violation_test.go due to a pre-existing issue with checkptr validation on unsafe.Slice with invalid test data. This issue existed before the refactoring.

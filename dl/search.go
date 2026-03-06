@@ -91,17 +91,32 @@ func searchInPaths(name string, searchPaths []struct {
 },
 ) string {
 	for _, sp := range searchPaths {
-		if sp.useCache {
-			if cachedPath := lookupInCache(name); cachedPath != "" {
-				if _, err := os.Stat(cachedPath); err == nil {
-					return cachedPath
-				}
-			}
-			continue
-		}
-		if path := searchInDirs(name, sp.dirs); path != "" {
+		if path := searchInSearchPath(name, sp); path != "" {
 			return path
 		}
+	}
+	return ""
+}
+
+// searchInSearchPath searches for a library in a single search path.
+func searchInSearchPath(name string, sp struct {
+	dirs     []string
+	useCache bool
+}) string {
+	if sp.useCache {
+		return searchInCacheIfExists(name)
+	}
+	return searchInDirs(name, sp.dirs)
+}
+
+// searchInCacheIfExists looks up a library in the cache and verifies it exists.
+func searchInCacheIfExists(name string) string {
+	cachedPath := lookupInCache(name)
+	if cachedPath == "" {
+		return ""
+	}
+	if _, err := os.Stat(cachedPath); err == nil {
+		return cachedPath
 	}
 	return ""
 }

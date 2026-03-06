@@ -77,13 +77,13 @@ func TestMalformedELF_WrongType(t *testing.T) {
 
 	// Create a minimal valid ELF header but with ET_EXEC type
 	data := make([]byte, 256)
-	
+
 	// ELF magic
 	data[0], data[1], data[2], data[3] = 0x7f, 'E', 'L', 'F'
 	data[4] = byte(elf.ELFCLASS64)
 	data[5] = byte(elf.ELFDATA2LSB)
 	data[6] = byte(elf.EV_CURRENT)
-	
+
 	// e_type = ET_EXEC (2) at offset 16
 	binary.LittleEndian.PutUint16(data[16:], uint16(elf.ET_EXEC))
 	// e_machine = EM_X86_64 at offset 18
@@ -136,24 +136,24 @@ func TestMalformedELF_PTLoadFileszGreaterThanMemsz(t *testing.T) {
 	badFile := filepath.Join(tmpDir, "badfilesz.so")
 
 	data := createMinimalELFHeader(t)
-	
+
 	// Extend data to include program header
 	data = append(data, make([]byte, 56)...)
-	
+
 	// Now set e_phnum and e_phoff
-	binary.LittleEndian.PutUint16(data[56:], 1) // e_phnum = 1
+	binary.LittleEndian.PutUint16(data[56:], 1)  // e_phnum = 1
 	binary.LittleEndian.PutUint64(data[32:], 64) // e_phoff = 64
-	
+
 	phOff := 64
-	
+
 	binary.LittleEndian.PutUint32(data[phOff:], uint32(elf.PT_LOAD))
 	binary.LittleEndian.PutUint32(data[phOff+4:], uint32(elf.PF_R|elf.PF_X))
-	binary.LittleEndian.PutUint64(data[phOff+8:], 0x1000)   // p_offset
-	binary.LittleEndian.PutUint64(data[phOff+16:], 0x1000)  // p_vaddr
-	binary.LittleEndian.PutUint64(data[phOff+24:], 0x1000)  // p_paddr
-	binary.LittleEndian.PutUint64(data[phOff+32:], 0x5000)  // p_filesz (LARGER)
-	binary.LittleEndian.PutUint64(data[phOff+40:], 0x2000)  // p_memsz (smaller - INVALID)
-	binary.LittleEndian.PutUint64(data[phOff+48:], 0x1000)  // p_align
+	binary.LittleEndian.PutUint64(data[phOff+8:], 0x1000)  // p_offset
+	binary.LittleEndian.PutUint64(data[phOff+16:], 0x1000) // p_vaddr
+	binary.LittleEndian.PutUint64(data[phOff+24:], 0x1000) // p_paddr
+	binary.LittleEndian.PutUint64(data[phOff+32:], 0x5000) // p_filesz (LARGER)
+	binary.LittleEndian.PutUint64(data[phOff+40:], 0x2000) // p_memsz (smaller - INVALID)
+	binary.LittleEndian.PutUint64(data[phOff+48:], 0x1000) // p_align
 
 	if err := os.WriteFile(badFile, data, 0o644); err != nil {
 		t.Fatalf("Failed to create test file: %v", err)
@@ -171,21 +171,21 @@ func TestMalformedELF_PTLoadMemsizeOverflow(t *testing.T) {
 	badFile := filepath.Join(tmpDir, "memsizoverflow.so")
 
 	data := createMinimalELFHeader(t)
-	
+
 	// Extend data first
 	data = append(data, make([]byte, 56)...)
-	
-	binary.LittleEndian.PutUint16(data[56:], 1) // e_phnum = 1
+
+	binary.LittleEndian.PutUint16(data[56:], 1)  // e_phnum = 1
 	binary.LittleEndian.PutUint64(data[32:], 64) // e_phoff = 64
-	
+
 	phOff := 64
-	
+
 	binary.LittleEndian.PutUint32(data[phOff:], uint32(elf.PT_LOAD))
 	binary.LittleEndian.PutUint32(data[phOff+4:], uint32(elf.PF_R|elf.PF_X))
 	binary.LittleEndian.PutUint64(data[phOff+8:], 0)
 	binary.LittleEndian.PutUint64(data[phOff+16:], 0xFFFFFFFFFFFF0000) // High vaddr
 	binary.LittleEndian.PutUint64(data[phOff+24:], 0xFFFFFFFFFFFF0000)
-	binary.LittleEndian.PutUint64(data[phOff+32:], 0x2000) // filesz
+	binary.LittleEndian.PutUint64(data[phOff+32:], 0x2000)  // filesz
 	binary.LittleEndian.PutUint64(data[phOff+40:], 0x20000) // memsz - would overflow when added to vaddr
 	binary.LittleEndian.PutUint64(data[phOff+48:], 0x1000)
 
@@ -210,16 +210,16 @@ func TestMalformedELF_MissingPTDynamic(t *testing.T) {
 	badFile := filepath.Join(tmpDir, "nodynamic.so")
 
 	data := createMinimalELFHeader(t)
-	
+
 	// Extend data first
 	data = append(data, make([]byte, 56)...)
-	
+
 	// Add a PT_LOAD but no PT_DYNAMIC
-	binary.LittleEndian.PutUint16(data[56:], 1) // e_phnum = 1
+	binary.LittleEndian.PutUint16(data[56:], 1)  // e_phnum = 1
 	binary.LittleEndian.PutUint64(data[32:], 64) // e_phoff = 64
-	
+
 	phOff := 64
-	
+
 	// Valid PT_LOAD
 	binary.LittleEndian.PutUint32(data[phOff:], uint32(elf.PT_LOAD))
 	binary.LittleEndian.PutUint32(data[phOff+4:], uint32(elf.PF_R|elf.PF_W))
@@ -246,15 +246,15 @@ func TestMalformedELF_DynamicSectionInvalidOffset(t *testing.T) {
 	badFile := filepath.Join(tmpDir, "baddynoffset.so")
 
 	data := createMinimalELFHeader(t)
-	
+
 	// Extend data first
 	data = append(data, make([]byte, 56)...)
-	
-	binary.LittleEndian.PutUint16(data[56:], 1) // e_phnum = 1
+
+	binary.LittleEndian.PutUint16(data[56:], 1)  // e_phnum = 1
 	binary.LittleEndian.PutUint64(data[32:], 64) // e_phoff = 64
-	
+
 	phOff := 64
-	
+
 	// PT_DYNAMIC with invalid file offset
 	binary.LittleEndian.PutUint32(data[phOff:], uint32(elf.PT_DYNAMIC))
 	binary.LittleEndian.PutUint32(data[phOff+4:], uint32(elf.PF_R|elf.PF_W))
@@ -324,15 +324,15 @@ func TestMalformedELF_ZeroAlignment(t *testing.T) {
 	badFile := filepath.Join(tmpDir, "zeroalign.so")
 
 	data := createMinimalELFHeader(t)
-	
+
 	// Extend data first
 	data = append(data, make([]byte, 56)...)
-	
-	binary.LittleEndian.PutUint16(data[56:], 1) // e_phnum = 1
+
+	binary.LittleEndian.PutUint16(data[56:], 1)  // e_phnum = 1
 	binary.LittleEndian.PutUint64(data[32:], 64) // e_phoff = 64
-	
+
 	phOff := 64
-	
+
 	binary.LittleEndian.PutUint32(data[phOff:], uint32(elf.PT_LOAD))
 	binary.LittleEndian.PutUint32(data[phOff+4:], uint32(elf.PF_R|elf.PF_X))
 	binary.LittleEndian.PutUint64(data[phOff+8:], 0)
@@ -360,15 +360,15 @@ func TestMalformedELF_CorruptedDynamicSection(t *testing.T) {
 	badFile := filepath.Join(tmpDir, "corruptdyn.so")
 
 	data := createMinimalELFHeader(t)
-	
+
 	// Extend data first for program header
 	data = append(data, make([]byte, 56)...)
-	
+
 	binary.LittleEndian.PutUint16(data[56:], 1)
 	binary.LittleEndian.PutUint64(data[32:], 64)
-	
+
 	phOff := 64
-	
+
 	// PT_DYNAMIC with size that's not multiple of entry size (16 bytes)
 	binary.LittleEndian.PutUint32(data[phOff:], uint32(elf.PT_DYNAMIC))
 	binary.LittleEndian.PutUint32(data[phOff+4:], uint32(elf.PF_R|elf.PF_W))
@@ -397,14 +397,14 @@ func TestMalformedELF_CorruptedDynamicSection(t *testing.T) {
 func createMinimalELFHeader(t *testing.T) []byte {
 	t.Helper()
 	data := make([]byte, 64)
-	
+
 	// ELF magic
 	data[0], data[1], data[2], data[3] = 0x7f, 'E', 'L', 'F'
 	data[4] = byte(elf.ELFCLASS64)
 	data[5] = byte(elf.ELFDATA2LSB)
 	data[6] = byte(elf.EV_CURRENT)
 	data[7] = byte(elf.ELFOSABI_NONE)
-	
+
 	// e_type = ET_DYN (3) at offset 16
 	binary.LittleEndian.PutUint16(data[16:], uint16(elf.ET_DYN))
 	// e_machine = EM_X86_64 at offset 18
@@ -417,6 +417,6 @@ func createMinimalELFHeader(t *testing.T) []byte {
 	binary.LittleEndian.PutUint16(data[54:], 56)
 	// e_phoff at offset 32 (program header offset)
 	binary.LittleEndian.PutUint64(data[32:], 64)
-	
+
 	return data
 }

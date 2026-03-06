@@ -20,6 +20,12 @@ func GnuHash(name string) uint32 {
 // gnuHashAddr – in-memory address of the GNU hash table
 // symtabAddr  – in-memory address of DT_SYMTAB
 // strtabAddr  – in-memory address of DT_STRTAB
+//
+// Note: This function works with mmap'd ELF file memory. The uintptr→unsafe.Pointer
+// conversions flagged by go vet are safe because:
+// 1. The addresses come from mmap and remain valid for the lifetime of the mapping
+// 2. The memory is pinned and won't be moved by the GC
+// 3. We convert to unsafe.Pointer immediately before dereferencing
 func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbol, error) {
 	if gnuHashAddr == 0 {
 		return nil, fmt.Errorf("gnu_hash: hash table address is 0")
@@ -30,19 +36,23 @@ func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbo
 	//   uint32 symoffset
 	//   uint32 bloom_size  (number of 64-bit bloom words)
 	//   uint32 bloom_shift
-	nbuckets := *(*uint32)(unsafe.Pointer(gnuHashAddr))
-	symoffset := *(*uint32)(unsafe.Pointer(gnuHashAddr + 4))
-	bloomSize := *(*uint32)(unsafe.Pointer(gnuHashAddr + 8))
-	bloomShift := *(*uint32)(unsafe.Pointer(gnuHashAddr + 12))
+	hashPtr := unsafe.Pointer(gnuHashAddr)
+	nbuckets := *(*uint32)(hashPtr)
+	symoffset := *(*uint32)(unsafe.Add(hashPtr, 4))
+	bloomSize := *(*uint32)(unsafe.Add(hashPtr, 8))
+	bloomShift := *(*uint32)(unsafe.Add(hashPtr, 12))
 
 	bloomBase := gnuHashAddr + 16
+	bloomBasePtr := unsafe.Pointer(bloomBase)
 	bucketsBase := bloomBase + uintptr(bloomSize)*8
+	bucketsBasePtr := unsafe.Pointer(bucketsBase)
 	chainsBase := bucketsBase + uintptr(nbuckets)*4
+	chainsBasePtr := unsafe.Pointer(chainsBase)
 
 	h := GnuHash(name)
 
 	// Bloom filter check.
-	bloomWord := *(*uint64)(unsafe.Pointer(bloomBase + uintptr((h/64)%uint32(bloomSize))*8))
+	bloomWord := *(*uint64)(unsafe.Add(bloomBasePtr, uintptr((h/64)%uint32(bloomSize))*8))
 	bit1 := (h >> 0) & 63
 	bit2 := (h >> bloomShift) & 63
 	if (bloomWord>>bit1)&1 == 0 || (bloomWord>>bit2)&1 == 0 {
@@ -50,14 +60,14 @@ func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbo
 	}
 
 	// Bucket lookup.
-	bucket := *(*uint32)(unsafe.Pointer(bucketsBase + uintptr(h%uint32(nbuckets))*4))
+	bucket := *(*uint32)(unsafe.Add(bucketsBasePtr, uintptr(h%uint32(nbuckets))*4))
 	if bucket == 0 {
 		return nil, fmt.Errorf("gnu_hash: symbol %q not found (empty bucket)", name)
 	}
 
 	// Walk the chain.
 	for symIdx := bucket; ; symIdx++ {
-		chainVal := *(*uint32)(unsafe.Pointer(chainsBase + uintptr(symIdx-symoffset)*4))
+		chainVal := *(*uint32)(unsafe.Add(chainsBasePtr, uintptr(symIdx-symoffset)*4))
 		if (chainVal &^ 1) == (h &^ 1) {
 			sym := symAtIndex(symtabAddr, uintptr(symIdx))
 			symName := ReadCStringMem(strtabAddr, uintptr(sym.Name))

@@ -287,8 +287,9 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 	}
 	if obj.InitArray != 0 && obj.InitArraySz > 0 {
 		n := obj.InitArraySz / 8
+		initArrayPtr := unsafe.Pointer(obj.InitArray)
 		for i := uint64(0); i < n; i++ {
-			fn := *(*uintptr)(unsafePointer(obj.InitArray + uintptr(i*8)))
+			fn := *(*uintptr)(unsafe.Add(initArrayPtr, i*8))
 			if fn != 0 {
 				callFunc(fn)
 			}
@@ -315,7 +316,7 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 	}
 
 	n := tableSize / relaEntSize
-	rels := unsafe.Slice((*relaEntry)(unsafePointer(tableAddr)), n)
+	rels := unsafe.Slice((*relaEntry)(unsafe.Pointer(tableAddr)), n)
 
 	for i := uint64(0); i < n; i++ {
 		r := &rels[i]
@@ -325,6 +326,7 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			return fmt.Errorf("relocation offset %#x is before base virtual address %#x", r.Offset, obj.Parsed.BaseVAddr)
 		}
 		offset := obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr)
+		offsetPtr := unsafe.Pointer(offset)
 		addend := r.Addend
 
 		switch relocType {
@@ -332,28 +334,28 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			// nothing
 
 		case R_X86_64_RELATIVE:
-			*(*uintptr)(unsafePointer(offset)) = obj.Base + uintptr(addend)
+			*(*uintptr)(offsetPtr) = obj.Base + uintptr(addend)
 
 		case R_X86_64_64:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
-			*(*uint64)(unsafePointer(offset)) = uint64(S) + uint64(addend)
+			*(*uint64)(offsetPtr) = uint64(S) + uint64(addend)
 
 		case R_X86_64_GLOB_DAT:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
-			*(*uintptr)(unsafePointer(offset)) = S
+			*(*uintptr)(offsetPtr) = S
 
 		case R_X86_64_JUMP_SLOT:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
-			*(*uintptr)(unsafePointer(offset)) = S
+			*(*uintptr)(offsetPtr) = S
 
 		case R_X86_64_COPY:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
@@ -368,8 +370,8 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			if !ok {
 				return fmt.Errorf("R_X86_64_COPY: symbol %q not found in symbol table", name)
 			}
-			dst := unsafe.Slice((*byte)(unsafePointer(offset)), sym.Size)
-			src := unsafe.Slice((*byte)(unsafePointer(S)), sym.Size)
+			dst := unsafe.Slice((*byte)(offsetPtr), sym.Size)
+			src := unsafe.Slice((*byte)(unsafe.Pointer(S)), sym.Size)
 			copy(dst, src)
 
 		case R_X86_64_32:
@@ -377,21 +379,21 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			if err != nil {
 				return err
 			}
-			*(*uint32)(unsafePointer(offset)) = uint32(uint64(S) + uint64(addend))
+			*(*uint32)(offsetPtr) = uint32(uint64(S) + uint64(addend))
 
 		case R_X86_64_32S:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
-			*(*int32)(unsafePointer(offset)) = int32(int64(S) + addend)
+			*(*int32)(offsetPtr) = int32(int64(S) + addend)
 
 		case R_X86_64_PC32, R_X86_64_PLT32:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
-			*(*uint32)(unsafePointer(offset)) = uint32(int64(S) + addend - int64(offset))
+			*(*uint32)(offsetPtr) = uint32(int64(S) + addend - int64(offset))
 
 		// TLS relocations are not supported.
 		case R_X86_64_DTPMOD64, R_X86_64_DTPOFF64, R_X86_64_TPOFF64,
@@ -449,8 +451,9 @@ func Unload(obj *Object) error {
 	// Run DT_FINI_ARRAY in reverse order.
 	if obj.FiniArray != 0 && obj.FiniArraySz > 0 {
 		n := obj.FiniArraySz / 8
+		finiArrayPtr := unsafe.Pointer(obj.FiniArray)
 		for i := n; i > 0; i-- {
-			fn := *(*uintptr)(unsafePointer(obj.FiniArray + uintptr((i-1)*8)))
+			fn := *(*uintptr)(unsafe.Add(finiArrayPtr, (i-1)*8))
 			if fn != 0 {
 				callFunc(fn)
 			}
@@ -466,14 +469,8 @@ func Unload(obj *Object) error {
 
 // zeroMem zeroes count bytes starting at addr.
 func zeroMem(addr, count uintptr) {
-	sl := unsafe.Slice((*byte)(unsafePointer(addr)), count)
+	sl := unsafe.Slice((*byte)(unsafe.Pointer(addr)), count)
 	for i := range sl {
 		sl[i] = 0
 	}
-}
-
-// unsafePointer converts a uintptr to an unsafe.Pointer.
-// This is a single conversion point to keep vet happy.
-func unsafePointer(addr uintptr) unsafe.Pointer {
-	return unsafe.Pointer(addr) //nolint:unsafeptr
 }

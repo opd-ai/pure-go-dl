@@ -29,16 +29,19 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 		return nil, fmt.Errorf("sysv_hash: hash table address is 0")
 	}
 
-	nbuckets := *(*uint32)(unsafe.Pointer(hashAddr))
+	hashPtr := unsafe.Pointer(hashAddr)
+	nbuckets := *(*uint32)(hashPtr)
 	// nchains follows immediately
-	// nchains := *(*uint32)(unsafe.Pointer(hashAddr + 4))
+	// nchains := *(*uint32)(unsafe.Add(hashPtr, 4))
 
 	bucketsBase := hashAddr + 8
+	bucketsBasePtr := unsafe.Pointer(bucketsBase)
 	// chains start after buckets
 	chainsBase := bucketsBase + uintptr(nbuckets)*4
+	chainsBasePtr := unsafe.Pointer(chainsBase)
 
 	h := SysvHash(name) % nbuckets
-	idx := *(*uint32)(unsafe.Pointer(bucketsBase + uintptr(h)*4))
+	idx := *(*uint32)(unsafe.Add(bucketsBasePtr, uintptr(h)*4))
 
 	for idx != 0 {
 		sym := symAtIndex(symtabAddr, uintptr(idx))
@@ -57,7 +60,7 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 				Section: elf.SectionIndex(sym.Shndx),
 			}, nil
 		}
-		idx = *(*uint32)(unsafe.Pointer(chainsBase + uintptr(idx)*4))
+		idx = *(*uint32)(unsafe.Add(chainsBasePtr, uintptr(idx)*4))
 	}
 
 	return nil, fmt.Errorf("sysv_hash: symbol %q not found", name)
@@ -65,5 +68,5 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 
 // symAtIndex returns a pointer to the Elf64Sym at the given index.
 func symAtIndex(symtabAddr, idx uintptr) *Elf64Sym {
-	return (*Elf64Sym)(unsafe.Pointer(symtabAddr + idx*symEntSize))
+	return (*Elf64Sym)(unsafe.Add(unsafe.Pointer(symtabAddr), idx*symEntSize))
 }

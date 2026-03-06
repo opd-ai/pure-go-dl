@@ -98,28 +98,28 @@ func (vt *VersionTable) ParseVersionTables(
 //	uint32 vna_name    (string table offset)
 //	uint32 vna_next    (offset to next Vernaux, 0 if last)
 func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uintptr) error {
-	current := addr
+	current := unsafe.Pointer(addr)
 	for i := uint64(0); i < count; i++ {
 		// Read Verneed header (16 bytes).
-		vnVersion := *(*uint16)(unsafe.Pointer(current))
-		vnCnt := *(*uint16)(unsafe.Pointer(current + 2))
-		_ = *(*uint32)(unsafe.Pointer(current + 4)) // vn_file (library name, not used for index)
-		vnAux := *(*uint32)(unsafe.Pointer(current + 8))
-		vnNext := *(*uint32)(unsafe.Pointer(current + 12))
+		vnVersion := *(*uint16)(current)
+		vnCnt := *(*uint16)(unsafe.Add(current, 2))
+		_ = *(*uint32)(unsafe.Add(current, 4)) // vn_file (library name, not used for index)
+		vnAux := *(*uint32)(unsafe.Add(current, 8))
+		vnNext := *(*uint32)(unsafe.Add(current, 12))
 
 		if vnVersion != 1 {
 			return fmt.Errorf("unsupported verneed version %d", vnVersion)
 		}
 
 		// Walk the Vernaux chain.
-		auxCurrent := current + uintptr(vnAux)
+		auxCurrent := unsafe.Add(current, uintptr(vnAux))
 		for j := uint16(0); j < vnCnt; j++ {
 			// Read Vernaux (20 bytes).
-			_ = *(*uint32)(unsafe.Pointer(auxCurrent))     // vna_hash
-			_ = *(*uint16)(unsafe.Pointer(auxCurrent + 4)) // vna_flags
-			vnaOther := *(*uint16)(unsafe.Pointer(auxCurrent + 6))
-			vnaName := *(*uint32)(unsafe.Pointer(auxCurrent + 8))
-			vnaNext := *(*uint32)(unsafe.Pointer(auxCurrent + 12))
+			_ = *(*uint32)(auxCurrent)                      // vna_hash
+			_ = *(*uint16)(unsafe.Add(auxCurrent, 4))       // vna_flags
+			vnaOther := *(*uint16)(unsafe.Add(auxCurrent, 6))
+			vnaName := *(*uint32)(unsafe.Add(auxCurrent, 8))
+			vnaNext := *(*uint32)(unsafe.Add(auxCurrent, 12))
 
 			name := ReadCStringMem(strtabAddr, uintptr(vnaName))
 			vt.Requirements[vnaOther] = &VersionRequirement{
@@ -130,13 +130,13 @@ func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uint
 			if vnaNext == 0 {
 				break
 			}
-			auxCurrent += uintptr(vnaNext)
+			auxCurrent = unsafe.Add(auxCurrent, uintptr(vnaNext))
 		}
 
 		if vnNext == 0 {
 			break
 		}
-		current += uintptr(vnNext)
+		current = unsafe.Add(current, uintptr(vnNext))
 	}
 	return nil
 }
@@ -159,24 +159,24 @@ func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uint
 //	uint32 vda_name    (string table offset)
 //	uint32 vda_next    (offset to next Verdaux, 0 if last)
 func (vt *VersionTable) parseVerdef(addr uintptr, count uint64, strtabAddr uintptr) error {
-	current := addr
+	current := unsafe.Pointer(addr)
 	for i := uint64(0); i < count; i++ {
 		// Read Verdef header (20 bytes).
-		vdVersion := *(*uint16)(unsafe.Pointer(current))
-		_ = *(*uint16)(unsafe.Pointer(current + 2)) // vd_flags
-		vdNdx := *(*uint16)(unsafe.Pointer(current + 4))
-		_ = *(*uint16)(unsafe.Pointer(current + 6)) // vd_cnt
-		_ = *(*uint32)(unsafe.Pointer(current + 8)) // vd_hash
-		vdAux := *(*uint32)(unsafe.Pointer(current + 12))
-		vdNext := *(*uint32)(unsafe.Pointer(current + 16))
+		vdVersion := *(*uint16)(current)
+		_ = *(*uint16)(unsafe.Add(current, 2))  // vd_flags
+		vdNdx := *(*uint16)(unsafe.Add(current, 4))
+		_ = *(*uint16)(unsafe.Add(current, 6))  // vd_cnt
+		_ = *(*uint32)(unsafe.Add(current, 8))  // vd_hash
+		vdAux := *(*uint32)(unsafe.Add(current, 12))
+		vdNext := *(*uint32)(unsafe.Add(current, 16))
 
 		if vdVersion != 1 {
 			return fmt.Errorf("unsupported verdef version %d", vdVersion)
 		}
 
 		// Read first Verdaux to get the version name.
-		auxCurrent := current + uintptr(vdAux)
-		vdaName := *(*uint32)(unsafe.Pointer(auxCurrent))
+		auxCurrent := unsafe.Add(current, uintptr(vdAux))
+		vdaName := *(*uint32)(auxCurrent)
 
 		name := ReadCStringMem(strtabAddr, uintptr(vdaName))
 		vt.Definitions[vdNdx] = &VersionDefinition{
@@ -187,7 +187,7 @@ func (vt *VersionTable) parseVerdef(addr uintptr, count uint64, strtabAddr uintp
 		if vdNext == 0 {
 			break
 		}
-		current += uintptr(vdNext)
+		current = unsafe.Add(current, uintptr(vdNext))
 	}
 	return nil
 }

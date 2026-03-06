@@ -159,15 +159,16 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 
 // ReadCStringMem reads a null-terminated C string from memory at base+offset.
 func ReadCStringMem(base, offset uintptr) string {
-	ptr := base + offset
+	basePtr := unsafe.Pointer(base)
+	ptr := unsafe.Add(basePtr, offset)
 	var buf []byte
 	for {
-		b := *(*byte)(unsafe.Pointer(ptr))
+		b := *(*byte)(ptr)
 		if b == 0 {
 			break
 		}
 		buf = append(buf, b)
-		ptr++
+		ptr = unsafe.Add(ptr, 1)
 	}
 	return string(buf)
 }

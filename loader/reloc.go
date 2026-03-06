@@ -1,6 +1,10 @@
 package loader
 
-import "github.com/opd-ai/pure-go-dl/symbol"
+import (
+	"unsafe"
+
+	"github.com/opd-ai/pure-go-dl/symbol"
+)
 
 // x86-64 relocation types (System V ABI supplement).
 const (
@@ -53,7 +57,7 @@ func symName(obj *Object, idx uint32) string {
 	if idx == 0 || obj.SymtabAddr == 0 || obj.StrtabAddr == 0 {
 		return ""
 	}
-	sym := (*symbol.Elf64Sym)(unsafePointer(obj.SymtabAddr + uintptr(idx)*24))
+	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
 	return symbol.ReadCStringMem(obj.StrtabAddr, uintptr(sym.Name))
 }
 
@@ -62,6 +66,6 @@ func symBind(obj *Object, idx uint32) uint8 {
 	if idx == 0 || obj.SymtabAddr == 0 {
 		return 0
 	}
-	sym := (*symbol.Elf64Sym)(unsafePointer(obj.SymtabAddr + uintptr(idx)*24))
+	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
 	return sym.Info >> 4 // upper 4 bits = binding
 }

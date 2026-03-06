@@ -25,14 +25,15 @@
 
 ## Implementation Steps
 
-### Step 1: Fix Silent Relocation Failures
+### Step 1: Fix Silent Relocation Failures ✅
 - **Deliverable**: Error handling for unsupported TLS/IFUNC relocations in `loader/loader.go`
 - **Dependencies**: None
 - **Rationale**: Per AUDIT findings HIGH-05/HIGH-06, TLS and IFUNC relocations are silently skipped. This masks the real cause of failures when loading libraries. Before adding new features, ensure clear error messages identify which unsupported features block a library.
 - **Acceptance**: Unknown relocation types return errors instead of silent skip
 - **Validation**: `go-stats-generator analyze . --sections patterns | jq '.patterns.error_handling'` shows no silent failures in relocation code
+- **Status**: COMPLETE — TLS, IFUNC, and unknown relocations now return clear errors
 
-### Step 2: Implement ld.so.cache Parser
+### Step 2: Implement ld.so.cache Parser ✅
 - **Deliverable**: Complete `dl/ldcache.go` implementation for `/etc/ld.so.cache` lookup
 - **Dependencies**: Step 1
 - **Rationale**: Per AUDIT finding HIGH-03 and ROADMAP Phase 5.1, ld.so.cache lookup is essential for efficient system library resolution. The `parseCache` function exists (complexity 17.9) but needs verification it correctly maps sonames to paths.
@@ -41,8 +42,9 @@
   ```bash
   go test -v -run TestLdCache ./dl/ 2>&1 | grep -E 'PASS|FAIL'
   ```
+- **Status**: COMPLETE — ldcache.go with comprehensive tests, integrated into findLibrary()
 
-### Step 3: Enable System Library Loading (Unblock M4)
+### Step 3: Enable System Library Loading (Unblock M4) ✅
 - **Deliverable**: Automatic loading of libc.so.6 and essential runtime libraries
 - **Dependencies**: Steps 1, 2
 - **Rationale**: Per AUDIT CRITICAL-01, the loader cannot resolve `__cxa_finalize` and other libc symbols because no mechanism exists to preload system libraries. This is the primary blocker for M4.
@@ -55,8 +57,9 @@
   ```bash
   CGO_ENABLED=0 go build -o /tmp/test ./cmd/pgldd && /tmp/test testdata/libtest.so 2>&1 | grep -v "undefined symbol"
   ```
+- **Status**: COMPLETE — System library loading implemented and tested
 
-### Step 4: Add Integration Tests for M4 Checkpoint
+### Step 4: Add Integration Tests for M4 Checkpoint ✅
 - **Deliverable**: Test file `dl/dl_test.go` with M4 verification tests
 - **Dependencies**: Step 3
 - **Rationale**: Per AUDIT HIGH-01 and ROADMAP Phase 4.4, the definition of M4 is: "cos(0)==1.0 from a CGO_ENABLED=0 binary". This requires loading libm.so.6, binding `cos`, and calling it.
@@ -71,8 +74,9 @@
   go-stats-generator analyze . --sections functions | jq '[.functions[] | select(.name | test("Test"))] | length'
   ```
   Should show ≥4 test functions.
+- **Status**: COMPLETE — 9 integration tests in dl/dl_test.go, all passing
 
-### Step 5: Implement Symbol Versioning (Partial)
+### Step 5: Implement Symbol Versioning (Partial) ✅
 - **Deliverable**: Basic DT_VERSYM/DT_VERDEF parsing in `symbol/` package
 - **Dependencies**: Step 4
 - **Rationale**: Per AUDIT HIGH-04 and ROADMAP Phase 7.1 (marked "HIGH PRIORITY"), symbol versioning is "needed for loading anything that depends on libc". Many glibc symbols like `stat` have multiple versions.
@@ -83,6 +87,7 @@
   go-stats-generator analyze . --sections functions | jq '[.functions[] | select(.name | test("Version|Versym"))] | length'
   ```
   Should show ≥2 version-related functions.
+- **Status**: COMPLETE — symbol/version.go with DT_VERSYM, DT_VERDEF, DT_VERNEED support
 
 ### Step 6: Add Package Documentation ✅
 - **Deliverable**: Package-level doc comments for all 6 packages
@@ -102,7 +107,7 @@
   ```
 - **Status**: COMPLETE — Package documentation coverage is now 100%
 
-### Step 7: Update README with Current Status
+### Step 7: Update README with Current Status ✅
 - **Deliverable**: Expanded README.md with usage examples and status
 - **Dependencies**: Steps 3, 4 (need working examples)
 - **Rationale**: Per AUDIT MEDIUM-01, README is only 3 lines. Users cannot understand capabilities or limitations.
@@ -114,6 +119,7 @@
   5. CGO_ENABLED=0 requirement
 - **Acceptance**: README contains working code example
 - **Validation**: Manual review — README > 50 lines with code blocks
+- **Status**: COMPLETE — README expanded to 259 lines with comprehensive documentation
 
 ## Complexity Hotspot Analysis
 

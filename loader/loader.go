@@ -20,6 +20,10 @@ import (
 // SymbolResolver resolves symbol names to absolute addresses.
 type SymbolResolver interface {
 	Resolve(name string) (uintptr, error)
+	// ResolveWithLibrary resolves a symbol and returns both its address and the
+	// providing library's Object (for TLS module tracking). Returns nil Object
+	// if the symbol is internally resolved or provided by the runtime.
+	ResolveWithLibrary(name string) (uintptr, *Object, error)
 }
 
 // Segment describes a single mapped PT_LOAD region.
@@ -536,27 +540,44 @@ func applyTPOff64(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Poi
 	var symOffsetInModule int64
 
 	if symIdx != 0 {
-		// Try to resolve the symbol to find which library provides it.
-		S, err := resolveSymForReloc(obj, symIdx, resolver)
-		if err != nil {
-			// Symbol not found - for weak symbols, write 0.
-			// For strong symbols, this is an error, but we'll write 0 anyway to avoid crashes.
-			*(*int64)(offsetPtr) = 0
-			return nil
-		}
-
-		// If the symbol resolved to an address, we need to find which library it belongs to.
-		// For now, try to use the current library's TLS module if it exists.
-		// TODO: Track which library each resolved symbol belongs to for proper TLS offset calculation.
-		if obj.TLSModule != nil {
-			tlsModule = obj.TLSModule
-			symOffsetInModule = int64(S - obj.Base)
+		name := symName(obj, symIdx)
+		if name == "" {
+			// No symbol name, use current library's TLS module if available.
+			if obj.TLSModule != nil {
+				tlsModule = obj.TLSModule
+			} else {
+				*(*int64)(offsetPtr) = 0
+				return nil
+			}
 		} else {
-			// Library has no TLS but references external TLS symbol.
-			// We can't properly calculate the offset without knowing the symbol's library.
-			// Write a marker value (0) for now - the symbol should be resolved at runtime.
-			*(*int64)(offsetPtr) = 0
-			return nil
+			// Try to resolve the symbol and find which library provides it.
+			addr, providerObj, err := resolver.ResolveWithLibrary(name)
+			if err != nil {
+				// Symbol not found - for weak symbols, write 0.
+				bind := symBind(obj, symIdx)
+				if bind == 2 { // STB_WEAK
+					*(*int64)(offsetPtr) = 0
+					return nil
+				}
+				// For strong symbols, write 0 to avoid crashes but this is an error state.
+				*(*int64)(offsetPtr) = 0
+				return nil
+			}
+
+			// Determine which TLS module to use based on the providing library.
+			if providerObj != nil && providerObj.TLSModule != nil {
+				// External symbol from a library with TLS - use that library's module.
+				tlsModule = providerObj.TLSModule
+				symOffsetInModule = int64(addr - providerObj.Base)
+			} else if obj.TLSModule != nil {
+				// Symbol resolved but provider has no TLS, or it's our own symbol - use our module.
+				tlsModule = obj.TLSModule
+				symOffsetInModule = int64(addr - obj.Base)
+			} else {
+				// Neither provider nor current library has TLS - write 0.
+				*(*int64)(offsetPtr) = 0
+				return nil
+			}
 		}
 	} else if obj.TLSModule != nil {
 		tlsModule = obj.TLSModule

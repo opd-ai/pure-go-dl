@@ -175,6 +175,11 @@ func (m *mockResolver) Resolve(name string) (uintptr, error) {
 	return 0, nil
 }
 
+func (m *mockResolver) ResolveWithLibrary(name string) (uintptr, *Object, error) {
+	addr, err := m.Resolve(name)
+	return addr, nil, err
+}
+
 func TestLoad(t *testing.T) {
 	// Test loading the test library
 	testLib := "../testdata/libtest.so"

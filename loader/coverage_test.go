@@ -434,6 +434,10 @@ func (e *errorResolver) Resolve(name string) (uintptr, error) {
 	return 0, fmt.Errorf("symbol %q not found", name)
 }
 
+func (e *errorResolver) ResolveWithLibrary(name string) (uintptr, *Object, error) {
+	return 0, nil, fmt.Errorf("symbol %q not found", name)
+}
+
 // TestLoadWithMissingDependency tests loading when a symbol can't be resolved
 func TestLoadWithMissingDependency(t *testing.T) {
 	// libreloc.so calls its own internal functions, but might have

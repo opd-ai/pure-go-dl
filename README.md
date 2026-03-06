@@ -269,9 +269,10 @@ See [ROADMAP.md](ROADMAP.md) for detailed implementation phases and future featu
 
 Contributions are welcome! Please:
 1. Read [ROADMAP.md](ROADMAP.md) for project context and design decisions
-2. Check existing issues and milestones
-3. Write integration tests for new features
-4. Ensure `CGO_ENABLED=0 go test -race ./...` passes
+2. Read [UNSAFE_POINTER_USAGE.md](UNSAFE_POINTER_USAGE.md) for unsafe pointer conventions and why `go vet` warnings are expected
+3. Check existing issues and milestones
+4. Write integration tests for new features
+5. Ensure `CGO_ENABLED=0 go test -race ./...` passes
 
 ## License
 

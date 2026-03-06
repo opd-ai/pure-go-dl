@@ -318,7 +318,7 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - README.md:3 — "CGO-free ELF dynamic linker" (fixed)
   - README.md:9 — Explicit runtime requirements notice (added)
 
-- [ ] **[LOW-03] UNSAFE_POINTER_USAGE.md exists but is not referenced in README** — UNSAFE_POINTER_USAGE.md
+- [x] **[LOW-03] UNSAFE_POINTER_USAGE.md exists but is not referenced in README** — UNSAFE_POINTER_USAGE.md
   
   **Evidence:** The repository contains `UNSAFE_POINTER_USAGE.md` (presumably documenting unsafe.Pointer usage patterns) but README.md doesn't link to it in the Development or Contributing sections.
   
@@ -326,9 +326,11 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   
   **Locations:**
   - UNSAFE_POINTER_USAGE.md — Exists in repo root
-  - README.md:243-250 — Contributing section (no mention)
+  - README.md:268-274 — Contributing section (now includes reference)
   
   **Recommendation:** Add link to UNSAFE_POINTER_USAGE.md in README's Development section.
+  
+  **Resolution:** Added UNSAFE_POINTER_USAGE.md reference as step 2 in Contributing section with context about unsafe pointer conventions and expected go vet warnings.
 
 ---
 

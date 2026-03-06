@@ -216,11 +216,14 @@ func mapSegments(obj *Object, parsed *goelf.ParsedObject, fd int) error {
 // populateObject computes dynamic section addresses, loads symbols, and initializes TLS.
 // populateDynamicTags populates Object fields from parsed dynamic section entries.
 // It converts virtual addresses to absolute addresses using the base address.
-func populateDynamicTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
+func populateDynamicTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) error {
 	populateSymbolTags(obj, dynTags, toAbs)
-	populateRelocationTags(obj, dynTags, toAbs)
+	if err := populateRelocationTags(obj, dynTags, toAbs); err != nil {
+		return err
+	}
 	populateInitFiniTags(obj, dynTags, toAbs)
 	populateSoname(obj, dynTags)
+	return nil
 }
 
 func populateSymbolTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
@@ -241,7 +244,7 @@ func populateSymbolTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(u
 	}
 }
 
-func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
+func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) error {
 	if v, ok := dynTags[elf.DT_RELA]; ok {
 		obj.RelaAddr = toAbs(v)
 	}
@@ -257,6 +260,16 @@ func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs fu
 	if v, ok := dynTags[elf.DT_PLTRELSZ]; ok {
 		obj.JmpRelSize = v
 	}
+
+	// Validate relocation table consistency: if size > 0, address must be non-zero
+	if obj.RelaSize > 0 && obj.RelaAddr == 0 {
+		return fmt.Errorf("inconsistent relocation table: DT_RELASZ=%d but DT_RELA is missing or zero", obj.RelaSize)
+	}
+	if obj.JmpRelSize > 0 && obj.JmpRelAddr == 0 {
+		return fmt.Errorf("inconsistent PLT relocation table: DT_PLTRELSZ=%d but DT_JMPREL is missing or zero", obj.JmpRelSize)
+	}
+
+	return nil
 }
 
 func populateInitFiniTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
@@ -357,7 +370,9 @@ func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
 		return base + uintptr(vaddr-parsed.BaseVAddr)
 	}
 
-	populateDynamicTags(obj, parsed.DynEntries, toAbs)
+	if err := populateDynamicTags(obj, parsed.DynEntries, toAbs); err != nil {
+		return fmt.Errorf("loader: dynamic tags validation failed: %w", err)
+	}
 	initializeSymbolTable(obj, parsed.DynEntries, base)
 	return setupTLS(obj, parsed)
 }

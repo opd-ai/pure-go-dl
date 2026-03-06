@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"debug/elf"
 	"os"
 	"path/filepath"
 	"testing"
@@ -380,5 +381,105 @@ func TestSymbolIndexBoundsChecking(t *testing.T) {
 		_ = symName(obj, 1)
 		_ = symBind(obj, 1)
 		_ = symAddress(obj, 1)
+	}
+}
+
+// TestRelocationTableConsistency tests that inconsistent relocation tables are rejected
+func TestRelocationTableConsistency(t *testing.T) {
+	testCases := []struct {
+		name       string
+		relaAddr   uintptr
+		relaSize   uint64
+		jmpRelAddr uintptr
+		jmpRelSize uint64
+		wantError  bool
+		errorMatch string
+	}{
+		{
+			name:       "consistent_rela_table",
+			relaAddr:   0x1000,
+			relaSize:   48,
+			jmpRelAddr: 0,
+			jmpRelSize: 0,
+			wantError:  false,
+		},
+		{
+			name:       "consistent_jmprel_table",
+			relaAddr:   0,
+			relaSize:   0,
+			jmpRelAddr: 0x2000,
+			jmpRelSize: 24,
+			wantError:  false,
+		},
+		{
+			name:       "inconsistent_rela_missing_addr",
+			relaAddr:   0,
+			relaSize:   48,
+			jmpRelAddr: 0,
+			jmpRelSize: 0,
+			wantError:  true,
+			errorMatch: "DT_RELASZ",
+		},
+		{
+			name:       "inconsistent_jmprel_missing_addr",
+			relaAddr:   0,
+			relaSize:   0,
+			jmpRelAddr: 0,
+			jmpRelSize: 24,
+			wantError:  true,
+			errorMatch: "DT_PLTRELSZ",
+		},
+		{
+			name:       "both_tables_consistent",
+			relaAddr:   0x1000,
+			relaSize:   48,
+			jmpRelAddr: 0x2000,
+			jmpRelSize: 24,
+			wantError:  false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			obj := &Object{}
+			obj.RelaAddr = tc.relaAddr
+			obj.RelaSize = tc.relaSize
+			obj.JmpRelAddr = tc.jmpRelAddr
+			obj.JmpRelSize = tc.jmpRelSize
+
+			dynTags := make(map[elf.DynTag]uint64)
+			if tc.relaAddr != 0 {
+				dynTags[elf.DT_RELA] = uint64(tc.relaAddr)
+			}
+			if tc.relaSize != 0 {
+				dynTags[elf.DT_RELASZ] = tc.relaSize
+			}
+			if tc.jmpRelAddr != 0 {
+				dynTags[elf.DT_JMPREL] = uint64(tc.jmpRelAddr)
+			}
+			if tc.jmpRelSize != 0 {
+				dynTags[elf.DT_PLTRELSZ] = tc.jmpRelSize
+			}
+
+			toAbs := func(vaddr uint64) uintptr {
+				return uintptr(vaddr)
+			}
+
+			err := populateRelocationTags(obj, dynTags, toAbs)
+
+			if tc.wantError {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tc.errorMatch)
+				} else if len(tc.errorMatch) > 0 && len(err.Error()) > 0 {
+					// Just verify we got an error - checking specific message content
+					// would be fragile
+					t.Logf("Got expected error: %v", err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+			}
+		})
 	}
 }

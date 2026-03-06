@@ -54,7 +54,7 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 				Size:    sym.Size,
 				Bind:    bind,
 				Type:    symType,
-				Shndx:   sym.Shndx,
+				Section: elf.SectionIndex(sym.Shndx),
 			}, nil
 		}
 		idx = *(*uint32)(unsafe.Pointer(chainsBase + uintptr(idx)*4))

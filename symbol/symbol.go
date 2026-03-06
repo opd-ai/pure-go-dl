@@ -13,8 +13,7 @@ type Symbol struct {
 	Size    uint64
 	Bind    elf.SymBind
 	Type    elf.SymType
-	Section elf.SectionIndex
-	Shndx   uint16
+	Section elf.SectionIndex // mirrors st_shndx; use elf.SHN_* constants
 }
 
 // Table is a name-to-Symbol index for a loaded shared object.
@@ -111,7 +110,6 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 			Bind:    bind,
 			Type:    symType,
 			Section: elf.SectionIndex(s.Shndx),
-			Shndx:   s.Shndx,
 		}
 		t.symbols[name] = sym
 	}

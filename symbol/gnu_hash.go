@@ -72,7 +72,7 @@ func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbo
 					Size:    sym.Size,
 					Bind:    bind,
 					Type:    symType,
-					Shndx:   sym.Shndx,
+					Section: elf.SectionIndex(sym.Shndx),
 				}, nil
 			}
 		}

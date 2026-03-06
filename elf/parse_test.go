@@ -168,7 +168,7 @@ func TestReadBytesAtVAddr(t *testing.T) {
 	if _, ok := obj.DynEntries[elf.DT_STRTAB]; !ok {
 		t.Skip("No DT_STRTAB found, cannot verify readBytesAtVAddr")
 	}
-	
+
 	// If we have DT_NEEDED entries, readBytesAtVAddr worked
 	if len(obj.Needed) > 0 {
 		t.Logf("Successfully read %d DT_NEEDED entries using readBytesAtVAddr", len(obj.Needed))

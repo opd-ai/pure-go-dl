@@ -25,13 +25,13 @@ func TestElfProt(t *testing.T) {
 	for _, tt := range tests {
 		got := elfProt(tt.flags)
 		// Verify the bits match expectations
-		hasRead := (got&unix.PROT_READ) != 0
-		hasWrite := (got&unix.PROT_WRITE) != 0
-		hasExec := (got&unix.PROT_EXEC) != 0
+		hasRead := (got & unix.PROT_READ) != 0
+		hasWrite := (got & unix.PROT_WRITE) != 0
+		hasExec := (got & unix.PROT_EXEC) != 0
 
-		wantRead := (tt.flags&elf.PF_R) != 0
-		wantWrite := (tt.flags&elf.PF_W) != 0
-		wantExec := (tt.flags&elf.PF_X) != 0
+		wantRead := (tt.flags & elf.PF_R) != 0
+		wantWrite := (tt.flags & elf.PF_W) != 0
+		wantExec := (tt.flags & elf.PF_X) != 0
 
 		if hasRead != wantRead || hasWrite != wantWrite || hasExec != wantExec {
 			t.Errorf("elfProt(%v) = 0x%x (%s), want %s", tt.flags, got, protToString(got), tt.want)
@@ -120,24 +120,24 @@ func TestZeroMem(t *testing.T) {
 	// Allocate a small buffer
 	size := 100
 	buf := make([]byte, size)
-	
+
 	// Fill with non-zero data
 	for i := range buf {
 		buf[i] = byte(i + 1) // Start at 1 to avoid accidental zeros
 	}
-	
+
 	// Zero a portion
 	addr := uintptr(unsafe.Pointer(&buf[10]))
 	count := uintptr(50)
 	zeroMem(addr, count)
-	
+
 	// Check that the region was zeroed
 	for i := 10; i < 60; i++ {
 		if buf[i] != 0 {
 			t.Errorf("buf[%d] = %d after zeroMem, want 0", i, buf[i])
 		}
 	}
-	
+
 	// Check that regions outside weren't touched
 	for i := 0; i < 10; i++ {
 		expected := byte(i + 1)
@@ -168,17 +168,17 @@ func (m *mockResolver) Resolve(name string) (uintptr, error) {
 func TestLoad(t *testing.T) {
 	// Test loading the test library
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{
 		symbols: make(map[string]uintptr),
 	}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// Verify object structure
 	if obj == nil {
 		t.Fatal("Load returned nil object")
@@ -195,7 +195,7 @@ func TestLoad(t *testing.T) {
 	if obj.RefCount != 1 {
 		t.Errorf("obj.RefCount = %d, want 1", obj.RefCount)
 	}
-	
+
 	// Verify dynamic addresses were computed
 	if obj.SymtabAddr == 0 {
 		t.Error("obj.SymtabAddr is zero")
@@ -203,7 +203,7 @@ func TestLoad(t *testing.T) {
 	if obj.StrtabAddr == 0 {
 		t.Error("obj.StrtabAddr is zero")
 	}
-	
+
 	// Either SysV hash or GNU hash should be present
 	if obj.HashAddr == 0 && obj.GnuHashAddr == 0 {
 		t.Error("Both obj.HashAddr and obj.GnuHashAddr are zero")
@@ -212,13 +212,13 @@ func TestLoad(t *testing.T) {
 
 func TestLoadInvalidFile(t *testing.T) {
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	tests := []string{
 		"nonexistent.so",
 		"/dev/null",
 		"loader_test.go",
 	}
-	
+
 	for _, path := range tests {
 		obj, err := Load(path, resolver)
 		if err == nil {
@@ -233,18 +233,18 @@ func TestLoadInvalidFile(t *testing.T) {
 func TestUnload(t *testing.T) {
 	testLib := "../testdata/libtest.so"
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
-	
+
 	// Unload should succeed (it unmaps memory and runs finalizers)
 	err = Unload(obj)
 	if err != nil {
 		t.Errorf("Unload() failed: %v", err)
 	}
-	
+
 	// Note: Unload doesn't modify RefCount - that's handled by the dl package
 	// The test just verifies that Unload completes without error
 }
@@ -252,13 +252,13 @@ func TestUnload(t *testing.T) {
 func TestObjectFields(t *testing.T) {
 	testLib := "../testdata/libtest.so"
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// Test that Object fields are properly initialized
 	if obj.Parsed == nil {
 		t.Error("obj.Parsed is nil")
@@ -266,7 +266,7 @@ func TestObjectFields(t *testing.T) {
 	if obj.Parsed.Path != testLib {
 		t.Errorf("obj.Parsed.Path = %q, want %q", obj.Parsed.Path, testLib)
 	}
-	
+
 	// Verify segments are mapped correctly
 	for i, seg := range obj.Segments {
 		if seg.Addr == 0 {
@@ -289,14 +289,14 @@ func TestLoadWithSystemLib(t *testing.T) {
 		"/usr/lib/x86_64-linux-gnu/libm.so.6",
 		"/lib64/libm.so.6",
 	}
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	for _, lib := range systemLibs {
 		obj, err := Load(lib, resolver)
 		if err == nil {
 			defer Unload(obj)
-			
+
 			// Verify basic properties
 			if obj.Base == 0 {
 				t.Errorf("Load(%q): Base is zero", lib)
@@ -307,6 +307,6 @@ func TestLoadWithSystemLib(t *testing.T) {
 			return // Success, don't try other paths
 		}
 	}
-	
+
 	t.Skip("No system libm.so.6 found, skipping system library load test")
 }

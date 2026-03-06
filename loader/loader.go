@@ -906,7 +906,7 @@ func Unload(obj *Object) error {
 	if obj.FiniAddr != 0 {
 		callFunc(obj.FiniAddr)
 	}
-	
+
 	// Unmap GOT if it was allocated.
 	if obj.GOTBase != 0 {
 		const gotPageSize = 4096
@@ -914,7 +914,7 @@ func Unload(obj *Object) error {
 			return fmt.Errorf("failed to unmap GOT: %w", err)
 		}
 	}
-	
+
 	// Unmap everything.
 	return mmap.Unmap(obj.Base, uintptr(obj.Parsed.MemSize))
 }

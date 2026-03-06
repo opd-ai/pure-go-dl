@@ -208,13 +208,9 @@ func mapSegments(obj *Object, parsed *goelf.ParsedObject, fd int) error {
 }
 
 // populateObject computes dynamic section addresses, loads symbols, and initializes TLS.
-func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
-	base := obj.Base
-	toAbs := func(vaddr uint64) uintptr {
-		return base + uintptr(vaddr-parsed.BaseVAddr)
-	}
-
-	dynTags := parsed.DynEntries
+// populateDynamicTags populates Object fields from parsed dynamic section entries.
+// It converts virtual addresses to absolute addresses using the base address.
+func populateDynamicTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
 	if v, ok := dynTags[elf.DT_SYMTAB]; ok {
 		obj.SymtabAddr = toAbs(v)
 	}
@@ -263,7 +259,10 @@ func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
 	if v, ok := dynTags[elf.DT_SONAME]; ok && obj.StrtabAddr != 0 {
 		obj.Soname = symbol.ReadCStringMem(obj.StrtabAddr, uintptr(v))
 	}
+}
 
+// initializeSymbolTable calculates symbol table size, parses version info, and loads symbols.
+func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uintptr) {
 	var symtabSize uint64
 	if syment, ok := dynTags[elf.DT_SYMENT]; ok && syment == 24 {
 		if _, ok := dynTags[elf.DT_STRSZ]; ok && obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
@@ -286,7 +285,11 @@ func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
 			_ = err
 		}
 	}
+}
 
+// setupTLS registers a TLS module if the object has a PT_TLS segment.
+// It locates the TLS initialization data within the mapped segments.
+func setupTLS(obj *Object, parsed *goelf.ParsedObject) error {
 	if tlsSeg := parsed.TLSSeg; tlsSeg != nil {
 		var tlsInitData uintptr
 		if tlsSeg.Filesz > 0 {
@@ -316,8 +319,20 @@ func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
 		}
 		obj.TLSModule = tlsModule
 	}
-
 	return nil
+}
+
+// populateObject fills in Object fields from parsed ELF data.
+// It converts dynamic section entries, initializes symbol tables, and sets up TLS.
+func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
+	base := obj.Base
+	toAbs := func(vaddr uint64) uintptr {
+		return base + uintptr(vaddr-parsed.BaseVAddr)
+	}
+
+	populateDynamicTags(obj, parsed.DynEntries, toAbs)
+	initializeSymbolTable(obj, parsed.DynEntries, base)
+	return setupTLS(obj, parsed)
 }
 
 // finalizeObject applies relocations, RELRO protection, and runs constructors.

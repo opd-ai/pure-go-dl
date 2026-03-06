@@ -26,10 +26,6 @@ A CGO-free ELF dynamic linker that enables loading native shared libraries (`.so
 
 ## Installation
 
-```bash
-go get github.com/opd-ai/pure-go-dl
-```
-
 **Build Requirements:**
 - Go 1.24 or later
 - `CGO_ENABLED=0` (no cgo compiler needed)
@@ -38,6 +34,10 @@ go get github.com/opd-ai/pure-go-dl
 - Linux (x86-64 or ARM64/aarch64)
 - Standard system libraries: `libc.so.6`, `libdl.so.2`, `libpthread.so.0`
 - Note: Binaries are **dynamically linked** despite being built with `CGO_ENABLED=0`
+
+```bash
+go get github.com/opd-ai/pure-go-dl
+```
 
 ## Quick Start
 

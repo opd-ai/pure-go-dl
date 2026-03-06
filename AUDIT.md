@@ -296,7 +296,7 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
 
 ### LOW
 
-- [ ] **[LOW-01] README installation section doesn't mention Go version requirement** — README.md:24-28
+- [x] **[LOW-01] README installation section doesn't mention Go version requirement** — README.md:24-28
   
   **Evidence:** The Installation section says "Requirements: Go 1.24 or later" but `go get github.com/opd-ai/pure-go-dl` is shown without verifying the Go version first.
   

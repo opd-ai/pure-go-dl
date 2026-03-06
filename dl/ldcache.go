@@ -104,7 +104,8 @@ func parseCacheHeader(data []byte) (*cacheHeader, error) {
 }
 
 // parseCacheEntries reads all cache entries and builds the library map.
-func parseCacheEntries(data []byte, header *cacheHeader) (*ldCache, error) {
+// validateCacheSize checks if the cache file contains enough data for entries.
+func validateCacheSize(data []byte, header *cacheHeader) (stringTable []byte, err error) {
 	headerSize := int(unsafe.Sizeof(cacheHeader{}))
 	entriesSize := int(header.NumLibs) * int(unsafe.Sizeof(cacheEntry{}))
 	stringsOffset := headerSize + entriesSize
@@ -113,35 +114,53 @@ func parseCacheEntries(data []byte, header *cacheHeader) (*ldCache, error) {
 		return nil, fmt.Errorf("ld.so.cache: truncated file (expected strings at offset %d, file size %d)", stringsOffset, len(data))
 	}
 
-	stringTable := data[stringsOffset:]
+	return data[stringsOffset:], nil
+}
+
+// readCacheEntry reads and processes a single cache entry.
+func readCacheEntry(reader *bytes.Reader, stringTable []byte, cache *ldCache) error {
+	var entry cacheEntry
+	if err := binary.Read(reader, binary.LittleEndian, &entry); err != nil {
+		return err
+	}
+
+	if !shouldIncludeEntry(&entry) {
+		return nil
+	}
+
+	soname, err := extractString(stringTable, entry.KeyOffset)
+	if err != nil {
+		return nil
+	}
+
+	path, err := extractString(stringTable, entry.ValueOffset)
+	if err != nil {
+		return nil
+	}
+
+	cache.entries[soname] = path
+	return nil
+}
+
+func parseCacheEntries(data []byte, header *cacheHeader) (*ldCache, error) {
+	stringTable, err := validateCacheSize(data, header)
+	if err != nil {
+		return nil, err
+	}
+
 	cache := &ldCache{
 		entries: make(map[string]string, int(header.NumLibs)),
 	}
 
-	entryData := data[headerSize:stringsOffset]
+	headerSize := int(unsafe.Sizeof(cacheHeader{}))
+	entriesSize := int(header.NumLibs) * int(unsafe.Sizeof(cacheEntry{}))
+	entryData := data[headerSize : headerSize+entriesSize]
 	reader := bytes.NewReader(entryData)
 
 	for i := uint32(0); i < header.NumLibs; i++ {
-		var entry cacheEntry
-		if err := binary.Read(reader, binary.LittleEndian, &entry); err != nil {
+		if err := readCacheEntry(reader, stringTable, cache); err != nil {
 			return nil, fmt.Errorf("ld.so.cache: failed to read entry %d: %w", i, err)
 		}
-
-		if !shouldIncludeEntry(&entry) {
-			continue
-		}
-
-		soname, err := extractString(stringTable, entry.KeyOffset)
-		if err != nil {
-			continue
-		}
-
-		path, err := extractString(stringTable, entry.ValueOffset)
-		if err != nil {
-			continue
-		}
-
-		cache.entries[soname] = path
 	}
 
 	return cache, nil

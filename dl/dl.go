@@ -311,29 +311,48 @@ func (l *Library) Bind(name string, fnPtr any) error {
 }
 
 // Close decrements the reference count and unloads if it reaches zero.
-func (l *Library) Close() error {
-	mu.Lock()
-	defer mu.Unlock()
+// decrementRefCount decrements the reference count and checks if cleanup is needed.
+func (l *Library) decrementRefCount() (shouldCleanup bool, err error) {
 	if l.obj.RefCount <= 0 {
-		return fmt.Errorf("dl: Close() called more than Open()")
+		return false, fmt.Errorf("dl: Close() called more than Open()")
 	}
 	l.obj.RefCount--
-	if l.obj.RefCount > 0 {
-		return nil
-	}
-	// Remove from loaded map.
+	return l.obj.RefCount == 0, nil
+}
+
+// removeFromLoadedMap removes the library from the loaded map.
+func removeFromLoadedMap(l *Library) {
 	for k, v := range loaded {
 		if v == l {
 			delete(loaded, k)
 		}
 	}
-	// Remove from globals.
+}
+
+// removeFromGlobals removes the library from the globals slice.
+func removeFromGlobals(l *Library) {
 	for i, g := range globals {
 		if g == l {
 			globals = append(globals[:i], globals[i+1:]...)
 			break
 		}
 	}
+}
+
+func (l *Library) Close() error {
+	mu.Lock()
+	defer mu.Unlock()
+
+	shouldCleanup, err := l.decrementRefCount()
+	if err != nil {
+		return err
+	}
+	if !shouldCleanup {
+		return nil
+	}
+
+	removeFromLoadedMap(l)
+	removeFromGlobals(l)
 	return loader.Unload(l.obj)
 }
 

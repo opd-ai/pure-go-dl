@@ -209,29 +209,43 @@ func mapFileRegion(mapAddr uintptr, alignedFileSize uint64, mapProt, fd int, ali
 }
 
 // mapBSSRegion maps the BSS (zero-initialized) portion and restores protection.
-func mapBSSRegion(mapAddr uintptr, ph elf.ProgHeader, alignedFileSize, alignedMemSize uint64, prot, mapProt int) error {
-	if ph.Memsz <= ph.Filesz {
-		return nil
-	}
-
+// mapBSSTail maps the additional anonymous memory for the BSS region.
+func mapBSSTail(mapAddr uintptr, alignedFileSize, alignedMemSize uint64, mapProt int) error {
 	tailStart := mapAddr + uintptr(alignedFileSize)
 	tailSize := uintptr(alignedMemSize) - uintptr(alignedFileSize)
-	if tailSize > 0 {
-		_, err := mmap.MapFixed(
-			tailStart, tailSize,
-			mapProt, mmap.MapPrivate|mmap.MapAnonymous,
-			-1, 0,
-		)
-		if err != nil {
-			return fmt.Errorf("loader: map BSS at 0x%x: %w", tailStart, err)
-		}
+	if tailSize == 0 {
+		return nil
 	}
+	_, err := mmap.MapFixed(
+		tailStart, tailSize,
+		mapProt, mmap.MapPrivate|mmap.MapAnonymous,
+		-1, 0,
+	)
+	if err != nil {
+		return fmt.Errorf("loader: map BSS at 0x%x: %w", tailStart, err)
+	}
+	return nil
+}
 
+// zeroBSSPage zeros out the partial page between file data and BSS start.
+func zeroBSSPage(mapAddr uintptr, ph elf.ProgHeader, alignedFileSize uint64) {
 	bssStart := mapAddr + uintptr(ph.Vaddr-pageDown(ph.Vaddr)) + uintptr(ph.Filesz)
 	pageEnd := mapAddr + uintptr(alignedFileSize)
 	if pageEnd > bssStart {
 		zeroMem(bssStart, pageEnd-bssStart)
 	}
+}
+
+func mapBSSRegion(mapAddr uintptr, ph elf.ProgHeader, alignedFileSize, alignedMemSize uint64, prot, mapProt int) error {
+	if ph.Memsz <= ph.Filesz {
+		return nil
+	}
+
+	if err := mapBSSTail(mapAddr, alignedFileSize, alignedMemSize, mapProt); err != nil {
+		return err
+	}
+
+	zeroBSSPage(mapAddr, ph, alignedFileSize)
 
 	if prot != mapProt {
 		if err := mmap.Protect(mapAddr, uintptr(alignedMemSize), prot); err != nil {
@@ -272,7 +286,8 @@ func populateSymbolTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(u
 	}
 }
 
-func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) error {
+// extractRelocationAddresses populates relocation table addresses from dynamic tags.
+func extractRelocationAddresses(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
 	if v, ok := dynTags[elf.DT_RELA]; ok {
 		obj.RelaAddr = toAbs(v)
 	}
@@ -288,16 +303,22 @@ func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs fu
 	if v, ok := dynTags[elf.DT_PLTRELSZ]; ok {
 		obj.JmpRelSize = v
 	}
+}
 
-	// Validate relocation table consistency: if size > 0, address must be non-zero
+// validateRelocationTables checks consistency of relocation table addresses and sizes.
+func validateRelocationTables(obj *Object) error {
 	if obj.RelaSize > 0 && obj.RelaAddr == 0 {
 		return fmt.Errorf("inconsistent relocation table: DT_RELASZ=%d but DT_RELA is missing or zero", obj.RelaSize)
 	}
 	if obj.JmpRelSize > 0 && obj.JmpRelAddr == 0 {
 		return fmt.Errorf("inconsistent PLT relocation table: DT_PLTRELSZ=%d but DT_JMPREL is missing or zero", obj.JmpRelSize)
 	}
-
 	return nil
+}
+
+func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) error {
+	extractRelocationAddresses(obj, dynTags, toAbs)
+	return validateRelocationTables(obj)
 }
 
 func populateInitFiniTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
@@ -328,25 +349,38 @@ func populateSoname(obj *Object, dynTags map[elf.DynTag]uint64) {
 }
 
 // initializeSymbolTable calculates symbol table size, parses version info, and loads symbols.
-func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uintptr) error {
-	var symtabSize uint64
-	if syment, ok := dynTags[elf.DT_SYMENT]; ok && syment == 24 {
-		if _, ok := dynTags[elf.DT_STRSZ]; ok && obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
-			if obj.StrtabAddr > obj.SymtabAddr {
-				symtabSize = uint64(obj.StrtabAddr - obj.SymtabAddr)
-			}
-		}
+// computeSymbolTableSize calculates the symbol table size from dynamic tags.
+func computeSymbolTableSize(dynTags map[elf.DynTag]uint64, symtabAddr, strtabAddr uintptr) uint64 {
+	syment, ok := dynTags[elf.DT_SYMENT]
+	if !ok || syment != 24 {
+		return 0
 	}
+	if _, ok := dynTags[elf.DT_STRSZ]; !ok || symtabAddr == 0 || strtabAddr == 0 {
+		return 0
+	}
+	if strtabAddr > symtabAddr {
+		return uint64(strtabAddr - symtabAddr)
+	}
+	return 0
+}
 
+// loadVersionInfo parses and sets version information for symbols.
+func loadVersionInfo(obj *Object, dynTags map[elf.DynTag]uint64, base uintptr, symCount uint64) {
+	if symCount == 0 || obj.StrtabAddr == 0 {
+		return
+	}
+	vt, err := symbol.ParseVersionInfo(dynTags, base, obj.StrtabAddr, obj.StrtabSize, symCount)
+	if err == nil && vt != nil {
+		obj.Symbols.SetVersionTable(vt)
+	}
+}
+
+func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uintptr) error {
+	symtabSize := computeSymbolTableSize(dynTags, obj.SymtabAddr, obj.StrtabAddr)
 	obj.SymtabSize = symtabSize
 
 	symCount := symtabSize / 24
-	if symCount > 0 && obj.StrtabAddr != 0 {
-		vt, err := symbol.ParseVersionInfo(dynTags, base, obj.StrtabAddr, obj.StrtabSize, symCount)
-		if err == nil && vt != nil {
-			obj.Symbols.SetVersionTable(vt)
-		}
-	}
+	loadVersionInfo(obj, dynTags, base, symCount)
 
 	if obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
 		if err := obj.Symbols.LoadFromDynamic(obj.SymtabAddr, obj.StrtabAddr, symtabSize, obj.StrtabSize); err != nil {
@@ -589,70 +623,69 @@ func applyDTPOff64(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Po
 }
 
 // applyTPOff64 applies a TPOFF64 TLS relocation (thread pointer relative offset).
-func applyTPOff64(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Pointer, addend int64, resolver SymbolResolver) error {
-	// For libraries without PT_TLS that reference external TLS symbols (like libm
-	// referencing libc's errno), we need to resolve the symbol from the providing library.
-	var tlsModule *tls.Module
-	var symOffsetInModule int64
-
-	if symIdx != 0 {
-		name := symName(obj, symIdx)
-		if name == "" {
-			// No symbol name, use current library's TLS module if available.
-			if obj.TLSModule != nil {
-				tlsModule = obj.TLSModule
-			} else {
-				*(*int64)(offsetPtr) = 0
-				return nil
-			}
-		} else {
-			// Try to resolve the symbol and find which library provides it.
-			addr, providerObj, err := resolver.ResolveWithLibrary(name)
-			if err != nil {
-				// Symbol not found - for weak symbols, write 0.
-				bind := symBind(obj, symIdx)
-				if bind == 2 { // STB_WEAK
-					*(*int64)(offsetPtr) = 0
-					return nil
-				}
-				// For strong symbols, write 0 to avoid crashes but this is an error state.
-				*(*int64)(offsetPtr) = 0
-				return nil
-			}
-
-			// Determine which TLS module to use based on the providing library.
-			if providerObj != nil && providerObj.TLSModule != nil {
-				// External symbol from a library with TLS - use that library's module.
-				tlsModule = providerObj.TLSModule
-				symOffsetInModule = int64(addr - providerObj.Base)
-			} else if obj.TLSModule != nil {
-				// Symbol resolved but provider has no TLS, or it's our own symbol - use our module.
-				tlsModule = obj.TLSModule
-				symOffsetInModule = int64(addr - obj.Base)
-			} else {
-				// Neither provider nor current library has TLS - write 0.
-				*(*int64)(offsetPtr) = 0
-				return nil
-			}
-		}
-	} else if obj.TLSModule != nil {
-		tlsModule = obj.TLSModule
-	} else {
-		// No symbol and no TLS module - write 0.
-		*(*int64)(offsetPtr) = 0
-		return nil
+// resolveTLSModuleAndOffset determines the TLS module and symbol offset for a symbol.
+// Returns the TLS module and offset within that module, or (nil, 0) if no TLS is available.
+func resolveTLSModuleAndOffset(obj *Object, symIdx uint32, resolver SymbolResolver) (*tls.Module, int64, error) {
+	if symIdx == 0 {
+		return obj.TLSModule, 0, nil
 	}
 
-	// Allocate a TLS block and compute the offset.
+	name := symName(obj, symIdx)
+	if name == "" {
+		return obj.TLSModule, 0, nil
+	}
+
+	addr, providerObj, err := resolver.ResolveWithLibrary(name)
+	if err != nil {
+		if isWeakSymbol(obj, symIdx) {
+			return nil, 0, nil
+		}
+		return nil, 0, nil
+	}
+
+	return selectTLSModule(obj, providerObj, addr)
+}
+
+// selectTLSModule chooses the appropriate TLS module from provider or current object.
+func selectTLSModule(obj, providerObj *Object, addr uintptr) (*tls.Module, int64, error) {
+	if providerObj != nil && providerObj.TLSModule != nil {
+		return providerObj.TLSModule, int64(addr - providerObj.Base), nil
+	}
+	if obj.TLSModule != nil {
+		return obj.TLSModule, int64(addr - obj.Base), nil
+	}
+	return nil, 0, nil
+}
+
+// isWeakSymbol checks if a symbol has weak binding (STB_WEAK).
+func isWeakSymbol(obj *Object, symIdx uint32) bool {
+	return symBind(obj, symIdx) == 2
+}
+
+// writeTPOffset allocates a TLS block and writes the computed offset.
+func writeTPOffset(offsetPtr unsafe.Pointer, tlsModule *tls.Module, symOffsetInModule, addend int64) error {
 	block, err := tls.GlobalManager().AllocateBlock(tlsModule)
 	if err != nil {
 		return fmt.Errorf("relocTPOff64: failed to allocate TLS block: %w", err)
 	}
-	// The thread pointer offset is negative from the TP.
 	offset := block.GetThreadPointerOffset()
 	offset += symOffsetInModule
 	*(*int64)(offsetPtr) = offset + addend
 	return nil
+}
+
+func applyTPOff64(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Pointer, addend int64, resolver SymbolResolver) error {
+	tlsModule, symOffsetInModule, err := resolveTLSModuleAndOffset(obj, symIdx, resolver)
+	if err != nil {
+		return err
+	}
+
+	if tlsModule == nil {
+		*(*int64)(offsetPtr) = 0
+		return nil
+	}
+
+	return writeTPOffset(offsetPtr, tlsModule, symOffsetInModule, addend)
 }
 
 // applyDTPOff32 applies a DTPOFF32 TLS relocation (32-bit module-relative offset).
@@ -1009,6 +1042,26 @@ func applyTlsld(obj *Object, r *relaEntry) error {
 // resolveSymForReloc returns the absolute address of the symbol at symIdx.
 // If symIdx is 0, returns 0 (used for relocRelative which has no symbol).
 // Weak symbols (STB_WEAK) resolve to 0 if not found, per ELF specification.
+// tryLocalSymbolLookup attempts to resolve a symbol from the object's own symbol table.
+func tryLocalSymbolLookup(obj *Object, name string) (uintptr, bool) {
+	if sym, ok := obj.Symbols.Lookup(name); ok {
+		return sym.Value, true
+	}
+	return 0, false
+}
+
+// tryExternalResolve attempts to resolve a symbol using the external resolver.
+func tryExternalResolve(resolver SymbolResolver, name string) (uintptr, bool) {
+	if resolver == nil {
+		return 0, false
+	}
+	addr, err := resolver.Resolve(name)
+	if err == nil {
+		return addr, true
+	}
+	return 0, false
+}
+
 func resolveSymForReloc(obj *Object, symIdx uint32, resolver SymbolResolver) (uintptr, error) {
 	if symIdx == 0 {
 		return 0, nil
@@ -1018,22 +1071,15 @@ func resolveSymForReloc(obj *Object, symIdx uint32, resolver SymbolResolver) (ui
 		return 0, nil
 	}
 
-	// Try our own symbol table first.
-	if sym, ok := obj.Symbols.Lookup(name); ok {
-		return sym.Value, nil
+	if addr, ok := tryLocalSymbolLookup(obj, name); ok {
+		return addr, nil
 	}
 
-	// Fall back to the external resolver.
-	if resolver != nil {
-		addr, err := resolver.Resolve(name)
-		if err == nil {
-			return addr, nil
-		}
+	if addr, ok := tryExternalResolve(resolver, name); ok {
+		return addr, nil
 	}
 
-	// Weak symbols are allowed to be unresolved and resolve to NULL.
-	bind := symBind(obj, symIdx)
-	if bind == 2 { // STB_WEAK = 2
+	if isWeakSymbol(obj, symIdx) {
 		return 0, nil
 	}
 

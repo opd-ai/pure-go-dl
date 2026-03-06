@@ -48,6 +48,19 @@ type ParsedObject struct {
 
 // Parse opens the ELF shared object at path and extracts metadata needed for
 // loading. It validates that the file is a 64-bit x86-64 shared library.
+// calculateMemoryLayout computes and validates the memory layout from program headers.
+func calculateMemoryLayout(obj *ParsedObject, minVAddr, maxVAddr uint64) error {
+	if maxVAddr < minVAddr {
+		return fmt.Errorf("invalid segment layout: maxVAddr=0x%x < minVAddr=0x%x", maxVAddr, minVAddr)
+	}
+	obj.BaseVAddr = minVAddr
+	obj.MemSize = PageAlign(maxVAddr - minVAddr)
+	if obj.MemSize == 0 {
+		return fmt.Errorf("computed MemSize is zero")
+	}
+	return nil
+}
+
 func Parse(path string) (*ParsedObject, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -75,14 +88,8 @@ func Parse(path string) (*ParsedObject, error) {
 		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
 	}
 
-	// Validate MemSize calculation
-	if maxVAddr < minVAddr {
-		return nil, fmt.Errorf("invalid segment layout: maxVAddr=0x%x < minVAddr=0x%x", maxVAddr, minVAddr)
-	}
-	obj.BaseVAddr = minVAddr
-	obj.MemSize = PageAlign(maxVAddr - minVAddr)
-	if obj.MemSize == 0 {
-		return nil, fmt.Errorf("computed MemSize is zero")
+	if err := calculateMemoryLayout(obj, minVAddr, maxVAddr); err != nil {
+		return nil, err
 	}
 
 	if err := readDynamicSection(f, obj); err != nil {
@@ -294,6 +301,35 @@ func validateSizeTag(obj *ParsedObject, tag elf.DynTag, name string) error {
 
 // resolveStringReferences reads the string table (DT_STRTAB) and resolves
 // DT_NEEDED, DT_RUNPATH, and DT_RPATH entries.
+// extractNeededLibraries parses DT_NEEDED entries from dynamic data.
+func extractNeededLibraries(dynData, strtabData []byte) []string {
+	var needed []string
+	const dynEntSize = 16
+	for off := 0; off+dynEntSize <= len(dynData); off += dynEntSize {
+		tag := elf.DynTag(binary.LittleEndian.Uint64(dynData[off:]))
+		if tag == elf.DT_NULL {
+			break
+		}
+		if tag == elf.DT_NEEDED {
+			nameOff := int(binary.LittleEndian.Uint64(dynData[off+8:]))
+			name := readCString(strtabData, nameOff)
+			needed = append(needed, name)
+		}
+	}
+	return needed
+}
+
+// extractRunpathAndRpath retrieves DT_RUNPATH and DT_RPATH from dynamic entries.
+func extractRunpathAndRpath(dynEntries map[elf.DynTag]uint64, strtabData []byte) (runpath, rpath string) {
+	if runpathOff, ok := dynEntries[elf.DT_RUNPATH]; ok {
+		runpath = readCString(strtabData, int(runpathOff))
+	}
+	if rpathOff, ok := dynEntries[elf.DT_RPATH]; ok {
+		rpath = readCString(strtabData, int(rpathOff))
+	}
+	return runpath, rpath
+}
+
 func resolveStringReferences(f *os.File, ef *elf.File, obj *ParsedObject) error {
 	strtabVA, ok := obj.DynEntries[elf.DT_STRTAB]
 	if !ok {
@@ -305,25 +341,8 @@ func resolveStringReferences(f *os.File, ef *elf.File, obj *ParsedObject) error 
 		return fmt.Errorf("read DT_STRTAB: %w", err)
 	}
 
-	const dynEntSize = 16
-	for off := 0; off+dynEntSize <= len(obj.DynData); off += dynEntSize {
-		tag := elf.DynTag(binary.LittleEndian.Uint64(obj.DynData[off:]))
-		if tag == elf.DT_NULL {
-			break
-		}
-		if tag == elf.DT_NEEDED {
-			nameOff := int(binary.LittleEndian.Uint64(obj.DynData[off+8:]))
-			name := readCString(strtabData, nameOff)
-			obj.Needed = append(obj.Needed, name)
-		}
-	}
-
-	if runpathOff, ok := obj.DynEntries[elf.DT_RUNPATH]; ok {
-		obj.Runpath = readCString(strtabData, int(runpathOff))
-	}
-	if rpathOff, ok := obj.DynEntries[elf.DT_RPATH]; ok {
-		obj.Rpath = readCString(strtabData, int(rpathOff))
-	}
+	obj.Needed = extractNeededLibraries(obj.DynData, strtabData)
+	obj.Runpath, obj.Rpath = extractRunpathAndRpath(obj.DynEntries, strtabData)
 
 	return nil
 }

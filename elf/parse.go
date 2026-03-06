@@ -219,7 +219,7 @@ func validateDynEntries(obj *ParsedObject) error {
 			// Note: We can't validate against individual PT_LOAD segments here,
 			// but we can at least check against the overall range
 			if val < obj.BaseVAddr || val >= maxVAddr {
-				return fmt.Errorf("invalid %v: address 0x%x out of range [0x%x, 0x%x)", 
+				return fmt.Errorf("invalid %v: address 0x%x out of range [0x%x, 0x%x)",
 					tag, val, obj.BaseVAddr, maxVAddr)
 			}
 		}

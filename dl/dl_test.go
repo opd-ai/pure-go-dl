@@ -121,6 +121,28 @@ func TestRefCounting(t *testing.T) {
 	}
 }
 
+func TestDoubleCloseFails(t *testing.T) {
+	lib, err := Open("../testdata/libtest.so")
+	if err != nil {
+		t.Fatalf("Open failed: %v", err)
+	}
+
+	// First close should succeed
+	err = lib.Close()
+	if err != nil {
+		t.Fatalf("First Close failed: %v", err)
+	}
+
+	// Second close should fail with an error
+	err = lib.Close()
+	if err == nil {
+		t.Errorf("Second Close should have failed but succeeded")
+	}
+	if err != nil && err.Error() != "dl: Close() called more than Open()" {
+		t.Errorf("Expected 'dl: Close() called more than Open()', got %q", err.Error())
+	}
+}
+
 func TestWeakSymbolsResolveToZero(t *testing.T) {
 	// This test verifies that weak symbols like __cxa_finalize resolve to NULL
 	// instead of causing loading to fail. We can't directly test the symbol

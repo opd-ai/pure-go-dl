@@ -212,6 +212,9 @@ func (l *Library) Bind(name string, fnPtr any) error {
 func (l *Library) Close() error {
 	mu.Lock()
 	defer mu.Unlock()
+	if l.obj.RefCount <= 0 {
+		return fmt.Errorf("dl: Close() called more than Open()")
+	}
 	l.obj.RefCount--
 	if l.obj.RefCount > 0 {
 		return nil

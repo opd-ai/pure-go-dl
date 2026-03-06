@@ -182,9 +182,9 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 // should be skipped in favor of an existing one.
 //
 // Symbol version priority:
-// - Hidden versions (marked with 0x8000 bit in DT_VERSYM) are skipped if a symbol
-//   with the same name already exists (prefer default @@ over non-default @)
-// - Non-hidden versions always replace existing symbols
+//   - Hidden versions (marked with 0x8000 bit in DT_VERSYM) are skipped if a symbol
+//     with the same name already exists (prefer default @@ over non-default @)
+//   - Non-hidden versions always replace existing symbols
 func (t *Table) shouldSkipSymbol(name string, symIdx uint64) bool {
 	// If no existing symbol, don't skip
 	if _, exists := t.symbols[name]; !exists {

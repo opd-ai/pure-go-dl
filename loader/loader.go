@@ -211,6 +211,13 @@ func mapSegments(obj *Object, parsed *goelf.ParsedObject, fd int) error {
 // populateDynamicTags populates Object fields from parsed dynamic section entries.
 // It converts virtual addresses to absolute addresses using the base address.
 func populateDynamicTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
+	populateSymbolTags(obj, dynTags, toAbs)
+	populateRelocationTags(obj, dynTags, toAbs)
+	populateInitFiniTags(obj, dynTags, toAbs)
+	populateSoname(obj, dynTags)
+}
+
+func populateSymbolTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
 	if v, ok := dynTags[elf.DT_SYMTAB]; ok {
 		obj.SymtabAddr = toAbs(v)
 	}
@@ -223,6 +230,9 @@ func populateDynamicTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(
 	if v, ok := dynTags[elf.DT_GNU_HASH]; ok {
 		obj.GnuHashAddr = toAbs(v)
 	}
+}
+
+func populateRelocationTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
 	if v, ok := dynTags[elf.DT_RELA]; ok {
 		obj.RelaAddr = toAbs(v)
 	}
@@ -238,6 +248,9 @@ func populateDynamicTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(
 	if v, ok := dynTags[elf.DT_PLTRELSZ]; ok {
 		obj.JmpRelSize = v
 	}
+}
+
+func populateInitFiniTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(uint64) uintptr) {
 	if v, ok := dynTags[elf.DT_INIT]; ok {
 		obj.InitAddr = toAbs(v)
 	}
@@ -256,6 +269,9 @@ func populateDynamicTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(
 	if v, ok := dynTags[elf.DT_FINI_ARRAYSZ]; ok {
 		obj.FiniArraySz = v
 	}
+}
+
+func populateSoname(obj *Object, dynTags map[elf.DynTag]uint64) {
 	if v, ok := dynTags[elf.DT_SONAME]; ok && obj.StrtabAddr != 0 {
 		obj.Soname = symbol.ReadCStringMem(obj.StrtabAddr, uintptr(v))
 	}

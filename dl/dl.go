@@ -120,48 +120,79 @@ func loadLib(name string, flag Flag, visiting map[string]bool) (*Library, error)
 func loadPath(path, soname string, flag Flag, visiting map[string]bool) (*Library, error) {
 	// Cycle detection: this path is already on the current goroutine's call stack.
 	if visiting[path] {
-		mu.Lock()
-		lib := loaded[path]
-		if lib != nil {
-			lib.obj.RefCount++
-		}
-		mu.Unlock()
+		return incrementRefIfLoaded(path), nil
+	}
+
+	// Check cache and coordinate with other goroutines loading the same library.
+	if lib, shouldContinue := checkLoadingCache(path); !shouldContinue {
 		return lib, nil
 	}
 
+	// Mark on this call stack to detect cycles in the dependency graph.
+	visiting[path] = true
+	defer delete(visiting, path)
+
+	// Parse and load dependencies depth-first.
+	parsed, err := goelf.Parse(path)
+	if err != nil {
+		releaseLoadingSlot(path)
+		return nil, err
+	}
+
+	if err := loadDependencies(parsed, visiting); err != nil {
+		releaseLoadingSlot(path)
+		return nil, err
+	}
+
+	// Load the library itself (maps segments, applies relocations, runs constructors).
+	obj, err := loader.Load(path, globalResolver{})
+	if err != nil {
+		releaseLoadingSlot(path)
+		return nil, err
+	}
+
+	// Register in global cache.
+	return registerLibrary(path, soname, obj, flag), nil
+}
+
+func incrementRefIfLoaded(path string) *Library {
 	mu.Lock()
+	defer mu.Unlock()
+	lib := loaded[path]
+	if lib != nil {
+		lib.obj.RefCount++
+	}
+	return lib
+}
+
+func checkLoadingCache(path string) (*Library, bool) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	// If another goroutine is loading this path, wait for it to finish.
 	for loading[path] {
 		cond.Wait()
 	}
+
 	// Check if it was loaded while we were waiting.
 	if lib, ok := loaded[path]; ok {
 		lib.obj.RefCount++
-		mu.Unlock()
-		return lib, nil
+		return lib, false // don't continue loading
 	}
+
 	// Claim the slot so no other goroutine starts loading this path.
 	loading[path] = true
+	return nil, true // continue loading
+}
+
+func releaseLoadingSlot(path string) {
+	mu.Lock()
+	delete(loading, path)
+	cond.Broadcast()
 	mu.Unlock()
+}
 
-	// Mark on this call stack to detect cycles in the dependency graph.
-	visiting[path] = true
-
-	// Parse the ELF file to read DT_NEEDED before fully loading it.
-	// This lets us load transitive dependencies depth-first.
-	parsed, err := goelf.Parse(path)
-	if err != nil {
-		mu.Lock()
-		delete(loading, path)
-		cond.Broadcast()
-		mu.Unlock()
-		delete(visiting, path)
-		return nil, err
-	}
-
-	// Load transitive dependencies depth-first.
-	// They are loaded as RTLD_GLOBAL so their symbols are visible during
-	// the relocation phase of the dependent library.
+func loadDependencies(parsed *goelf.ParsedObject, visiting map[string]bool) error {
 	for _, dep := range parsed.Needed {
 		if visiting[dep] {
 			continue // already on this call stack → cycle, skip
@@ -175,20 +206,15 @@ func loadPath(path, soname string, flag Flag, visiting map[string]bool) (*Librar
 			_ = loadErr // non-fatal: continue with missing dependency
 		}
 	}
+	return nil
+}
 
-	delete(visiting, path)
-
-	// Now load the library itself (maps segments, applies relocations,
-	// runs constructors).
-	obj, err := loader.Load(path, globalResolver{})
-
+func registerLibrary(path, soname string, obj *loader.Object, flag Flag) *Library {
 	mu.Lock()
+	defer mu.Unlock()
+
 	delete(loading, path)
 	cond.Broadcast()
-	if err != nil {
-		mu.Unlock()
-		return nil, err
-	}
 
 	lib := &Library{obj: obj, global: flag == RTLD_GLOBAL}
 	if obj.Soname != "" && obj.Soname != path {
@@ -201,9 +227,8 @@ func loadPath(path, soname string, flag Flag, visiting map[string]bool) (*Librar
 	if lib.global {
 		globals = append(globals, lib)
 	}
-	mu.Unlock()
 
-	return lib, nil
+	return lib
 }
 
 // Sym returns the absolute address of the exported symbol name.

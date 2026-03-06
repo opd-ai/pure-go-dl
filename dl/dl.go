@@ -16,9 +16,13 @@ import (
 type Flag int
 
 const (
-	RTLD_LOCAL  Flag = 0
-	RTLD_GLOBAL Flag = 1
+	RTLD_LOCAL  Flag = 0 // Symbols are only visible to this library and its dependents (default)
+	RTLD_GLOBAL Flag = 1 // Symbols are visible to all subsequently loaded libraries
+	RTLD_NOW    Flag = 2 // Immediate symbol binding (always enabled; provided for compatibility)
 )
+
+// RTLD_LAZY (deferred symbol binding) is explicitly not supported.
+// All libraries are loaded with eager binding semantics (RTLD_NOW behavior).
 
 // Library represents a loaded shared object.
 type Library struct {
@@ -55,10 +59,21 @@ func (globalResolver) Resolve(name string) (uintptr, error) {
 // Open loads the shared library identified by name (path or soname).
 // Transitive DT_NEEDED dependencies are loaded depth-first before the
 // requested library, so their symbols are available during relocation.
+//
+// Flags control symbol visibility:
+//   - RTLD_LOCAL (default): symbols visible only to this library and dependents
+//   - RTLD_GLOBAL: symbols visible to all subsequently loaded libraries
+//   - RTLD_NOW: immediate binding (compatibility flag; all libraries use eager binding)
+//
+// Note: RTLD_LAZY is not supported; all symbol binding is eager.
 func Open(name string, flags ...Flag) (*Library, error) {
 	flag := RTLD_LOCAL
 	if len(flags) > 0 {
 		flag = flags[0]
+		// RTLD_NOW is a no-op compatibility flag (eager binding is always enabled)
+		if flag == RTLD_NOW {
+			flag = RTLD_LOCAL
+		}
 	}
 	// visiting tracks paths on the current call stack to detect cycles.
 	return loadLib(name, flag, make(map[string]bool))

@@ -106,6 +106,9 @@ func Open(name string, flags ...Flag) (*Library, error)
 Load a shared library by name or path. Supports:
 - `RTLD_LOCAL` (default): Symbols are only visible to this library and its dependents
 - `RTLD_GLOBAL`: Symbols are visible to all subsequently loaded libraries
+- `RTLD_NOW`: Immediate symbol binding (compatibility flag; all libraries use eager binding)
+
+Note: `RTLD_LAZY` (deferred binding) is not supported. All symbol binding is eager.
 
 ### Symbol Resolution
 

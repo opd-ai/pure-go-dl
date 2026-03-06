@@ -170,3 +170,30 @@ func TestRunpathRpathParsing(t *testing.T) {
 	// In the future, we could create a library with RUNPATH set and verify
 	// it's parsed correctly.
 }
+
+func TestRTLD_NOW_Flag(t *testing.T) {
+	// Test that RTLD_NOW flag is accepted (compatibility with standard dlopen).
+	// Since all loading is eager binding, RTLD_NOW should behave like RTLD_LOCAL.
+	lib, err := Open("../testdata/libtest.so", RTLD_NOW)
+	if err != nil {
+		t.Fatalf("Open with RTLD_NOW failed: %v", err)
+	}
+	defer lib.Close()
+
+	// Verify the library is functional
+	var add func(int, int) int
+	err = lib.Bind("add", &add)
+	if err != nil {
+		t.Fatalf("Bind failed: %v", err)
+	}
+
+	result := add(10, 20)
+	if result != 30 {
+		t.Errorf("add(10, 20) = %d, want 30", result)
+	}
+
+	// Verify it's not global (RTLD_NOW should act like RTLD_LOCAL)
+	if lib.global {
+		t.Errorf("Library loaded with RTLD_NOW should not be global")
+	}
+}

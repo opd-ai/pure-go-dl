@@ -1,3 +1,7 @@
+// Package loader implements core ELF shared object loading, including memory mapping
+// of PT_LOAD segments, relocation processing, and constructor/destructor execution.
+// It handles the low-level operations needed to map a shared library into memory
+// and make it executable from a pure Go program.
 package loader
 
 import (

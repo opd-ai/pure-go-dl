@@ -3,6 +3,9 @@ package tls
 import (
 	"testing"
 	"unsafe"
+
+	"github.com/opd-ai/pure-go-dl/internal/mmap"
+	"golang.org/x/sys/unix"
 )
 
 func TestRegisterModule(t *testing.T) {
@@ -62,9 +65,24 @@ func TestAllocateBlock(t *testing.T) {
 func TestBlockInitialization(t *testing.T) {
 	mgr := GlobalManager()
 
-	// Create init data
+	// Create init data in mmap'd memory (mimics real usage where InitData points to PT_LOAD segment)
 	initData := []byte{1, 2, 3, 4, 5, 6, 7, 8}
-	initDataPtr := uintptr(unsafe.Pointer(&initData[0]))
+	initMem, err := mmap.Map(
+		0,
+		uintptr(len(initData)),
+		unix.PROT_READ|unix.PROT_WRITE,
+		mmap.MapPrivate|mmap.MapAnonymous,
+		-1, 0)
+	if err != nil {
+		t.Fatalf("Failed to mmap init data: %v", err)
+	}
+	defer mmap.Unmap(initMem, uintptr(len(initData)))
+
+	// Copy test data into mmap'd region
+	initSlice := unsafe.Slice((*byte)(unsafe.Pointer(initMem)), len(initData))
+	copy(initSlice, initData)
+
+	initDataPtr := uintptr(initMem)
 
 	// Register module with init data
 	mod, err := mgr.RegisterModule(64, 8, uint64(len(initData)), initDataPtr)

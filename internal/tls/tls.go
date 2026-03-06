@@ -19,7 +19,7 @@ type Module struct {
 	Size     uint64  // Size of TLS data + bss
 	Align    uint64  // Required alignment
 	FileSize uint64  // Size of initialized data
-	InitData uintptr // Pointer to initialization data in mmap'd memory
+	InitData uintptr // Pointer to initialization data (must be mmap'd memory, not Go-managed)
 }
 
 // Block represents an allocated TLS block for a specific module and thread.

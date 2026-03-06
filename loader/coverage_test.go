@@ -54,20 +54,20 @@ func TestSymAddress(t *testing.T) {
 	// For testing symAddress, we need a loaded object with actual symbols
 	testLib := "../testdata/libtest.so"
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Skipf("Cannot load test library: %v", err)
 	}
 	defer Unload(obj)
-	
+
 	// Test with index 0 (usually undefined symbol)
 	addr := symAddress(obj, 0)
 	// Index 0 is the undefined symbol, should be 0
 	if addr != 0 {
 		t.Logf("symAddress(0) = %x (expected 0 for undefined symbol)", addr)
 	}
-	
+
 	// Test with a valid index (1 is usually the first real symbol)
 	addr = symAddress(obj, 1)
 	// Should be some address
@@ -78,13 +78,13 @@ func TestSymAddress(t *testing.T) {
 func TestSymBind(t *testing.T) {
 	testLib := "../testdata/libtest.so"
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Skipf("Cannot load test library: %v", err)
 	}
 	defer Unload(obj)
-	
+
 	// Test with index 0
 	bind := symBind(obj, 0)
 	// Bind value should be 0-15 (valid range for ELF symbol binding)
@@ -97,19 +97,19 @@ func TestSymBind(t *testing.T) {
 func TestSymName(t *testing.T) {
 	testLib := "../testdata/libtest.so"
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Skipf("Cannot load test library: %v", err)
 	}
 	defer Unload(obj)
-	
+
 	// Test with index 0 (undefined symbol, usually has empty name)
 	name := symName(obj, 0)
 	if name != "" {
 		t.Logf("symName(0) = %q (expected empty for undefined symbol)", name)
 	}
-	
+
 	// Test with index 1 (should be a real symbol)
 	name = symName(obj, 1)
 	// Name might be empty or a real name, just verify it doesn't crash
@@ -119,7 +119,7 @@ func TestSymName(t *testing.T) {
 // TestResolveSymForRelocEdgeCases tests symbol resolution edge cases
 func TestResolveSymForRelocEdgeCases(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	// Load the test library
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
 	obj, err := Load(testLib, resolver)
@@ -127,7 +127,7 @@ func TestResolveSymForRelocEdgeCases(t *testing.T) {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// Test with symbol index 0 (undefined symbol)
 	addr, err := resolveSymForReloc(obj, 0, resolver)
 	// Index 0 is typically the undefined symbol
@@ -138,13 +138,13 @@ func TestResolveSymForRelocEdgeCases(t *testing.T) {
 // TestLoadErrors tests various error conditions during loading
 func TestLoadErrors(t *testing.T) {
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	// Test loading non-existent file
 	_, err := Load("/nonexistent/path/to/library.so", resolver)
 	if err == nil {
 		t.Error("Load of nonexistent file should fail")
 	}
-	
+
 	// Test loading empty file
 	_, err = Load("/dev/null", resolver)
 	if err == nil {
@@ -158,15 +158,15 @@ func TestLoadErrors(t *testing.T) {
 func TestRelocationHandlers(t *testing.T) {
 	// Load a library that has various relocation types
 	testLib := "../testdata/libreloc.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// The library should have been loaded successfully, which means
 	// relocations were applied. We can verify the object is valid.
 	if obj.Base == 0 {
@@ -180,15 +180,15 @@ func TestRelocationHandlers(t *testing.T) {
 // TestTLSLibrary tests loading a library with TLS
 func TestTLSLibrary(t *testing.T) {
 	testLib := "../testdata/libtls.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// Verify TLS module was set up
 	if obj.TLSModule == nil {
 		t.Error("TLS module was not initialized for library with PT_TLS")
@@ -198,15 +198,15 @@ func TestTLSLibrary(t *testing.T) {
 // TestIFuncLibrary tests loading a library with IFUNC
 func TestIFuncLibrary(t *testing.T) {
 	testLib := "../testdata/libifunc.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// The library should load successfully even with IFUNC relocations
 	if obj.Base == 0 {
 		t.Error("Object base address is zero")
@@ -216,15 +216,15 @@ func TestIFuncLibrary(t *testing.T) {
 // TestInitFiniArrays tests that init/fini array addresses are populated
 func TestInitFiniArrays(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// libtest.so has a constructor, so InitArray should be non-zero
 	if obj.InitArray != 0 && obj.InitArraySz == 0 {
 		t.Error("InitArray address set but size is zero")
@@ -234,15 +234,15 @@ func TestInitFiniArrays(t *testing.T) {
 // TestDynamicTagPopulation tests that dynamic tags are correctly extracted
 func TestDynamicTagPopulation(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// Verify key dynamic addresses are populated
 	if obj.SymtabAddr == 0 {
 		t.Error("SymtabAddr not populated")
@@ -250,7 +250,7 @@ func TestDynamicTagPopulation(t *testing.T) {
 	if obj.StrtabAddr == 0 {
 		t.Error("StrtabAddr not populated")
 	}
-	
+
 	// Either hash or gnu_hash should be present
 	if obj.HashAddr == 0 && obj.GnuHashAddr == 0 {
 		t.Error("Neither HashAddr nor GnuHashAddr populated")
@@ -260,20 +260,20 @@ func TestDynamicTagPopulation(t *testing.T) {
 // TestObjectRefCount tests reference counting
 func TestObjectRefCount(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// Initial refcount should be 1
 	if obj.RefCount != 1 {
 		t.Errorf("Initial RefCount = %d, want 1", obj.RefCount)
 	}
-	
+
 	// Manually increment
 	obj.RefCount++
 	if obj.RefCount != 2 {
@@ -284,19 +284,19 @@ func TestObjectRefCount(t *testing.T) {
 // TestSegmentMapping tests that segments are correctly mapped
 func TestSegmentMapping(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	if len(obj.Segments) == 0 {
 		t.Fatal("No segments mapped")
 	}
-	
+
 	for i, seg := range obj.Segments {
 		if seg.Addr == 0 {
 			t.Errorf("Segment %d has zero address", i)
@@ -314,19 +314,19 @@ func TestSegmentMapping(t *testing.T) {
 // TestSymbolTableInitialization tests symbol table setup
 func TestSymbolTableInitialization(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	if obj.Symbols == nil {
 		t.Fatal("Symbol table is nil")
 	}
-	
+
 	// Try to look up a known symbol
 	sym, ok := obj.Symbols.Lookup("add")
 	if !ok {
@@ -345,17 +345,17 @@ func TestZeroMemBoundaries(t *testing.T) {
 		t.Fatalf("mmap failed: %v", err)
 	}
 	defer mmap.Unmap(addr, size)
-	
+
 	buf := unsafe.Slice((*byte)(unsafe.Pointer(addr)), size)
-	
+
 	// Fill with pattern
 	for i := range buf {
 		buf[i] = 0xAA
 	}
-	
+
 	// Zero entire buffer
 	zeroMem(addr, size)
-	
+
 	// Verify all zeros
 	for i, b := range buf {
 		if b != 0 {
@@ -368,14 +368,14 @@ func TestZeroMemBoundaries(t *testing.T) {
 // TestPageAlignmentHelpers tests page alignment edge cases
 func TestPageAlignmentEdgeCases(t *testing.T) {
 	pageSize := uint64(unix.Getpagesize())
-	
+
 	// Test pageDown with large values
 	largeValue := uint64(1<<32 - 1)
 	result := pageDown(largeValue)
 	if result%pageSize != 0 {
 		t.Errorf("pageDown(%d) = %d, not page-aligned", largeValue, result)
 	}
-	
+
 	// Test pageUp with large values
 	result = pageUp(largeValue)
 	if result%pageSize != 0 {
@@ -387,18 +387,18 @@ func TestPageAlignmentEdgeCases(t *testing.T) {
 func TestMultipleLoadsUnloads(t *testing.T) {
 	testLib := "../testdata/libtest.so"
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	// Load and unload 3 times
 	for i := 0; i < 3; i++ {
 		obj, err := Load(testLib, resolver)
 		if err != nil {
 			t.Fatalf("Load iteration %d failed: %v", i, err)
 		}
-		
+
 		if obj.Base == 0 {
 			t.Errorf("Iteration %d: base address is zero", i)
 		}
-		
+
 		err = Unload(obj)
 		if err != nil {
 			t.Errorf("Unload iteration %d failed: %v", i, err)
@@ -409,15 +409,15 @@ func TestMultipleLoadsUnloads(t *testing.T) {
 // TestRelaTableProcessing tests that RELA tables are processed
 func TestRelaTableProcessing(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// If the library has RELA entries, they should be populated
 	if obj.RelaAddr != 0 && obj.RelaSize == 0 {
 		t.Error("RelaAddr set but RelaSize is zero")
@@ -439,9 +439,9 @@ func TestLoadWithMissingDependency(t *testing.T) {
 	// libreloc.so calls its own internal functions, but might have
 	// external references that our error resolver will fail on
 	testLib := "../testdata/libreloc.so"
-	
+
 	resolver := &errorResolver{}
-	
+
 	// This might fail due to missing symbols, which is expected
 	obj, err := Load(testLib, resolver)
 	if err != nil {
@@ -449,7 +449,7 @@ func TestLoadWithMissingDependency(t *testing.T) {
 		t.Logf("Load failed as expected: %v", err)
 		return
 	}
-	
+
 	// If it succeeded, clean up
 	if obj != nil {
 		Unload(obj)
@@ -459,15 +459,15 @@ func TestLoadWithMissingDependency(t *testing.T) {
 // TestSonameExtraction tests that SONAME is extracted if present
 func TestSonameExtraction(t *testing.T) {
 	testLib := "../testdata/libtest.so"
-	
+
 	resolver := &mockResolver{symbols: make(map[string]uintptr)}
-	
+
 	obj, err := Load(testLib, resolver)
 	if err != nil {
 		t.Fatalf("Load(%q) failed: %v", testLib, err)
 	}
 	defer Unload(obj)
-	
+
 	// The SONAME might or might not be set depending on how the library was built
 	// Just verify we can access the field
 	_ = obj.Soname

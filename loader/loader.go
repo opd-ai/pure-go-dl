@@ -393,14 +393,18 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			}
 			*(*uint32)(unsafePointer(offset)) = uint32(int64(S) + addend - int64(offset))
 
-		// TLS and IFUNC are not supported; silently skip.
+		// TLS relocations are not supported.
 		case R_X86_64_DTPMOD64, R_X86_64_DTPOFF64, R_X86_64_TPOFF64,
 			R_X86_64_TLSGD, R_X86_64_TLSLD, R_X86_64_DTPOFF32,
-			R_X86_64_GOTTPOFF, R_X86_64_TPOFF32, R_X86_64_IRELATIVE:
-			// skip
+			R_X86_64_GOTTPOFF, R_X86_64_TPOFF32:
+			return fmt.Errorf("TLS relocation type %d not supported at offset %#x", relocType, r.Offset)
+
+		// IFUNC relocations are not supported.
+		case R_X86_64_IRELATIVE:
+			return fmt.Errorf("IFUNC relocation (R_X86_64_IRELATIVE) not supported at offset %#x", r.Offset)
 
 		default:
-			// Unknown relocation type – skip with a warning.
+			return fmt.Errorf("unknown relocation type %d at offset %#x", relocType, r.Offset)
 		}
 	}
 	return nil

@@ -102,6 +102,13 @@ go install github.com/opd-ai/pure-go-dl/cmd/pgldd@latest
 pgldd /lib/x86_64-linux-gnu/libm.so.6
 ```
 
+**Output Format:** Each line contains a hexadecimal address followed by the symbol name, sorted alphabetically:
+```
+0x00007f1234567890  cos
+0x00007f12345678a0  sin
+0x00007f12345678b0  sqrt
+```
+
 ## API Reference
 
 ### Opening Libraries

@@ -21,7 +21,7 @@ const (
 )
 
 // Map creates a memory mapping. addr=0 lets the kernel choose.
-func Map(addr, length uintptr, prot, flags int, fd int, offset int64) (uintptr, error) {
+func Map(addr, length uintptr, prot, flags, fd int, offset int64) (uintptr, error) {
 	ret, _, errno := unix.Syscall6(
 		unix.SYS_MMAP,
 		addr,
@@ -43,7 +43,7 @@ func MapAnon(length uintptr, prot int) (uintptr, error) {
 }
 
 // MapFixed maps over an existing reservation at a fixed address.
-func MapFixed(addr, length uintptr, prot, flags int, fd int, offset int64) (uintptr, error) {
+func MapFixed(addr, length uintptr, prot, flags, fd int, offset int64) (uintptr, error) {
 	return Map(addr, length, prot, flags|unix.MAP_FIXED, fd, offset)
 }
 

@@ -31,7 +31,7 @@ var (
 	cond    *sync.Cond
 	loaded  = map[string]*Library{} // soname/path → Library
 	loading = map[string]bool{}     // paths currently being loaded (by any goroutine)
-	globals []*Library               // RTLD_GLOBAL libraries
+	globals []*Library              // RTLD_GLOBAL libraries
 )
 
 func init() {

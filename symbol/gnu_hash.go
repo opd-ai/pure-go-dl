@@ -58,7 +58,7 @@ func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbo
 	// Walk the chain.
 	for symIdx := bucket; ; symIdx++ {
 		chainVal := *(*uint32)(unsafe.Pointer(chainsBase + uintptr(symIdx-symoffset)*4))
-		if (chainVal&^1) == (h &^ 1) {
+		if (chainVal &^ 1) == (h &^ 1) {
 			sym := symAtIndex(symtabAddr, uintptr(symIdx))
 			symName := ReadCStringMem(strtabAddr, uintptr(sym.Name))
 			if symName == name {

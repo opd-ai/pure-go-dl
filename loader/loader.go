@@ -443,7 +443,7 @@ func Unload(obj *Object) error {
 }
 
 // zeroMem zeroes count bytes starting at addr.
-func zeroMem(addr uintptr, count uintptr) {
+func zeroMem(addr, count uintptr) {
 	sl := unsafe.Slice((*byte)(unsafePointer(addr)), count)
 	for i := range sl {
 		sl[i] = 0

@@ -64,6 +64,6 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 }
 
 // symAtIndex returns a pointer to the Elf64Sym at the given index.
-func symAtIndex(symtabAddr uintptr, idx uintptr) *Elf64Sym {
+func symAtIndex(symtabAddr, idx uintptr) *Elf64Sym {
 	return (*Elf64Sym)(unsafe.Pointer(symtabAddr + idx*symEntSize))
 }

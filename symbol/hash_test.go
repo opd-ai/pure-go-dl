@@ -108,7 +108,7 @@ func TestSysvLookup(t *testing.T) {
 	hashAddr := uintptr(unsafe.Pointer(&hashTable[0]))
 
 	// Test successful lookup of "cos"
-	sym, err := symbol.SysvLookup("cos", hashAddr, symtabAddr, strtabAddr)
+	sym, err := symbol.SysvLookup("cos", hashAddr, symtabAddr, strtabAddr, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("SysvLookup(cos) failed: %v", err)
 	}
@@ -123,7 +123,7 @@ func TestSysvLookup(t *testing.T) {
 	}
 
 	// Test successful lookup of "sin"
-	sym, err = symbol.SysvLookup("sin", hashAddr, symtabAddr, strtabAddr)
+	sym, err = symbol.SysvLookup("sin", hashAddr, symtabAddr, strtabAddr, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("SysvLookup(sin) failed: %v", err)
 	}
@@ -135,14 +135,14 @@ func TestSysvLookup(t *testing.T) {
 	}
 
 	// Test failed lookup
-	_, err = symbol.SysvLookup("nonexistent", hashAddr, symtabAddr, strtabAddr)
+	_, err = symbol.SysvLookup("nonexistent", hashAddr, symtabAddr, strtabAddr, uint64(len(strtab)))
 	if err == nil {
 		t.Error("SysvLookup should fail for nonexistent symbol")
 	}
 }
 
 func TestSysvLookup_ZeroHashAddr(t *testing.T) {
-	_, err := symbol.SysvLookup("test", 0, 0x1000, 0x2000)
+	_, err := symbol.SysvLookup("test", 0, 0x1000, 0x2000, 0)
 	if err == nil {
 		t.Error("SysvLookup with zero hash address should return error")
 	}

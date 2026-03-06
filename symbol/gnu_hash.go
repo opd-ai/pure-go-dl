@@ -22,13 +22,14 @@ func GnuHash(name string) uint32 {
 // gnuHashAddr – in-memory address of the GNU hash table
 // symtabAddr  – in-memory address of DT_SYMTAB
 // strtabAddr  – in-memory address of DT_STRTAB
+// strtabSize  – size of the string table in bytes (for bounds checking)
 //
 // Note: This function works with mmap'd ELF file memory. The uintptr→unsafe.Pointer
 // conversions flagged by go vet are safe because:
 // 1. The addresses come from mmap and remain valid for the lifetime of the mapping
 // 2. The memory is pinned and won't be moved by the GC
 // 3. We convert to unsafe.Pointer immediately before dereferencing
-func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbol, error) {
+func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr, strtabSize uint64) (*Symbol, error) {
 	if gnuHashAddr == 0 {
 		return nil, fmt.Errorf("gnu_hash: hash table address is 0")
 	}
@@ -72,7 +73,7 @@ func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbo
 		chainVal := *(*uint32)(unsafe.Add(chainsBasePtr, uintptr(symIdx-symoffset)*4))
 		if (chainVal &^ 1) == (h &^ 1) {
 			sym := symAtIndex(symtabAddr, uintptr(symIdx))
-			symName := ReadCStringMem(strtabAddr, uintptr(sym.Name))
+			symName := ReadCStringMem(strtabAddr, uintptr(sym.Name), uintptr(strtabSize))
 			if symName == name {
 				bind := elf.SymBind(sym.Info >> 4)
 				symType := elf.SymType(sym.Info & 0xf)

@@ -22,7 +22,7 @@ func symName(obj *Object, idx uint32) string {
 		return ""
 	}
 	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
-	return symbol.ReadCStringMem(obj.StrtabAddr, uintptr(sym.Name))
+	return symbol.ReadCStringMem(obj.StrtabAddr, uintptr(sym.Name), uintptr(obj.StrtabSize))
 }
 
 // symBind returns the symbol binding type (STB_LOCAL, STB_GLOBAL, STB_WEAK, etc.).

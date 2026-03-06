@@ -54,7 +54,7 @@ func (vt *VersionTable) ParseVersionTables(
 	versymAddr uintptr, versymCount uint64,
 	verneedAddr uintptr, verneedNum uint64,
 	verdefAddr uintptr, verdefNum uint64,
-	strtabAddr uintptr,
+	strtabAddr uintptr, strtabSize uint64,
 ) error {
 	// Parse DT_VERSYM: array of uint16 version indices, one per symbol.
 	if versymAddr != 0 && versymCount > 0 {
@@ -63,14 +63,14 @@ func (vt *VersionTable) ParseVersionTables(
 
 	// Parse DT_VERNEED: version requirements (dependencies).
 	if verneedAddr != 0 && verneedNum > 0 {
-		if err := vt.parseVerneed(verneedAddr, verneedNum, strtabAddr); err != nil {
+		if err := vt.parseVerneed(verneedAddr, verneedNum, strtabAddr, strtabSize); err != nil {
 			return fmt.Errorf("parse verneed: %w", err)
 		}
 	}
 
 	// Parse DT_VERDEF: version definitions (exports).
 	if verdefAddr != 0 && verdefNum > 0 {
-		if err := vt.parseVerdef(verdefAddr, verdefNum, strtabAddr); err != nil {
+		if err := vt.parseVerdef(verdefAddr, verdefNum, strtabAddr, strtabSize); err != nil {
 			return fmt.Errorf("parse verdef: %w", err)
 		}
 	}
@@ -97,7 +97,7 @@ func (vt *VersionTable) ParseVersionTables(
 //	uint16 vna_other   (version index)
 //	uint32 vna_name    (string table offset)
 //	uint32 vna_next    (offset to next Vernaux, 0 if last)
-func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uintptr) error {
+func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uintptr, strtabSize uint64) error {
 	current := unsafe.Pointer(addr)
 	for i := uint64(0); i < count; i++ {
 		// Read Verneed header (16 bytes).
@@ -121,7 +121,7 @@ func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uint
 			vnaName := *(*uint32)(unsafe.Add(auxCurrent, 8))
 			vnaNext := *(*uint32)(unsafe.Add(auxCurrent, 12))
 
-			name := ReadCStringMem(strtabAddr, uintptr(vnaName))
+			name := ReadCStringMem(strtabAddr, uintptr(vnaName), uintptr(strtabSize))
 			vt.Requirements[vnaOther] = &VersionRequirement{
 				Name:  name,
 				Index: vnaOther,
@@ -158,7 +158,7 @@ func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uint
 //
 //	uint32 vda_name    (string table offset)
 //	uint32 vda_next    (offset to next Verdaux, 0 if last)
-func (vt *VersionTable) parseVerdef(addr uintptr, count uint64, strtabAddr uintptr) error {
+func (vt *VersionTable) parseVerdef(addr uintptr, count uint64, strtabAddr uintptr, strtabSize uint64) error {
 	current := unsafe.Pointer(addr)
 	for i := uint64(0); i < count; i++ {
 		// Read Verdef header (20 bytes).
@@ -178,7 +178,7 @@ func (vt *VersionTable) parseVerdef(addr uintptr, count uint64, strtabAddr uintp
 		auxCurrent := unsafe.Add(current, uintptr(vdAux))
 		vdaName := *(*uint32)(auxCurrent)
 
-		name := ReadCStringMem(strtabAddr, uintptr(vdaName))
+		name := ReadCStringMem(strtabAddr, uintptr(vdaName), uintptr(strtabSize))
 		vt.Definitions[vdNdx] = &VersionDefinition{
 			Name:  name,
 			Index: vdNdx,
@@ -217,7 +217,7 @@ func (vt *VersionTable) GetVersionName(verIdx uint16) string {
 
 // ParseVersionInfo is a convenience function that parses version info from dynamic tags.
 // It extracts the necessary addresses/counts from dynEntries and calls ParseVersionTables.
-func ParseVersionInfo(dynEntries map[elf.DynTag]uint64, baseAddr, strtabAddr uintptr, symCount uint64) (*VersionTable, error) {
+func ParseVersionInfo(dynEntries map[elf.DynTag]uint64, baseAddr, strtabAddr uintptr, strtabSize, symCount uint64) (*VersionTable, error) {
 	vt := NewVersionTable()
 
 	versymAddr := uintptr(0)
@@ -247,7 +247,7 @@ func ParseVersionInfo(dynEntries map[elf.DynTag]uint64, baseAddr, strtabAddr uin
 		versymAddr, symCount,
 		verneedAddr, verneedNum,
 		verdefAddr, verdefNum,
-		strtabAddr,
+		strtabAddr, strtabSize,
 	); err != nil {
 		return nil, err
 	}

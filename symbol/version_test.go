@@ -9,7 +9,7 @@ import (
 func TestVersionTable_ParseVersionTables(t *testing.T) {
 	// Test with empty/nil addresses.
 	vt := NewVersionTable()
-	err := vt.ParseVersionTables(0, 0, 0, 0, 0, 0, 0)
+	err := vt.ParseVersionTables(0, 0, 0, 0, 0, 0, 0, 0)
 	if err != nil {
 		t.Errorf("ParseVersionTables with nil addresses should not error: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestVersionTable_ParseVerneed(t *testing.T) {
 	verneedAddr := uintptr(unsafe.Pointer(&verneedData[0]))
 
 	vt := NewVersionTable()
-	err := vt.ParseVersionTables(0, 0, verneedAddr, 1, 0, 0, strtabAddr)
+	err := vt.ParseVersionTables(0, 0, verneedAddr, 1, 0, 0, strtabAddr, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("ParseVersionTables failed: %v", err)
 	}
@@ -159,7 +159,7 @@ func TestVersionTable_ParseVerdef(t *testing.T) {
 	verdefAddr := uintptr(unsafe.Pointer(&verdefData[0]))
 
 	vt := NewVersionTable()
-	err := vt.ParseVersionTables(0, 0, 0, 0, verdefAddr, 2, strtabAddr)
+	err := vt.ParseVersionTables(0, 0, 0, 0, verdefAddr, 2, strtabAddr, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("ParseVersionTables failed: %v", err)
 	}
@@ -307,7 +307,7 @@ func TestVersionTable_GetVersionName(t *testing.T) {
 func TestParseVersionInfo(t *testing.T) {
 	// Test with no version tags.
 	dynEntries := map[elf.DynTag]uint64{}
-	vt, err := ParseVersionInfo(dynEntries, 0, 0, 0)
+	vt, err := ParseVersionInfo(dynEntries, 0, 0, 0, 0)
 	if err != nil {
 		t.Errorf("ParseVersionInfo with empty tags should not error: %v", err)
 	}
@@ -322,7 +322,7 @@ func TestParseVersionInfo(t *testing.T) {
 	dynEntries[elf.DT_VERDEF] = 0x3000
 	dynEntries[elf.DT_VERDEFNUM] = 0
 
-	vt, err = ParseVersionInfo(dynEntries, 0, 0, 0)
+	vt, err = ParseVersionInfo(dynEntries, 0, 0, 0, 0)
 	if err != nil {
 		t.Errorf("ParseVersionInfo should handle zero counts gracefully: %v", err)
 	}

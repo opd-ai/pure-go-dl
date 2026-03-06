@@ -47,6 +47,7 @@ type Object struct {
 	SymtabAddr  uintptr
 	SymtabSize  uint64 // size of symbol table in bytes
 	StrtabAddr  uintptr
+	StrtabSize  uint64  // size of string table in bytes (from DT_STRSZ)
 	HashAddr    uintptr // SysV DT_HASH, 0 if absent
 	GnuHashAddr uintptr // DT_GNU_HASH, 0 if absent
 
@@ -229,6 +230,9 @@ func populateSymbolTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func(u
 	if v, ok := dynTags[elf.DT_STRTAB]; ok {
 		obj.StrtabAddr = toAbs(v)
 	}
+	if v, ok := dynTags[elf.DT_STRSZ]; ok {
+		obj.StrtabSize = v
+	}
 	if v, ok := dynTags[elf.DT_HASH]; ok {
 		obj.HashAddr = toAbs(v)
 	}
@@ -278,7 +282,7 @@ func populateInitFiniTags(obj *Object, dynTags map[elf.DynTag]uint64, toAbs func
 
 func populateSoname(obj *Object, dynTags map[elf.DynTag]uint64) {
 	if v, ok := dynTags[elf.DT_SONAME]; ok && obj.StrtabAddr != 0 {
-		obj.Soname = symbol.ReadCStringMem(obj.StrtabAddr, uintptr(v))
+		obj.Soname = symbol.ReadCStringMem(obj.StrtabAddr, uintptr(v), uintptr(obj.StrtabSize))
 	}
 }
 
@@ -297,14 +301,14 @@ func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uint
 
 	symCount := symtabSize / 24
 	if symCount > 0 && obj.StrtabAddr != 0 {
-		vt, err := symbol.ParseVersionInfo(dynTags, base, obj.StrtabAddr, symCount)
+		vt, err := symbol.ParseVersionInfo(dynTags, base, obj.StrtabAddr, obj.StrtabSize, symCount)
 		if err == nil && vt != nil {
 			obj.Symbols.SetVersionTable(vt)
 		}
 	}
 
 	if obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
-		if err := obj.Symbols.LoadFromDynamic(obj.SymtabAddr, obj.StrtabAddr, symtabSize); err != nil {
+		if err := obj.Symbols.LoadFromDynamic(obj.SymtabAddr, obj.StrtabAddr, symtabSize, obj.StrtabSize); err != nil {
 			_ = err
 		}
 	}

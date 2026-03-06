@@ -110,7 +110,8 @@ const maxFallbackSymbols = 4096
 
 // LoadFromDynamic reads Elf64_Sym entries from the in-memory symbol table and
 // populates t. symtabSize is the total byte size of the symbol table.
-func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint64) error {
+// strtabSize is the size of the string table in bytes (for bounds checking).
+func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize, strtabSize uint64) error {
 	if symtabAddr == 0 {
 		return fmt.Errorf("symbol: symtabAddr is 0")
 	}
@@ -143,7 +144,7 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 			continue // undefined; resolved from elsewhere
 		}
 
-		name := ReadCStringMem(strtabAddr, uintptr(s.Name))
+		name := ReadCStringMem(strtabAddr, uintptr(s.Name), uintptr(strtabSize))
 		if name == "" {
 			continue
 		}
@@ -203,17 +204,28 @@ func (t *Table) shouldSkipSymbol(name string, symIdx uint64) bool {
 }
 
 // ReadCStringMem reads a null-terminated C string from memory at base+offset.
-func ReadCStringMem(base, offset uintptr) string {
+// The limit parameter specifies the maximum valid offset (size of the string table).
+// If limit is 0, no bounds checking is performed (for backward compatibility).
+// Returns empty string if offset is out of bounds or no null terminator is found within limit.
+func ReadCStringMem(base, offset, limit uintptr) string {
+	if limit > 0 && offset >= limit {
+		return ""
+	}
 	basePtr := unsafe.Pointer(base)
 	ptr := unsafe.Add(basePtr, offset)
 	var buf []byte
+	bytesRead := uintptr(0)
 	for {
+		if limit > 0 && offset+bytesRead >= limit {
+			return ""
+		}
 		b := *(*byte)(ptr)
 		if b == 0 {
 			break
 		}
 		buf = append(buf, b)
 		ptr = unsafe.Add(ptr, 1)
+		bytesRead++
 	}
 	return string(buf)
 }

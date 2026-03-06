@@ -24,7 +24,8 @@ func SysvHash(name string) uint32 {
 // hashAddr   – in-memory address of the hash table
 // symtabAddr – in-memory address of DT_SYMTAB
 // strtabAddr – in-memory address of DT_STRTAB
-func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol, error) {
+// strtabSize – size of the string table in bytes (for bounds checking)
+func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr, strtabSize uint64) (*Symbol, error) {
 	if hashAddr == 0 {
 		return nil, fmt.Errorf("sysv_hash: hash table address is 0")
 	}
@@ -45,7 +46,7 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 
 	for idx != 0 {
 		sym := symAtIndex(symtabAddr, uintptr(idx))
-		symName := ReadCStringMem(strtabAddr, uintptr(sym.Name))
+		symName := ReadCStringMem(strtabAddr, uintptr(sym.Name), uintptr(strtabSize))
 		if symName == name {
 			bind := elf.SymBind(sym.Info >> 4)
 			symType := elf.SymType(sym.Info & 0xf)

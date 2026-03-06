@@ -116,7 +116,7 @@ func TestReadCStringMem(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got := ReadCStringMem(baseAddr, tt.offset)
+		got := ReadCStringMem(baseAddr, tt.offset, 0) // 0 = no bounds checking for backward compat
 		if got != tt.want {
 			t.Errorf("ReadCStringMem(base, %d) = %q, want %q", tt.offset, got, tt.want)
 		}
@@ -128,9 +128,40 @@ func TestReadCStringMem_Empty(t *testing.T) {
 	testData := []byte("\x00remaining")
 	baseAddr := uintptr(unsafe.Pointer(&testData[0]))
 
-	got := ReadCStringMem(baseAddr, 0)
+	got := ReadCStringMem(baseAddr, 0, 0) // 0 = no bounds checking
 	if got != "" {
 		t.Errorf("ReadCStringMem for empty string = %q, want empty string", got)
+	}
+}
+
+// TestReadCStringMem_BoundsCheck tests that bounds checking prevents out-of-bounds reads.
+func TestReadCStringMem_BoundsCheck(t *testing.T) {
+	// Create a string table: "hello\0world\0"
+	testData := []byte("hello\x00world\x00")
+	baseAddr := uintptr(unsafe.Pointer(&testData[0]))
+	strtabSize := uintptr(len(testData))
+
+	tests := []struct {
+		name   string
+		offset uintptr
+		limit  uintptr
+		want   string
+	}{
+		{"valid offset", 0, strtabSize, "hello"},
+		{"valid offset 2", 6, strtabSize, "world"},
+		{"offset at limit", strtabSize, strtabSize, ""},         // offset == limit
+		{"offset beyond limit", strtabSize + 1, strtabSize, ""}, // offset > limit
+		{"large offset", 10000, strtabSize, ""},                 // way beyond
+		{"limit too small", 0, 3, ""},                           // no null terminator within limit
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ReadCStringMem(baseAddr, tt.offset, tt.limit)
+			if got != tt.want {
+				t.Errorf("ReadCStringMem(base, %d, %d) = %q, want %q", tt.offset, tt.limit, got, tt.want)
+			}
+		})
 	}
 }
 
@@ -139,7 +170,7 @@ func TestLoadFromDynamic_ErrorCases(t *testing.T) {
 	table := NewTable(0x1000)
 
 	// Test with zero symtab address
-	err := table.LoadFromDynamic(0, 0x2000, 100)
+	err := table.LoadFromDynamic(0, 0x2000, 100, 100)
 	if err == nil {
 		t.Error("LoadFromDynamic with zero symtabAddr should return error")
 	}
@@ -195,7 +226,7 @@ func TestLoadFromDynamic_BasicSymbols(t *testing.T) {
 	symtabSize := uint64(3 * symEntSize)
 
 	table := NewTable(0x10000)
-	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize)
+	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("LoadFromDynamic failed: %v", err)
 	}
@@ -254,7 +285,7 @@ func TestLoadFromDynamic_SkipsUndefined(t *testing.T) {
 	symtabSize := uint64(1 * symEntSize)
 
 	table := NewTable(0x1000)
-	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize)
+	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("LoadFromDynamic failed: %v", err)
 	}
@@ -288,7 +319,7 @@ func TestLoadFromDynamic_SkipsLocal(t *testing.T) {
 	symtabSize := uint64(1 * symEntSize)
 
 	table := NewTable(0x1000)
-	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize)
+	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("LoadFromDynamic failed: %v", err)
 	}
@@ -322,7 +353,7 @@ func TestLoadFromDynamic_WeakSymbols(t *testing.T) {
 	symtabSize := uint64(1 * symEntSize)
 
 	table := NewTable(0x1000)
-	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize)
+	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("LoadFromDynamic failed: %v", err)
 	}
@@ -369,7 +400,7 @@ func TestLoadFromDynamic_WithVersionInfo(t *testing.T) {
 	vt.Requirements[2] = &VersionRequirement{Name: "GLIBC_2.2.5", Index: 2}
 	table.SetVersionTable(vt)
 
-	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize)
+	err := table.LoadFromDynamic(symtabAddr, strtabAddr, symtabSize, uint64(len(strtab)))
 	if err != nil {
 		t.Fatalf("LoadFromDynamic failed: %v", err)
 	}
@@ -436,6 +467,6 @@ func BenchmarkReadCStringMem(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = ReadCStringMem(baseAddr, 0)
+		_ = ReadCStringMem(baseAddr, 0, 0) // 0 = no bounds checking
 	}
 }

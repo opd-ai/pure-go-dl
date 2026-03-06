@@ -328,3 +328,58 @@ func TestApplyRelaTableMisaligned(t *testing.T) {
 		}
 	}
 }
+
+// TestSymbolIndexBoundsChecking tests that out-of-bounds symbol indices are handled safely
+func TestSymbolIndexBoundsChecking(t *testing.T) {
+	testLib := "../testdata/libtest.so"
+	resolver := &mockResolver{symbols: make(map[string]uintptr)}
+
+	obj, err := Load(testLib, resolver)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+	defer Unload(obj)
+
+	// Calculate the maximum valid symbol index
+	maxValidIdx := uint32(0)
+	if obj.SymtabSize > 0 {
+		maxValidIdx = uint32(obj.SymtabSize/24) - 1
+	}
+
+	// Test out-of-bounds indices
+	oobIndices := []uint32{
+		uint32(obj.SymtabSize / 24),       // exactly one past the end
+		uint32(obj.SymtabSize/24) + 1,     // one more past the end
+		uint32(obj.SymtabSize/24) + 100,   // far past the end
+		0xFFFFFFFF,                         // maximum uint32
+	}
+
+	for _, idx := range oobIndices {
+		// symName should return empty string for OOB indices
+		name := symName(obj, idx)
+		if name != "" {
+			t.Errorf("symName with OOB index %d should return empty string, got: %q", idx, name)
+		}
+
+		// symBind should return 0 for OOB indices
+		bind := symBind(obj, idx)
+		if bind != 0 {
+			t.Errorf("symBind with OOB index %d should return 0, got: %d", idx, bind)
+		}
+
+		// symAddress should return 0 for OOB indices
+		addr := symAddress(obj, idx)
+		if addr != 0 {
+			t.Errorf("symAddress with OOB index %d should return 0, got: %#x", idx, addr)
+		}
+	}
+
+	// Test that valid indices still work (idx 1 is typically valid, idx 0 is reserved)
+	if maxValidIdx >= 1 {
+		// Just verify these don't panic - actual return values depend on the library
+		_ = symName(obj, 1)
+		_ = symBind(obj, 1)
+		_ = symAddress(obj, 1)
+	}
+}
+

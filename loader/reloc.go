@@ -17,6 +17,10 @@ func symName(obj *Object, idx uint32) string {
 	if idx == 0 || obj.SymtabAddr == 0 || obj.StrtabAddr == 0 {
 		return ""
 	}
+	symCount := obj.SymtabSize / 24
+	if uint64(idx) >= symCount {
+		return ""
+	}
 	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
 	return symbol.ReadCStringMem(obj.StrtabAddr, uintptr(sym.Name))
 }
@@ -26,6 +30,10 @@ func symBind(obj *Object, idx uint32) uint8 {
 	if idx == 0 || obj.SymtabAddr == 0 {
 		return 0
 	}
+	symCount := obj.SymtabSize / 24
+	if uint64(idx) >= symCount {
+		return 0
+	}
 	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
 	return sym.Info >> 4 // upper 4 bits = binding
 }
@@ -33,6 +41,10 @@ func symBind(obj *Object, idx uint32) uint8 {
 // symAddress returns the symbol's value (address or TLS offset).
 func symAddress(obj *Object, idx uint32) uintptr {
 	if idx == 0 || obj.SymtabAddr == 0 {
+		return 0
+	}
+	symCount := obj.SymtabSize / 24
+	if uint64(idx) >= symCount {
 		return 0
 	}
 	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))

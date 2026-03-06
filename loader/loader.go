@@ -45,6 +45,7 @@ type Object struct {
 
 	// Adjusted (absolute) addresses of key dynamic tables.
 	SymtabAddr  uintptr
+	SymtabSize  uint64  // size of symbol table in bytes
 	StrtabAddr  uintptr
 	HashAddr    uintptr // SysV DT_HASH, 0 if absent
 	GnuHashAddr uintptr // DT_GNU_HASH, 0 if absent
@@ -291,6 +292,8 @@ func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uint
 			}
 		}
 	}
+
+	obj.SymtabSize = symtabSize
 
 	symCount := symtabSize / 24
 	if symCount > 0 && obj.StrtabAddr != 0 {

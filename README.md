@@ -53,20 +53,20 @@ import (
 
 func main() {
     // Load a shared library
-    lib, err := dl.Open("libm.so.6")
+    lib, err := dl.Open("/path/to/libcustom.so")
     if err != nil {
         panic(err)
     }
     defer lib.Close()
 
     // Bind a function to a Go variable
-    var cos func(float64) float64
-    if err := lib.Bind("cos", &cos); err != nil {
+    var add func(int, int) int
+    if err := lib.Bind("add", &add); err != nil {
         panic(err)
     }
 
     // Call the native function
-    fmt.Println(cos(0)) // Output: 1.0
+    fmt.Println(add(2, 3)) // Output: 5
 }
 ```
 
@@ -194,12 +194,11 @@ If you need truly static binaries, consider using cgo with static linking flags 
 ### Library Compatibility
 
 The loader successfully handles:
-- ✅ libm.so.6 (math library)
-- ✅ libz.so (compression)
-- ✅ Most glibc-based system libraries
 - ✅ Custom libraries compiled with `-fPIC -shared`
 - ✅ Libraries using IFUNC (GNU indirect functions for CPU-optimized variants)
 - ✅ Libraries using TLS (Thread-Local Storage) with multi-threading support
+- ⚠️ libm.so.6 (math library) — not validated in CI; glibc init functions may fail on some systems
+- ⚠️ libz.so (compression) — not validated in CI; enable with `PURE_GO_DL_TEST_SYSTEM_LIBS=1` to test
 
 ## Testing
 

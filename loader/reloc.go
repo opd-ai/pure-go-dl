@@ -1,5 +1,7 @@
 package loader
 
+import "github.com/opd-ai/pure-go-dl/symbol"
+
 // x86-64 relocation types (System V ABI supplement).
 const (
 	R_X86_64_NONE      = 0
@@ -51,14 +53,6 @@ func symName(obj *Object, idx uint32) string {
 	if idx == 0 || obj.SymtabAddr == 0 || obj.StrtabAddr == 0 {
 		return ""
 	}
-	type elf64Sym struct {
-		Name  uint32
-		Info  uint8
-		Other uint8
-		Shndx uint16
-		Value uint64
-		Size  uint64
-	}
-	sym := (*elf64Sym)(unsafePointer(obj.SymtabAddr + uintptr(idx)*24))
-	return readCStringMem(obj.StrtabAddr, uintptr(sym.Name))
+	sym := (*symbol.Elf64Sym)(unsafePointer(obj.SymtabAddr + uintptr(idx)*24))
+	return symbol.ReadCStringMem(obj.StrtabAddr, uintptr(sym.Name))
 }

@@ -60,7 +60,7 @@ func GnuLookup(name string, gnuHashAddr, symtabAddr, strtabAddr uintptr) (*Symbo
 		chainVal := *(*uint32)(unsafe.Pointer(chainsBase + uintptr(symIdx-symoffset)*4))
 		if (chainVal&^1) == (h &^ 1) {
 			sym := symAtIndex(symtabAddr, uintptr(symIdx))
-			symName := readCStringMem(strtabAddr, uintptr(sym.Name))
+			symName := ReadCStringMem(strtabAddr, uintptr(sym.Name))
 			if symName == name {
 				bind := elf.SymBind(sym.Info >> 4)
 				symType := elf.SymType(sym.Info & 0xf)

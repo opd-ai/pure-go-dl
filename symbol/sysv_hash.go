@@ -42,7 +42,7 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 
 	for idx != 0 {
 		sym := symAtIndex(symtabAddr, uintptr(idx))
-		symName := readCStringMem(strtabAddr, uintptr(sym.Name))
+		symName := ReadCStringMem(strtabAddr, uintptr(sym.Name))
 		if symName == name {
 			bind := elf.SymBind(sym.Info >> 4)
 			symType := elf.SymType(sym.Info & 0xf)
@@ -63,7 +63,7 @@ func SysvLookup(name string, hashAddr, symtabAddr, strtabAddr uintptr) (*Symbol,
 	return nil, fmt.Errorf("sysv_hash: symbol %q not found", name)
 }
 
-// symAtIndex returns a pointer to the Elf64_Sym at the given index.
-func symAtIndex(symtabAddr uintptr, idx uintptr) *elf64Sym {
-	return (*elf64Sym)(unsafe.Pointer(symtabAddr + idx*symEntSize))
+// symAtIndex returns a pointer to the Elf64Sym at the given index.
+func symAtIndex(symtabAddr uintptr, idx uintptr) *Elf64Sym {
+	return (*Elf64Sym)(unsafe.Pointer(symtabAddr + idx*symEntSize))
 }

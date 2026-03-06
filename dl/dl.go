@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/ebitengine/purego"
+	goelf "github.com/opd-ai/pure-go-dl/elf"
 	"github.com/opd-ai/pure-go-dl/loader"
 	"github.com/opd-ai/pure-go-dl/symbol"
 )
@@ -27,9 +28,15 @@ type Library struct {
 
 var (
 	mu      sync.Mutex
+	cond    *sync.Cond
 	loaded  = map[string]*Library{} // soname/path → Library
+	loading = map[string]bool{}     // paths currently being loaded (by any goroutine)
 	globals []*Library               // RTLD_GLOBAL libraries
 )
+
+func init() {
+	cond = sync.NewCond(&mu)
+}
 
 // globalResolver implements loader.SymbolResolver over the globals list.
 type globalResolver struct{}
@@ -46,13 +53,19 @@ func (globalResolver) Resolve(name string) (uintptr, error) {
 }
 
 // Open loads the shared library identified by name (path or soname).
-// Transitive DT_NEEDED dependencies are loaded first.
+// Transitive DT_NEEDED dependencies are loaded depth-first before the
+// requested library, so their symbols are available during relocation.
 func Open(name string, flags ...Flag) (*Library, error) {
 	flag := RTLD_LOCAL
 	if len(flags) > 0 {
 		flag = flags[0]
 	}
+	// visiting tracks paths on the current call stack to detect cycles.
+	return loadLib(name, flag, make(map[string]bool))
+}
 
+// loadLib resolves a library by name (soname or path) and loads it.
+func loadLib(name string, flag Flag, visiting map[string]bool) (*Library, error) {
 	mu.Lock()
 	if lib, ok := loaded[name]; ok {
 		lib.obj.RefCount++
@@ -61,51 +74,100 @@ func Open(name string, flags ...Flag) (*Library, error) {
 	}
 	mu.Unlock()
 
-	// Locate the file.
 	path, err := findLibrary(name)
 	if err != nil {
 		return nil, err
 	}
-
-	// Load dependencies first (pre-resolver step: load them without symbols).
-	// We'll do a best-effort parse to collect DT_NEEDED.
-	// The actual loading happens depth-first.
-	lib, err := loadOne(path, flag)
-	if err != nil {
-		return nil, err
-	}
-	return lib, nil
+	return loadPath(path, name, flag, visiting)
 }
 
-// loadOne loads a single shared object (not its dependencies recursively) and
-// registers it in the global table.
-func loadOne(path string, flag Flag) (*Library, error) {
+// loadPath loads a library by its resolved absolute file path.
+// visiting is per-call-stack and used for cycle detection.
+func loadPath(path, soname string, flag Flag, visiting map[string]bool) (*Library, error) {
+	// Cycle detection: this path is already on the current goroutine's call stack.
+	if visiting[path] {
+		mu.Lock()
+		lib := loaded[path]
+		if lib != nil {
+			lib.obj.RefCount++
+		}
+		mu.Unlock()
+		return lib, nil
+	}
+
 	mu.Lock()
+	// If another goroutine is loading this path, wait for it to finish.
+	for loading[path] {
+		cond.Wait()
+	}
+	// Check if it was loaded while we were waiting.
 	if lib, ok := loaded[path]; ok {
 		lib.obj.RefCount++
 		mu.Unlock()
 		return lib, nil
 	}
+	// Claim the slot so no other goroutine starts loading this path.
+	loading[path] = true
 	mu.Unlock()
 
-	obj, err := loader.Load(path, globalResolver{})
+	// Mark on this call stack to detect cycles in the dependency graph.
+	visiting[path] = true
+
+	// Parse the ELF file to read DT_NEEDED before fully loading it.
+	// This lets us load transitive dependencies depth-first.
+	parsed, err := goelf.Parse(path)
 	if err != nil {
+		mu.Lock()
+		delete(loading, path)
+		cond.Broadcast()
+		mu.Unlock()
+		delete(visiting, path)
+		return nil, err
+	}
+
+	// Load transitive dependencies depth-first.
+	// They are loaded as RTLD_GLOBAL so their symbols are visible during
+	// the relocation phase of the dependent library.
+	for _, dep := range parsed.Needed {
+		if visiting[dep] {
+			continue // already on this call stack → cycle, skip
+		}
+		depPath, findErr := findLibrary(dep)
+		if findErr != nil {
+			continue // non-fatal: system library may not be present
+		}
+		if _, loadErr := loadPath(depPath, dep, RTLD_GLOBAL, visiting); loadErr != nil {
+			_ = loadErr // non-fatal: continue with missing dependency
+		}
+	}
+
+	delete(visiting, path)
+
+	// Now load the library itself (maps segments, applies relocations,
+	// runs constructors).
+	obj, err := loader.Load(path, globalResolver{})
+
+	mu.Lock()
+	delete(loading, path)
+	cond.Broadcast()
+	if err != nil {
+		mu.Unlock()
 		return nil, err
 	}
 
 	lib := &Library{obj: obj, global: flag == RTLD_GLOBAL}
-
-	mu.Lock()
-	defer mu.Unlock()
-	key := path
-	if obj.Soname != "" {
-		key = obj.Soname
+	if obj.Soname != "" && obj.Soname != path {
+		loaded[obj.Soname] = lib
 	}
-	loaded[key] = lib
+	if soname != "" && soname != path && soname != obj.Soname {
+		loaded[soname] = lib
+	}
 	loaded[path] = lib
 	if lib.global {
 		globals = append(globals, lib)
 	}
+	mu.Unlock()
+
 	return lib, nil
 }
 
@@ -160,7 +222,6 @@ func (l *Library) PrintSymbols(w io.Writer) {
 		sym  *symbol.Symbol
 	}
 	var entries []entry
-	// Walk all symbols – we expose the Symbols field via a helper.
 	l.obj.Symbols.ForEach(func(name string, s *symbol.Symbol) {
 		entries = append(entries, entry{name, s})
 	})

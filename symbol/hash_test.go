@@ -9,20 +9,18 @@ import (
 func TestSysvHash(t *testing.T) {
 	tests := []struct {
 		name string
+		want uint32
 	}{
-		{""},
-		{"_start"},
-		{"printf"},
-		{"malloc"},
-		{"free"},
-		{"__libc_start_main"},
+		{"", 0x00000000},
+		{"printf", 0x077905a6},
+		{"malloc", 0x07383353},
+		{"free", 0x0006d8b5},
+		{"cos", 0x00006a63},
 	}
-	// At minimum verify the hash doesn't panic and returns consistent results.
 	for _, tt := range tests {
-		h1 := symbol.SysvHash(tt.name)
-		h2 := symbol.SysvHash(tt.name)
-		if h1 != h2 {
-			t.Errorf("SysvHash(%q) is not deterministic: %d vs %d", tt.name, h1, h2)
+		got := symbol.SysvHash(tt.name)
+		if got != tt.want {
+			t.Errorf("SysvHash(%q) = 0x%x, want 0x%x", tt.name, got, tt.want)
 		}
 	}
 }

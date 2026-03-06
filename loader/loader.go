@@ -230,7 +230,7 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 		obj.FiniArraySz = v
 	}
 	if v, ok := dynTags[elf.DT_SONAME]; ok && obj.StrtabAddr != 0 {
-		obj.Soname = readCStringMem(obj.StrtabAddr, uintptr(v))
+		obj.Soname = symbol.ReadCStringMem(obj.StrtabAddr, uintptr(v))
 	}
 
 	// Build symbol table. DT_STRSZ gives the string-table size; we derive the
@@ -260,11 +260,27 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 
 	// Apply GNU RELRO: make protected regions read-only.
 	if relro := parsed.GNURelroSeg; relro != nil {
-		relroAddr := base + uintptr(relro.Vaddr-parsed.BaseVAddr)
-		relroSize := uintptr(pageUp(relro.Memsz))
-		if err := mmap.Protect(relroAddr, relroSize, mmap.ProtRead); err != nil {
-			// Non-fatal warning; the library is still usable.
-			_ = err
+		if relro.Vaddr >= parsed.BaseVAddr {
+			relroAddr := base + uintptr(relro.Vaddr-parsed.BaseVAddr)
+			relroSize := uintptr(pageUp(relro.Memsz))
+			if err := mmap.Protect(relroAddr, relroSize, mmap.ProtRead); err != nil {
+				// Non-fatal warning; the library is still usable.
+				_ = err
+			}
+		}
+	}
+
+	// Run constructors: DT_INIT first, then DT_INIT_ARRAY in forward order.
+	if obj.InitAddr != 0 {
+		callFunc(obj.InitAddr)
+	}
+	if obj.InitArray != 0 && obj.InitArraySz > 0 {
+		n := obj.InitArraySz / 8
+		for i := uint64(0); i < n; i++ {
+			fn := *(*uintptr)(unsafePointer(obj.InitArray + uintptr(i*8)))
+			if fn != 0 {
+				callFunc(fn)
+			}
 		}
 	}
 
@@ -294,6 +310,9 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 		r := &rels[i]
 		symIdx := relaSymIdx(r.Info)
 		relocType := relaType(r.Info)
+		if r.Offset < obj.Parsed.BaseVAddr {
+			return fmt.Errorf("relocation offset %#x is before base virtual address %#x", r.Offset, obj.Parsed.BaseVAddr)
+		}
 		offset := obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr)
 		addend := r.Addend
 
@@ -330,14 +349,16 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			if err != nil {
 				return err
 			}
-			// Determine size from our own symbol table entry.
+			// Size must come from the source symbol (the exporting library).
+			// We look it up by name; a missing entry is an error, not a
+			// silent 8-byte fallback, to prevent silent memory corruption.
 			name := symName(obj, symIdx)
-			size := uint64(8) // fallback
-			if sym, ok := obj.Symbols.Lookup(name); ok {
-				size = sym.Size
+			sym, ok := obj.Symbols.Lookup(name)
+			if !ok {
+				return fmt.Errorf("R_X86_64_COPY: symbol %q not found in symbol table", name)
 			}
-			dst := unsafe.Slice((*byte)(unsafePointer(offset)), size)
-			src := unsafe.Slice((*byte)(unsafePointer(S)), size)
+			dst := unsafe.Slice((*byte)(unsafePointer(offset)), sym.Size)
+			src := unsafe.Slice((*byte)(unsafePointer(S)), sym.Size)
 			copy(dst, src)
 
 		case R_X86_64_32:
@@ -434,22 +455,3 @@ func zeroMem(addr uintptr, count uintptr) {
 func unsafePointer(addr uintptr) unsafe.Pointer {
 	return unsafe.Pointer(addr) //nolint:unsafeptr
 }
-
-// readCStringMem reads a null-terminated C string from memory.
-func readCStringMem(base, offset uintptr) string {
-	ptr := base + offset
-	var buf []byte
-	for {
-		b := *(*byte)(unsafe.Pointer(ptr))
-		if b == 0 {
-			break
-		}
-		buf = append(buf, b)
-		ptr++
-	}
-	return string(buf)
-}
-
-// callFunc calls a function at the given address with no arguments.
-// Implemented in assembly (or via a trampoline) in call_amd64.s.
-func callFunc(addr uintptr)

@@ -48,7 +48,7 @@ func (t *Table) ForEach(fn func(name string, s *Symbol)) {
 	}
 }
 
-// elf64Sym mirrors the on-wire layout of Elf64_Sym (24 bytes, little-endian).
+// Elf64Sym mirrors the on-wire layout of Elf64_Sym (24 bytes, little-endian).
 //
 //	st_name  uint32  // 0..3
 //	st_info  uint8   // 4
@@ -56,7 +56,7 @@ func (t *Table) ForEach(fn func(name string, s *Symbol)) {
 //	st_shndx uint16  // 6..7
 //	st_value uint64  // 8..15
 //	st_size  uint64  // 16..23
-type elf64Sym struct {
+type Elf64Sym struct {
 	Name  uint32
 	Info  uint8
 	Other uint8
@@ -81,7 +81,7 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 	}
 
 	n := symtabSize / symEntSize
-	syms := unsafe.Slice((*elf64Sym)(unsafe.Pointer(symtabAddr)), n)
+	syms := unsafe.Slice((*Elf64Sym)(unsafe.Pointer(symtabAddr)), n)
 
 	for i := uint64(0); i < n; i++ {
 		s := &syms[i]
@@ -98,7 +98,7 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 			continue // undefined; resolved from elsewhere
 		}
 
-		name := readCStringMem(strtabAddr, uintptr(s.Name))
+		name := ReadCStringMem(strtabAddr, uintptr(s.Name))
 		if name == "" {
 			continue
 		}
@@ -116,8 +116,8 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 	return nil
 }
 
-// readCStringMem reads a null-terminated C string from memory at base+offset.
-func readCStringMem(base, offset uintptr) string {
+// ReadCStringMem reads a null-terminated C string from memory at base+offset.
+func ReadCStringMem(base, offset uintptr) string {
 	ptr := base + offset
 	var buf []byte
 	for {

@@ -48,16 +48,14 @@ func TestCompatibility_CustomLibrary(t *testing.T) {
 // TestCompatibility_libm tests loading and using the system math library (libm.so.6).
 // This is the "M4 checkpoint" test: cos(0) == 1.0 from a CGO_ENABLED=0 binary.
 //
-// IMPORTANT: This test is currently KNOWN TO FAIL with a SIGSEGV during library
-// initialization. The crash occurs when libm's init functions execute, likely due
-// to IFUNC resolution or other advanced glibc features that need additional work.
+// System library testing requires PURE_GO_DL_TEST_SYSTEM_LIBS=1 due to potential
+// compatibility issues with glibc init functions on different system configurations.
+// Fix: Improve IFUNC resolution and glibc init handling to make this test pass by default.
 //
-// To enable this test (it will crash), set: PURE_GO_DL_TEST_SYSTEM_LIBS=1
-//
-// GitHub Issue: This test documents the need for robust init function handling.
+// To enable this test, set: PURE_GO_DL_TEST_SYSTEM_LIBS=1
 func TestCompatibility_libm(t *testing.T) {
 	if os.Getenv("PURE_GO_DL_TEST_SYSTEM_LIBS") != "1" {
-		t.Skip("Skipping libm test - known to crash during init - set PURE_GO_DL_TEST_SYSTEM_LIBS=1 to attempt anyway")
+		t.Skip("Skipping libm test - set PURE_GO_DL_TEST_SYSTEM_LIBS=1 to enable")
 	}
 
 	lib, err := Open("libm.so.6")

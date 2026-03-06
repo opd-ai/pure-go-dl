@@ -9,6 +9,7 @@ import (
 	goelf "github.com/opd-ai/pure-go-dl/elf"
 	"github.com/opd-ai/pure-go-dl/internal/mmap"
 	"github.com/opd-ai/pure-go-dl/symbol"
+	"golang.org/x/sys/unix"
 )
 
 // SymbolResolver resolves symbol names to absolute addresses.
@@ -72,10 +73,16 @@ func elfProt(flags elf.ProgFlag) int {
 }
 
 // pageDown rounds addr down to a page boundary.
-func pageDown(v uint64) uint64 { return v &^ 4095 }
+func pageDown(v uint64) uint64 {
+	pageSizeMask := uint64(unix.Getpagesize() - 1)
+	return v &^ pageSizeMask
+}
 
 // pageUp rounds v up to a page boundary.
-func pageUp(v uint64) uint64 { return (v + 4095) &^ 4095 }
+func pageUp(v uint64) uint64 {
+	pageSizeMask := uint64(unix.Getpagesize() - 1)
+	return (v + pageSizeMask) &^ pageSizeMask
+}
 
 // Load maps the shared object at path into memory and applies relocations.
 // resolver is used to look up symbols from already-loaded libraries.

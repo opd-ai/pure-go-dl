@@ -12,6 +12,13 @@ import (
 	"golang.org/x/sys/unix"
 )
 
+const (
+	// maxModuleID is the maximum number of TLS modules that can be registered.
+	// This prevents unbounded memory growth in the DTV and module ID overflow.
+	// 65536 modules is far beyond typical usage (most programs load <100 libraries).
+	maxModuleID = 1 << 16
+)
+
 // Module represents a TLS template for a loaded shared library.
 // Each library with a PT_TLS segment gets a TLS module with a unique ID.
 type Module struct {
@@ -56,6 +63,11 @@ func GlobalManager() *Manager {
 func (m *Manager) RegisterModule(size, align, fileSize uint64, initData uintptr) (*Module, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+
+	// Check module ID limit to prevent unbounded growth
+	if m.nextID >= maxModuleID {
+		return nil, fmt.Errorf("tls: module ID limit exceeded (max %d modules)", maxModuleID)
+	}
 
 	if align == 0 {
 		align = 1

@@ -135,7 +135,7 @@ func computeSymtabSize(symtabSize uint64) uint64 {
 }
 
 // loadSymbolEntry processes a single symbol table entry.
-func (t *Table) loadSymbolEntry(symtabAddr, strtabAddr uintptr, idx uint64, strtabSize uint64) error {
+func (t *Table) loadSymbolEntry(symtabAddr, strtabAddr uintptr, idx, strtabSize uint64) error {
 	symPtr := unsafe.Add(unsafe.Pointer(symtabAddr), idx*symEntSize)
 	s := (*Elf64Sym)(symPtr)
 

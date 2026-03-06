@@ -78,9 +78,9 @@ func buildSearchPaths(runpath, rpath string) []struct {
 	}{
 		{splitPaths(runpath), false},                      // 1. DT_RUNPATH
 		{splitPaths(os.Getenv("LD_LIBRARY_PATH")), false}, // 2. LD_LIBRARY_PATH
-		{nil, true},                                       // 3. /etc/ld.so.cache
-		{splitPaths(rpath), false},                        // 4. DT_RPATH
-		{defaultSearchPaths, false},                       // 5. Default paths
+		{nil, true},                 // 3. /etc/ld.so.cache
+		{splitPaths(rpath), false},  // 4. DT_RPATH
+		{defaultSearchPaths, false}, // 5. Default paths
 	}
 }
 
@@ -88,7 +88,8 @@ func buildSearchPaths(runpath, rpath string) []struct {
 func searchInPaths(name string, searchPaths []struct {
 	dirs     []string
 	useCache bool
-}) string {
+},
+) string {
 	for _, sp := range searchPaths {
 		if sp.useCache {
 			if cachedPath := lookupInCache(name); cachedPath != "" {

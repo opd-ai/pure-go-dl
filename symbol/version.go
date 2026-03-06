@@ -215,6 +215,19 @@ func (vt *VersionTable) GetVersionName(verIdx uint16) string {
 	return ""
 }
 
+// getDynAddrAndCount extracts an address and count pair from dynEntries.
+func getDynAddrAndCount(dynEntries map[elf.DynTag]uint64, baseAddr uintptr, addrTag, countTag elf.DynTag) (uintptr, uint64) {
+	addr := uintptr(0)
+	count := uint64(0)
+	if v, ok := dynEntries[addrTag]; ok {
+		addr = baseAddr + uintptr(v)
+	}
+	if v, ok := dynEntries[countTag]; ok {
+		count = v
+	}
+	return addr, count
+}
+
 // ParseVersionInfo is a convenience function that parses version info from dynamic tags.
 // It extracts the necessary addresses/counts from dynEntries and calls ParseVersionTables.
 func ParseVersionInfo(dynEntries map[elf.DynTag]uint64, baseAddr, strtabAddr uintptr, strtabSize, symCount uint64) (*VersionTable, error) {
@@ -225,23 +238,8 @@ func ParseVersionInfo(dynEntries map[elf.DynTag]uint64, baseAddr, strtabAddr uin
 		versymAddr = baseAddr + uintptr(v)
 	}
 
-	verneedAddr := uintptr(0)
-	verneedNum := uint64(0)
-	if v, ok := dynEntries[elf.DT_VERNEED]; ok {
-		verneedAddr = baseAddr + uintptr(v)
-	}
-	if v, ok := dynEntries[elf.DT_VERNEEDNUM]; ok {
-		verneedNum = v
-	}
-
-	verdefAddr := uintptr(0)
-	verdefNum := uint64(0)
-	if v, ok := dynEntries[elf.DT_VERDEF]; ok {
-		verdefAddr = baseAddr + uintptr(v)
-	}
-	if v, ok := dynEntries[elf.DT_VERDEFNUM]; ok {
-		verdefNum = v
-	}
+	verneedAddr, verneedNum := getDynAddrAndCount(dynEntries, baseAddr, elf.DT_VERNEED, elf.DT_VERNEEDNUM)
+	verdefAddr, verdefNum := getDynAddrAndCount(dynEntries, baseAddr, elf.DT_VERDEF, elf.DT_VERDEFNUM)
 
 	if err := vt.ParseVersionTables(
 		versymAddr, symCount,

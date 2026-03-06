@@ -13,40 +13,43 @@ type relaEntry struct {
 	Addend int64
 }
 
-func symName(obj *Object, idx uint32) string {
-	if idx == 0 || obj.SymtabAddr == 0 || obj.StrtabAddr == 0 {
-		return ""
+// getSymbolEntry returns a pointer to the symbol at idx, or nil if invalid.
+func getSymbolEntry(obj *Object, idx uint32) *symbol.Elf64Sym {
+	if idx == 0 || obj.SymtabAddr == 0 {
+		return nil
 	}
 	symCount := obj.SymtabSize / 24
 	if uint64(idx) >= symCount {
+		return nil
+	}
+	return (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
+}
+
+func symName(obj *Object, idx uint32) string {
+	if obj.StrtabAddr == 0 {
 		return ""
 	}
-	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
+	sym := getSymbolEntry(obj, idx)
+	if sym == nil {
+		return ""
+	}
 	return symbol.ReadCStringMem(obj.StrtabAddr, uintptr(sym.Name), uintptr(obj.StrtabSize))
 }
 
 // symBind returns the symbol binding type (STB_LOCAL, STB_GLOBAL, STB_WEAK, etc.).
 func symBind(obj *Object, idx uint32) uint8 {
-	if idx == 0 || obj.SymtabAddr == 0 {
+	sym := getSymbolEntry(obj, idx)
+	if sym == nil {
 		return 0
 	}
-	symCount := obj.SymtabSize / 24
-	if uint64(idx) >= symCount {
-		return 0
-	}
-	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
 	return sym.Info >> 4 // upper 4 bits = binding
 }
 
 // symAddress returns the symbol's value (address or TLS offset).
 func symAddress(obj *Object, idx uint32) uintptr {
-	if idx == 0 || obj.SymtabAddr == 0 {
+	sym := getSymbolEntry(obj, idx)
+	if sym == nil {
 		return 0
 	}
-	symCount := obj.SymtabSize / 24
-	if uint64(idx) >= symCount {
-		return 0
-	}
-	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
 	return uintptr(sym.Value)
 }

@@ -477,8 +477,9 @@ func apply64(obj *Object, symIdx uint32, offsetPtr unsafe.Pointer, addend int64,
 	return nil
 }
 
-// applyGlobDat applies a GLOB_DAT relocation.
-func applyGlobDat(obj *Object, symIdx uint32, offsetPtr unsafe.Pointer, resolver SymbolResolver) error {
+// applySymbolAddress resolves a symbol and writes its address to the target.
+// Used for GLOB_DAT and JUMP_SLOT relocations which have identical semantics.
+func applySymbolAddress(obj *Object, symIdx uint32, offsetPtr unsafe.Pointer, resolver SymbolResolver) error {
 	S, err := resolveSymForReloc(obj, symIdx, resolver)
 	if err != nil {
 		return err
@@ -487,14 +488,14 @@ func applyGlobDat(obj *Object, symIdx uint32, offsetPtr unsafe.Pointer, resolver
 	return nil
 }
 
+// applyGlobDat applies a GLOB_DAT relocation.
+func applyGlobDat(obj *Object, symIdx uint32, offsetPtr unsafe.Pointer, resolver SymbolResolver) error {
+	return applySymbolAddress(obj, symIdx, offsetPtr, resolver)
+}
+
 // applyJumpSlot applies a JUMP_SLOT relocation.
 func applyJumpSlot(obj *Object, symIdx uint32, offsetPtr unsafe.Pointer, resolver SymbolResolver) error {
-	S, err := resolveSymForReloc(obj, symIdx, resolver)
-	if err != nil {
-		return err
-	}
-	*(*uintptr)(offsetPtr) = S
-	return nil
+	return applySymbolAddress(obj, symIdx, offsetPtr, resolver)
 }
 
 // applyCopy applies a COPY relocation.
@@ -930,16 +931,11 @@ func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 
 	symIdx := uint32(r.Info >> 32)
 
-	// Allocate or retrieve GOT entry pair for this symbol.
-	gotEntry, err := allocateGOTEntryPair(obj, symIdx)
+	// Allocate GOT entry pair and populate module ID.
+	gotEntry, err := allocateTLSGotEntry(obj, symIdx, "relocTLSGD", r.Offset)
 	if err != nil {
-		return fmt.Errorf("relocTLSGD at %#x: %w", r.Offset, err)
+		return err
 	}
-
-	// Populate GOT entries: [DTPMOD64, DTPOFF64].
-	// DTPMOD64 = module ID
-	moduleID := obj.TLSModule.GetModuleID()
-	*(*uint64)(unsafe.Pointer(gotEntry)) = moduleID
 
 	// DTPOFF64 = symbol offset within TLS block
 	// For TLS symbols, st_value contains the offset within the PT_TLS segment.
@@ -953,17 +949,30 @@ func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 	}
 	*(*uint64)(unsafe.Pointer(gotEntry + 8)) = tlsOffset
 
-	// Compute PC-relative offset from relocation site to GOT entry.
-	// The instruction is: leaq symbol@tlsgd(%rip), %rdi
-	// We patch the 32-bit PC-relative offset in the instruction.
-	relocSite := obj.Base + uintptr(r.Offset)
-	pcRelOffset := int64(gotEntry) - int64(relocSite+4) // +4 for instruction size
-
-	// Write the PC-relative offset to the relocation site.
-	offsetPtr := unsafe.Pointer(relocSite)
-	*(*int32)(offsetPtr) = int32(pcRelOffset)
+	// Patch instruction with PC-relative offset to GOT entry.
+	writePCRelativeOffset(obj, r.Offset, gotEntry)
 
 	return nil
+}
+
+// allocateTLSGotEntry allocates a GOT entry pair for TLS and populates the module ID.
+// Returns the GOT entry address for further population.
+func allocateTLSGotEntry(obj *Object, symIdx uint32, relocName string, offset uint64) (uintptr, error) {
+	gotEntry, err := allocateGOTEntryPair(obj, symIdx)
+	if err != nil {
+		return 0, fmt.Errorf("%s at %#x: %w", relocName, offset, err)
+	}
+	// DTPMOD64 = module ID (first slot)
+	*(*uint64)(unsafe.Pointer(gotEntry)) = obj.TLSModule.GetModuleID()
+	return gotEntry, nil
+}
+
+// writePCRelativeOffset patches a 32-bit PC-relative offset at the relocation site.
+// Used by TLSGD and TLSLD relocations for leaq instructions.
+func writePCRelativeOffset(obj *Object, offset uint64, gotEntry uintptr) {
+	relocSite := obj.Base + uintptr(offset)
+	pcRelOffset := int64(gotEntry) - int64(relocSite+4) // +4 for instruction size
+	*(*int32)(unsafe.Pointer(relocSite)) = int32(pcRelOffset)
 }
 
 // applyTlsld handles relocTLSLD relocations (Local Dynamic TLS model).
@@ -982,29 +991,17 @@ func applyTlsld(obj *Object, r *relaEntry) error {
 	// Use a special marker (0xFFFFFFFF) to avoid collision with real symbol indices.
 	const tlsldMarker = uint32(0xFFFFFFFF)
 
-	// Allocate or retrieve GOT entry pair for TLSLD.
-	gotEntry, err := allocateGOTEntryPair(obj, tlsldMarker)
+	// Allocate GOT entry pair and populate module ID.
+	gotEntry, err := allocateTLSGotEntry(obj, tlsldMarker, "relocTLSLD", r.Offset)
 	if err != nil {
-		return fmt.Errorf("relocTLSLD at %#x: %w", r.Offset, err)
+		return err
 	}
-
-	// Populate GOT entries: [DTPMOD64, 0].
-	// DTPMOD64 = module ID
-	moduleID := obj.TLSModule.GetModuleID()
-	*(*uint64)(unsafe.Pointer(gotEntry)) = moduleID
 
 	// Second entry is 0 (no symbol-specific offset for Local Dynamic)
 	*(*uint64)(unsafe.Pointer(gotEntry + 8)) = 0
 
-	// Compute PC-relative offset from relocation site to GOT entry.
-	// The instruction is: leaq symbol@tlsld(%rip), %rdi
-	// We patch the 32-bit PC-relative offset in the instruction.
-	relocSite := obj.Base + uintptr(r.Offset)
-	pcRelOffset := int64(gotEntry) - int64(relocSite+4) // +4 for instruction size
-
-	// Write the PC-relative offset to the relocation site.
-	offsetPtr := unsafe.Pointer(relocSite)
-	*(*int32)(offsetPtr) = int32(pcRelOffset)
+	// Patch instruction with PC-relative offset to GOT entry.
+	writePCRelativeOffset(obj, r.Offset, gotEntry)
 
 	return nil
 }

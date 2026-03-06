@@ -18,6 +18,76 @@
   },
   "functions": [
     {
+      "name": "splitPaths",
+      "package": "dl",
+      "file": "dl/search.go",
+      "line": 21,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 10,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 2,
+        "overall": 6.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 77,
+        "has_example": false,
+        "quality_score": 0.40800000000000003
+      }
+    },
+    {
+      "name": "findLibrary",
+      "package": "dl",
+      "file": "dl/search.go",
+      "line": 45,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 49,
+        "code": 34,
+        "comments": 7,
+        "blank": 8
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 11,
+        "cognitive": 11,
+        "nesting_depth": 2,
+        "overall": 15.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 437,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
       "name": "main",
       "package": "main",
       "file": "cmd/pgldd/main.go",
@@ -50,6 +120,461 @@
         "comment_length": 0,
         "has_example": false,
         "quality_score": 0
+      }
+    },
+    {
+      "name": "Map",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 24,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 13,
+        "code": 13,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 61,
+        "has_example": false,
+        "quality_score": 0.244
+      }
+    },
+    {
+      "name": "MapAnon",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 41,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 53,
+        "has_example": false,
+        "quality_score": 0.21200000000000002
+      }
+    },
+    {
+      "name": "MapFixed",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 46,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 63,
+        "has_example": false,
+        "quality_score": 0.252
+      }
+    },
+    {
+      "name": "Protect",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 51,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 51,
+        "has_example": false,
+        "quality_score": 0.20400000000000001
+      }
+    },
+    {
+      "name": "Unmap",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 60,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 32,
+        "has_example": false,
+        "quality_score": 0.128
+      }
+    },
+    {
+      "name": "relaSymIdx",
+      "package": "loader",
+      "file": "loader/reloc.go",
+      "line": 49,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 0,
+        "code": 0,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "relaType",
+      "package": "loader",
+      "file": "loader/reloc.go",
+      "line": 50,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 0,
+        "code": 0,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "symName",
+      "package": "loader",
+      "file": "loader/reloc.go",
+      "line": 52,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "symBind",
+      "package": "loader",
+      "file": "loader/reloc.go",
+      "line": 61,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 81,
+        "has_example": false,
+        "quality_score": 0.42400000000000004
+      }
+    },
+    {
+      "name": "callFunc",
+      "package": "loader",
+      "file": "loader/call.go",
+      "line": 9,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 3,
+        "code": 3,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.5
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 263,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "SysvHash",
+      "package": "symbol",
+      "file": "symbol/sysv_hash.go",
+      "line": 10,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 9,
+        "code": 9,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 2,
+        "overall": 4.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 54,
+        "has_example": false,
+        "quality_score": 0.21600000000000003
+      }
+    },
+    {
+      "name": "SysvLookup",
+      "package": "symbol",
+      "file": "symbol/sysv_hash.go",
+      "line": 27,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 36,
+        "code": 26,
+        "comments": 5,
+        "blank": 5
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 2,
+        "overall": 6.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 213,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "symAtIndex",
+      "package": "symbol",
+      "file": "symbol/sysv_hash.go",
+      "line": 67,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 65,
+        "has_example": false,
+        "quality_score": 0.36
       }
     },
     {
@@ -336,1026 +861,6 @@
         "comment_length": 76,
         "has_example": false,
         "quality_score": 0.30400000000000005
-      }
-    },
-    {
-      "name": "splitPaths",
-      "package": "dl",
-      "file": "dl/search.go",
-      "line": 21,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 10,
-        "code": 10,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 4,
-        "cognitive": 4,
-        "nesting_depth": 2,
-        "overall": 6.2
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 77,
-        "has_example": false,
-        "quality_score": 0.40800000000000003
-      }
-    },
-    {
-      "name": "findLibrary",
-      "package": "dl",
-      "file": "dl/search.go",
-      "line": 45,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 49,
-        "code": 34,
-        "comments": 7,
-        "blank": 8
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.1
-      },
-      "complexity": {
-        "cyclomatic": 11,
-        "cognitive": 11,
-        "nesting_depth": 2,
-        "overall": 15.3
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 437,
-        "has_example": false,
-        "quality_score": 0.4
-      }
-    },
-    {
-      "name": "relaSymIdx",
-      "package": "loader",
-      "file": "loader/reloc.go",
-      "line": 49,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 0,
-        "code": 0,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 1,
-        "cognitive": 1,
-        "nesting_depth": 0,
-        "overall": 1.3
-      },
-      "documentation": {
-        "has_comment": false,
-        "comment_length": 0,
-        "has_example": false,
-        "quality_score": 0
-      }
-    },
-    {
-      "name": "relaType",
-      "package": "loader",
-      "file": "loader/reloc.go",
-      "line": 50,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 0,
-        "code": 0,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 1,
-        "cognitive": 1,
-        "nesting_depth": 0,
-        "overall": 1.3
-      },
-      "documentation": {
-        "has_comment": false,
-        "comment_length": 0,
-        "has_example": false,
-        "quality_score": 0
-      }
-    },
-    {
-      "name": "symName",
-      "package": "loader",
-      "file": "loader/reloc.go",
-      "line": 52,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 5,
-        "code": 5,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.3
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": false,
-        "comment_length": 0,
-        "has_example": false,
-        "quality_score": 0
-      }
-    },
-    {
-      "name": "symBind",
-      "package": "loader",
-      "file": "loader/reloc.go",
-      "line": 61,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 5,
-        "code": 5,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.3
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 81,
-        "has_example": false,
-        "quality_score": 0.42400000000000004
-      }
-    },
-    {
-      "name": "GnuHash",
-      "package": "symbol",
-      "file": "symbol/gnu_hash.go",
-      "line": 10,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 5,
-        "code": 5,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 52,
-        "has_example": false,
-        "quality_score": 0.20800000000000002
-      }
-    },
-    {
-      "name": "GnuLookup",
-      "package": "symbol",
-      "file": "symbol/gnu_hash.go",
-      "line": 23,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 61,
-        "code": 44,
-        "comments": 10,
-        "blank": 7
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.6
-      },
-      "complexity": {
-        "cyclomatic": 8,
-        "cognitive": 8,
-        "nesting_depth": 3,
-        "overall": 11.9
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 216,
-        "has_example": false,
-        "quality_score": 0.4
-      }
-    },
-    {
-      "name": "init",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 37,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 1,
-        "code": 1,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 0,
-        "return_count": 0,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0
-      },
-      "complexity": {
-        "cyclomatic": 1,
-        "cognitive": 1,
-        "nesting_depth": 0,
-        "overall": 1.3
-      },
-      "documentation": {
-        "has_comment": false,
-        "comment_length": 0,
-        "has_example": false,
-        "quality_score": 0
-      }
-    },
-    {
-      "name": "Resolve",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 44,
-      "is_exported": true,
-      "is_method": true,
-      "receiver_type": "globalResolver",
-      "lines": {
-        "total": 8,
-        "code": 8,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.1
-      },
-      "complexity": {
-        "cyclomatic": 3,
-        "cognitive": 3,
-        "nesting_depth": 2,
-        "overall": 4.9
-      },
-      "documentation": {
-        "has_comment": false,
-        "comment_length": 0,
-        "has_example": false,
-        "quality_score": 0
-      }
-    },
-    {
-      "name": "Open",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 58,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 6,
-        "code": 5,
-        "comments": 1,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 2,
-        "has_variadic": true,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 2.6
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 204,
-        "has_example": false,
-        "quality_score": 0.4
-      }
-    },
-    {
-      "name": "loadLib",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 68,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 14,
-        "code": 12,
-        "comments": 1,
-        "blank": 1
-      },
-      "signature": {
-        "parameter_count": 3,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 2.1
-      },
-      "complexity": {
-        "cyclomatic": 3,
-        "cognitive": 3,
-        "nesting_depth": 1,
-        "overall": 4.4
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 66,
-        "has_example": false,
-        "quality_score": 0.264
-      }
-    },
-    {
-      "name": "loadPath",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 87,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 86,
-        "code": 64,
-        "comments": 13,
-        "blank": 9
-      },
-      "signature": {
-        "parameter_count": 3,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 2.1
-      },
-      "complexity": {
-        "cyclomatic": 14,
-        "cognitive": 14,
-        "nesting_depth": 2,
-        "overall": 19.2
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 118,
-        "has_example": false,
-        "quality_score": 0.4
-      }
-    },
-    {
-      "name": "Sym",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 177,
-      "is_exported": true,
-      "is_method": true,
-      "receiver_type": "*Library",
-      "lines": {
-        "total": 5,
-        "code": 5,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.1
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 62,
-        "has_example": false,
-        "quality_score": 0.348
-      }
-    },
-    {
-      "name": "Bind",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 187,
-      "is_exported": true,
-      "is_method": true,
-      "receiver_type": "*Library",
-      "lines": {
-        "total": 6,
-        "code": 6,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 1,
-        "generic_parameters": null,
-        "signature_complexity": 2.1
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 141,
-        "has_example": false,
-        "quality_score": 0.4
-      }
-    },
-    {
-      "name": "Close",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 197,
-      "is_exported": true,
-      "is_method": true,
-      "receiver_type": "*Library",
-      "lines": {
-        "total": 20,
-        "code": 18,
-        "comments": 2,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 0,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.3
-      },
-      "complexity": {
-        "cyclomatic": 6,
-        "cognitive": 6,
-        "nesting_depth": 2,
-        "overall": 8.8
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 69,
-        "has_example": false,
-        "quality_score": 0.27599999999999997
-      }
-    },
-    {
-      "name": "PrintSymbols",
-      "package": "dl",
-      "file": "dl/dl.go",
-      "line": 221,
-      "is_exported": true,
-      "is_method": true,
-      "receiver_type": "*Library",
-      "lines": {
-        "total": 12,
-        "code": 12,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 0,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.5
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 60,
-        "has_example": false,
-        "quality_score": 0.24
-      }
-    },
-    {
-      "name": "Map",
-      "package": "mmap",
-      "file": "internal/mmap/mmap.go",
-      "line": 24,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 13,
-        "code": 13,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 3,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 2.1
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 61,
-        "has_example": false,
-        "quality_score": 0.244
-      }
-    },
-    {
-      "name": "MapAnon",
-      "package": "mmap",
-      "file": "internal/mmap/mmap.go",
-      "line": 41,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 1,
-        "code": 1,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.6
-      },
-      "complexity": {
-        "cyclomatic": 1,
-        "cognitive": 1,
-        "nesting_depth": 0,
-        "overall": 1.3
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 53,
-        "has_example": false,
-        "quality_score": 0.21200000000000002
-      }
-    },
-    {
-      "name": "MapFixed",
-      "package": "mmap",
-      "file": "internal/mmap/mmap.go",
-      "line": 46,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 1,
-        "code": 1,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 3,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 2.1
-      },
-      "complexity": {
-        "cyclomatic": 1,
-        "cognitive": 1,
-        "nesting_depth": 0,
-        "overall": 1.3
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 63,
-        "has_example": false,
-        "quality_score": 0.252
-      }
-    },
-    {
-      "name": "Protect",
-      "package": "mmap",
-      "file": "internal/mmap/mmap.go",
-      "line": 51,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 5,
-        "code": 5,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.3
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 51,
-        "has_example": false,
-        "quality_score": 0.20400000000000001
-      }
-    },
-    {
-      "name": "Unmap",
-      "package": "mmap",
-      "file": "internal/mmap/mmap.go",
-      "line": 60,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 5,
-        "code": 5,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 2,
-        "cognitive": 2,
-        "nesting_depth": 1,
-        "overall": 3.1
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 32,
-        "has_example": false,
-        "quality_score": 0.128
-      }
-    },
-    {
-      "name": "callFunc",
-      "package": "loader",
-      "file": "loader/call.go",
-      "line": 9,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 3,
-        "code": 3,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 0,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.5
-      },
-      "complexity": {
-        "cyclomatic": 1,
-        "cognitive": 1,
-        "nesting_depth": 0,
-        "overall": 1.3
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 263,
-        "has_example": false,
-        "quality_score": 0.5
-      }
-    },
-    {
-      "name": "SysvHash",
-      "package": "symbol",
-      "file": "symbol/sysv_hash.go",
-      "line": 10,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 9,
-        "code": 9,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 3,
-        "cognitive": 3,
-        "nesting_depth": 2,
-        "overall": 4.9
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 54,
-        "has_example": false,
-        "quality_score": 0.21600000000000003
-      }
-    },
-    {
-      "name": "SysvLookup",
-      "package": "symbol",
-      "file": "symbol/sysv_hash.go",
-      "line": 27,
-      "is_exported": true,
-      "is_method": false,
-      "lines": {
-        "total": 36,
-        "code": 26,
-        "comments": 5,
-        "blank": 5
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.6
-      },
-      "complexity": {
-        "cyclomatic": 4,
-        "cognitive": 4,
-        "nesting_depth": 2,
-        "overall": 6.2
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 213,
-        "has_example": false,
-        "quality_score": 0.4
-      }
-    },
-    {
-      "name": "symAtIndex",
-      "package": "symbol",
-      "file": "symbol/sysv_hash.go",
-      "line": 67,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 1,
-        "code": 1,
-        "comments": 0,
-        "blank": 0
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 1,
-        "cognitive": 1,
-        "nesting_depth": 0,
-        "overall": 1.3
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 65,
-        "has_example": false,
-        "quality_score": 0.36
-      }
-    },
-    {
-      "name": "parseCache",
-      "package": "dl",
-      "file": "dl/ldcache.go",
-      "line": 64,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 84,
-        "code": 52,
-        "comments": 15,
-        "blank": 17
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.1
-      },
-      "complexity": {
-        "cyclomatic": 13,
-        "cognitive": 13,
-        "nesting_depth": 2,
-        "overall": 17.9
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 46,
-        "has_example": false,
-        "quality_score": 0.18400000000000002
-      }
-    },
-    {
-      "name": "extractString",
-      "package": "dl",
-      "file": "dl/ldcache.go",
-      "line": 152,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 10,
-        "code": 8,
-        "comments": 0,
-        "blank": 2
-      },
-      "signature": {
-        "parameter_count": 2,
-        "return_count": 2,
-        "has_variadic": false,
-        "returns_error": true,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 1.6
-      },
-      "complexity": {
-        "cyclomatic": 3,
-        "cognitive": 3,
-        "nesting_depth": 1,
-        "overall": 4.4
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 79,
-        "has_example": false,
-        "quality_score": 0.31600000000000006
-      }
-    },
-    {
-      "name": "lookupInCache",
-      "package": "dl",
-      "file": "dl/ldcache.go",
-      "line": 167,
-      "is_exported": false,
-      "is_method": false,
-      "lines": {
-        "total": 22,
-        "code": 15,
-        "comments": 3,
-        "blank": 4
-      },
-      "signature": {
-        "parameter_count": 1,
-        "return_count": 1,
-        "has_variadic": false,
-        "returns_error": false,
-        "interface_parameters": 0,
-        "generic_parameters": null,
-        "signature_complexity": 0.8
-      },
-      "complexity": {
-        "cyclomatic": 3,
-        "cognitive": 3,
-        "nesting_depth": 1,
-        "overall": 4.4
-      },
-      "documentation": {
-        "has_comment": true,
-        "comment_length": 128,
-        "has_example": false,
-        "quality_score": 0.5
       }
     },
     {
@@ -1709,6 +1214,76 @@
       }
     },
     {
+      "name": "GnuHash",
+      "package": "symbol",
+      "file": "symbol/gnu_hash.go",
+      "line": 10,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 52,
+        "has_example": false,
+        "quality_score": 0.20800000000000002
+      }
+    },
+    {
+      "name": "GnuLookup",
+      "package": "symbol",
+      "file": "symbol/gnu_hash.go",
+      "line": 23,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 61,
+        "code": 44,
+        "comments": 10,
+        "blank": 7
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 8,
+        "cognitive": 8,
+        "nesting_depth": 3,
+        "overall": 11.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 216,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
       "name": "PageAlign",
       "package": "elf",
       "file": "elf/parse.go",
@@ -1846,6 +1421,431 @@
         "comment_length": 70,
         "has_example": false,
         "quality_score": 0.27999999999999997
+      }
+    },
+    {
+      "name": "init",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 41,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "Resolve",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 48,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "globalResolver",
+      "lines": {
+        "total": 8,
+        "code": 8,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 2,
+        "overall": 4.9
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "Open",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 69,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 8,
+        "comments": 2,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": true,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.6
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 2,
+        "overall": 4.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 536,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "loadLib",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 83,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 14,
+        "code": 12,
+        "comments": 1,
+        "blank": 1
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 66,
+        "has_example": false,
+        "quality_score": 0.264
+      }
+    },
+    {
+      "name": "loadPath",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 102,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 86,
+        "code": 64,
+        "comments": 13,
+        "blank": 9
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 14,
+        "cognitive": 14,
+        "nesting_depth": 2,
+        "overall": 19.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 118,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "Sym",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 192,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 62,
+        "has_example": false,
+        "quality_score": 0.348
+      }
+    },
+    {
+      "name": "Bind",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 202,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 1,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 141,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "Close",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 212,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 20,
+        "code": 18,
+        "comments": 2,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 2,
+        "overall": 8.8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 69,
+        "has_example": false,
+        "quality_score": 0.27599999999999997
+      }
+    },
+    {
+      "name": "PrintSymbols",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 236,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 12,
+        "code": 12,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.5
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 60,
+        "has_example": false,
+        "quality_score": 0.24
+      }
+    },
+    {
+      "name": "parseCache",
+      "package": "dl",
+      "file": "dl/ldcache.go",
+      "line": 64,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 84,
+        "code": 52,
+        "comments": 15,
+        "blank": 17
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 13,
+        "cognitive": 13,
+        "nesting_depth": 2,
+        "overall": 17.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 46,
+        "has_example": false,
+        "quality_score": 0.18400000000000002
+      }
+    },
+    {
+      "name": "extractString",
+      "package": "dl",
+      "file": "dl/ldcache.go",
+      "line": 152,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 8,
+        "comments": 0,
+        "blank": 2
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 79,
+        "has_example": false,
+        "quality_score": 0.31600000000000006
+      }
+    },
+    {
+      "name": "lookupInCache",
+      "package": "dl",
+      "file": "dl/ldcache.go",
+      "line": 167,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 22,
+        "code": 15,
+        "comments": 3,
+        "blank": 4
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 128,
+        "has_example": false,
+        "quality_score": 0.5
       }
     },
     {
@@ -2197,9 +2197,9 @@
       "overall": 91.11111111111111
     },
     "quality": {
-      "average_length": 70.13100436681222,
+      "average_length": 71.80341880341881,
       "code_examples": 0,
-      "inline_comments": 345,
+      "inline_comments": 358,
       "block_comments": 0,
       "quality_score": 56.44444444444445
     },
@@ -2216,10 +2216,17 @@
     ],
     "xxx_comments": [],
     "deprecated_comments": [],
-    "note_comments": [],
+    "note_comments": [
+      {
+        "file": "/home/user/go/src/github.com/opd-ai/pure-go-dl/dl/dl.go",
+        "line": 68,
+        "description": "RTLD_LAZY is not supported; all symbol binding is eager."
+      }
+    ],
     "stale_annotations": 0,
     "annotations_by_category": {
-      "BUG": 1
+      "BUG": 1,
+      "NOTE": 1
     }
   },
   "generics": {

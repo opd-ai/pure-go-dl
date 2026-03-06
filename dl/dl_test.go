@@ -224,8 +224,6 @@ func TestRTLD_NOW_Flag(t *testing.T) {
 // and that TLS metadata is correctly parsed.
 func TestTLSLibraryParsing(t *testing.T) {
 	// Test loading a library with Thread-Local Storage (TLS).
-	// Full TLS runtime support (__tls_get_addr) is not yet implemented,
-	// but we should be able to load the library and parse its TLS segment.
 	lib, err := Open("../testdata/libtls.so")
 	if err != nil {
 		t.Fatalf("Open libtls.so failed: %v", err)
@@ -248,6 +246,38 @@ func TestTLSLibraryParsing(t *testing.T) {
 		t.Errorf("Sym(get_tls_counter) failed: %v", err)
 	}
 
-	// Note: Actually calling TLS functions requires __tls_get_addr support,
-	// which is not yet fully implemented. This test only verifies parsing.
+	// Test calling TLS functions now that __tls_get_addr is implemented
+	var getTLSCounter func() int32
+	err = lib.Bind("get_tls_counter", &getTLSCounter)
+	if err != nil {
+		t.Fatalf("Bind(get_tls_counter) failed: %v", err)
+	}
+
+	// The initial value should be 42 (set in libtls.c)
+	value := getTLSCounter()
+	if value != 42 {
+		t.Errorf("get_tls_counter() = %d, want 42", value)
+	} else {
+		t.Logf("get_tls_counter() = %d ✓", value)
+	}
+
+	// Test incrementing the counter
+	var incrementTLSCounter func() int32
+	err = lib.Bind("increment_tls_counter", &incrementTLSCounter)
+	if err != nil {
+		t.Fatalf("Bind(increment_tls_counter) failed: %v", err)
+	}
+
+	newValue := incrementTLSCounter()
+	if newValue != 43 {
+		t.Errorf("increment_tls_counter() = %d, want 43", newValue)
+	} else {
+		t.Logf("increment_tls_counter() = %d ✓", newValue)
+	}
+
+	// Verify the counter was actually incremented
+	currentValue := getTLSCounter()
+	if currentValue != 43 {
+		t.Errorf("After increment, get_tls_counter() = %d, want 43", currentValue)
+	}
 }

@@ -411,40 +411,45 @@ Thread-Local Storage (TLS) support is partially implemented:
 - ✅ R_X86_64_TPOFF64 relocation (thread pointer offset)
 - ✅ R_X86_64_DTPOFF32 and R_X86_64_TPOFF32 (32-bit variants)
 - ✅ Comprehensive TLS infrastructure and tests
+- ✅ `__tls_get_addr` runtime function for dynamic TLS access (using purego.NewCallback)
+- ✅ TLS initialization data mapping (fixed page alignment bug)
 
 **Not Yet Implemented:**
-- ❌ `__tls_get_addr` runtime function for dynamic TLS access
 - ❌ R_X86_64_TLSGD, R_X86_64_TLSLD, R_X86_64_GOTTPOFF (code sequence relocations)
 - ❌ Per-thread TLS block management (currently single-threaded)
 - ❌ Dynamic Thread Vector (DTV) for multi-threaded access
 
 **Current Status:**
 
-Libraries with `PT_TLS` segments can be loaded successfully. TLS metadata is parsed,
-modules are registered, and basic TLS relocations are processed. However, libraries
-that use the General Dynamic (GD) TLS access model (which calls `__tls_get_addr` at runtime)
-cannot be fully executed.
+Libraries with `PT_TLS` segments can be loaded and executed successfully. TLS variables
+can be accessed and modified through functions that use `__tls_get_addr`. The General
+Dynamic (GD) TLS access model is now supported via a C-callable callback created with
+purego.NewCallback.
 
-**Implementation Challenge:**
+**Remaining Limitations:**
 
-The primary blocker is `__tls_get_addr`, which requires:
-1. A C-callable function trampoline (complex with purego limitations)
-2. Integration with Go's runtime for per-thread storage
-3. Or, loading glibc (which itself uses TLS, creating a bootstrap problem)
+1. **Single-threaded only**: All TLS accesses use a pseudo thread ID (always 1). True
+   per-thread storage would require gettid() syscall integration and runtime cooperation.
+
+2. **Code sequence relocations**: R_X86_64_TLSGD, TLSLD, and GOTTPOFF require rewriting
+   instruction sequences, which is complex and not yet implemented. Libraries using
+   these relocations will fail to load with clear error messages.
 
 **Workarounds:**
 
-1. Use libraries compiled with `-ftls-model=initial-exec` (fewer relocations)
-2. Avoid libraries with heavy TLS usage
-3. Load glibc as a dependency (requires resolving its TLS bootstrap)
+1. Most libraries use the Initial Exec or Local Exec TLS models, which are fully supported
+2. For code sequence relocations, use libraries compiled with `-ftls-model=initial-exec`
+3. Single-threaded use cases work correctly
 
 **Priority: Medium** — needed for pthread-heavy libraries and newer system libraries.
 
-**Status: PARTIAL** — Implemented in commit [current]:
-- internal/tls/ package with TLS management
+**Status: PARTIAL** — Implemented across commits:
+- internal/tls/ package with TLS management and __tls_get_addr
 - PT_TLS segment detection in elf/parse.go
-- TLS module registration in loader/loader.go
+- TLS module registration and initialization in loader/loader.go
 - TLS relocations in loader/loader.go
+- C-callable __tls_get_addr using purego.NewCallback
+- Fixed TLS initialization data mapping to account for page alignment
 - Comprehensive tests in internal/tls/tls_test.go and dl/dl_test.go
 
 ### 7.4 aarch64 Port

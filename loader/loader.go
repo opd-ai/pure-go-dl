@@ -286,11 +286,18 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 			for i := range obj.Segments {
 				seg := &obj.Segments[i]
 				// Check if TLS vaddr falls within this segment
-				segStart := parsed.BaseVAddr + parsed.LoadSegments[i].Vaddr
-				segEnd := segStart + parsed.LoadSegments[i].Memsz
+				loadSeg := &parsed.LoadSegments[i]
+				segStart := parsed.BaseVAddr + loadSeg.Vaddr
+				segEnd := segStart + loadSeg.Memsz
 				if tlsSeg.Vaddr >= segStart && tlsSeg.Vaddr < segEnd {
-					offset := tlsSeg.Vaddr - segStart
-					tlsInitData = seg.Addr + uintptr(offset)
+					// seg.Addr is the page-aligned map address, but the segment's actual
+					// data starts at an offset due to page alignment.
+					alignedVAddr := pageDown(loadSeg.Vaddr)
+					leading := loadSeg.Vaddr - alignedVAddr
+					
+					// Calculate offset from the segment's actual start (not page-aligned start)
+					offset := tlsSeg.Vaddr - loadSeg.Vaddr
+					tlsInitData = seg.Addr + uintptr(leading) + uintptr(offset)
 					break
 				}
 			}

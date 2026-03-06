@@ -3,6 +3,8 @@ package tls
 import (
 	"sync"
 	"unsafe"
+
+	"github.com/ebitengine/purego"
 )
 
 // TLSIndex is the structure passed to __tls_get_addr.
@@ -93,19 +95,18 @@ func GetTLSAddr(indexPtr uintptr) uintptr {
 	return block.Addr + uintptr(idx.Offset)
 }
 
-// RegisterTLSGetAddr returns a placeholder address for __tls_get_addr.
-// Full __tls_get_addr support requires runtime cooperation and is complex.
-// For now, we return a non-zero address to satisfy symbol resolution,
-// but actual TLS access through __tls_get_addr is not yet supported.
+// RegisterTLSGetAddr returns a C-callable function pointer for __tls_get_addr.
+// This creates a callback using purego that allows C code to call into our
+// Go TLS implementation. The function follows the System V AMD64 ABI.
 func RegisterTLSGetAddr() uintptr {
 	if tlsGetAddrFunc != 0 {
 		return tlsGetAddrFunc
 	}
 
-	// Return the address of our GetTLSAddr function as a placeholder.
-	// This allows symbol resolution to succeed, but calling it from C
-	// won't work properly without additional trampoline code.
-	tlsGetAddrFunc = 1 // Non-zero placeholder
+	// Create a C-callable callback for GetTLSAddr.
+	// purego.NewCallback creates a function pointer that can be called from C code.
+	// The signature must match: uintptr __tls_get_addr(uintptr ti)
+	tlsGetAddrFunc = purego.NewCallback(GetTLSAddr)
 
 	return tlsGetAddrFunc
 }

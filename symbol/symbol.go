@@ -166,9 +166,40 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 			}
 		}
 
+		// When multiple versions of a symbol exist, prefer the default (non-hidden) version.
+		// Skip hidden versions if we already have a symbol with that name.
+		if t.shouldSkipSymbol(name, i) {
+			continue
+		}
+
 		t.symbols[name] = sym
 	}
 	return nil
+}
+
+// shouldSkipSymbol determines if a symbol should be skipped during loading
+// when multiple versions of the same symbol exist. Returns true if this symbol
+// should be skipped in favor of an existing one.
+//
+// Symbol version priority:
+// - Hidden versions (marked with 0x8000 bit in DT_VERSYM) are skipped if a symbol
+//   with the same name already exists (prefer default @@ over non-default @)
+// - Non-hidden versions always replace existing symbols
+func (t *Table) shouldSkipSymbol(name string, symIdx uint64) bool {
+	// If no existing symbol, don't skip
+	if _, exists := t.symbols[name]; !exists {
+		return false
+	}
+
+	// Check if current symbol is hidden (non-default version)
+	if t.versions != nil && t.versions.SymbolVersions != nil && symIdx < uint64(len(t.versions.SymbolVersions)) {
+		isHidden := (t.versions.SymbolVersions[symIdx] & 0x8000) != 0
+		if isHidden {
+			return true // Skip hidden version, keep existing
+		}
+	}
+
+	return false // Non-hidden version replaces existing
 }
 
 // ReadCStringMem reads a null-terminated C string from memory at base+offset.

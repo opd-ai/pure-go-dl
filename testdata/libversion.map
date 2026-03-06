@@ -1,0 +1,13 @@
+TESTLIB_1.0 {
+    global:
+        add;
+        multiply;
+    local:
+        *;
+};
+
+TESTLIB_2.0 {
+    global:
+        add;
+        subtract;
+} TESTLIB_1.0;

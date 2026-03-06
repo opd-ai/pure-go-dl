@@ -253,7 +253,7 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - testdata/ARM64_TESTING.md:1 — ARM64 testing documentation (ADDED)
   - testdata/Makefile:7 — ARM64 build target (ADDED)
 
-- [ ] **[MEDIUM-04] Symbol versioning test coverage is indirect** — symbol/version.go, dl/compat_test.go:297-321
+- [x] **[MEDIUM-04] Symbol versioning test coverage is indirect** — symbol/version.go, dl/compat_test.go:297-321
   
   **Evidence:** The README claims "✅ Symbol versioning support (`DT_VERSYM`, `DT_VERDEF`, `DT_VERNEED`)" but the only test (`TestCompatibility_SymbolVersioning`) simply verifies that loading glibc doesn't crash. It doesn't validate that:
   - Multiple versions of the same symbol (e.g., `stat@GLIBC_2.2.5` vs `stat@GLIBC_2.33`) resolve correctly
@@ -267,6 +267,13 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - dl/compat_test.go:297-321 — Indirect test (just loads libc)
   
   **Recommendation:** Create a custom test library with explicitly versioned symbols and verify that `Lookup` and `LookupVersion` select the correct version.
+  
+  **Resolution:** Created testdata/libversion.so with multiple symbol versions (add@TESTLIB_1.0 and add@@TESTLIB_2.0) and comprehensive test suite in dl/versioning_test.go validating:
+  - Default version (@@ annotation) is correctly selected for unversioned lookups
+  - Multiple versions of the same symbol resolve to the correct implementation
+  - Hidden versions (marked with 0x8000 bit) are properly distinguished from default versions
+  - Fixed symbol loading logic in symbol/symbol.go to prefer non-hidden (default) versions
+  All 4 new test functions pass, confirming correct version resolution behavior.
 
 - [ ] **[MEDIUM-05] Weak symbol test only checks "undefined weak", not "defined weak override"** — dl/dl_test.go:136-156
   

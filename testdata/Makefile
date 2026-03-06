@@ -3,7 +3,7 @@
 CC ?= gcc
 CFLAGS = -shared -fPIC -O2 -g
 
-all: libtest.so libreloc.so libifunc.so libtls.so
+all: libtest.so libreloc.so libifunc.so libtls.so libversion.so
 
 # ARM64-specific libraries (only build on aarch64 or when explicitly requested)
 arm64: libarm64.so libarm64_tls.so
@@ -25,6 +25,9 @@ libarm64.so: libarm64.c
 
 libarm64_tls.so: libarm64_tls.c
 	$(CC) $(CFLAGS) -o $@ $< -lpthread
+
+libversion.so: libversion.c libversion.map
+	$(CC) $(CFLAGS) -Wl,--version-script=libversion.map -o $@ libversion.c
 
 clean:
 	rm -f *.so

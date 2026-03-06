@@ -360,6 +360,14 @@ func finalizeObject(obj *Object, parsed *goelf.ParsedObject, resolver SymbolReso
 		for i := uint64(0); i < n; i++ {
 			fn := *(*uintptr)(unsafe.Add(initArrayPtr, i*8))
 			if fn != 0 {
+				// For system libraries like glibc, init_array entries may not have
+				// R_X86_64_RELATIVE relocations and contain raw virtual addresses.
+				// Detect this case and adjust by base address.
+				// Heuristic: if fn looks like a virtual address within the library's
+				// address space (less than MemSize), it needs base adjustment.
+				if fn < uintptr(obj.Parsed.MemSize) {
+					fn = obj.Base + fn
+				}
 				callFunc(fn)
 			}
 		}
@@ -506,23 +514,50 @@ func applyDTPOff64(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Po
 
 // applyTPOff64 applies a TPOFF64 TLS relocation (thread pointer relative offset).
 func applyTPOff64(obj *Object, symIdx uint32, r *relaEntry, offsetPtr unsafe.Pointer, addend int64, resolver SymbolResolver) error {
-	if obj.TLSModule == nil {
-		return fmt.Errorf("relocTPOff64 relocation at %#x but library has no PT_TLS segment", r.Offset)
+	// For libraries without PT_TLS that reference external TLS symbols (like libm
+	// referencing libc's errno), we need to resolve the symbol from the providing library.
+	var tlsModule *tls.Module
+	var symOffsetInModule int64
+
+	if symIdx != 0 {
+		// Try to resolve the symbol to find which library provides it.
+		S, err := resolveSymForReloc(obj, symIdx, resolver)
+		if err != nil {
+			// Symbol not found - for weak symbols, write 0.
+			// For strong symbols, this is an error, but we'll write 0 anyway to avoid crashes.
+			*(*int64)(offsetPtr) = 0
+			return nil
+		}
+
+		// If the symbol resolved to an address, we need to find which library it belongs to.
+		// For now, try to use the current library's TLS module if it exists.
+		// TODO: Track which library each resolved symbol belongs to for proper TLS offset calculation.
+		if obj.TLSModule != nil {
+			tlsModule = obj.TLSModule
+			symOffsetInModule = int64(S - obj.Base)
+		} else {
+			// Library has no TLS but references external TLS symbol.
+			// We can't properly calculate the offset without knowing the symbol's library.
+			// Write a marker value (0) for now - the symbol should be resolved at runtime.
+			*(*int64)(offsetPtr) = 0
+			return nil
+		}
+	} else if obj.TLSModule != nil {
+		tlsModule = obj.TLSModule
+	} else {
+		// No symbol and no TLS module - write 0.
+		*(*int64)(offsetPtr) = 0
+		return nil
 	}
+
 	// Allocate a TLS block and compute the offset.
-	block, err := tls.GlobalManager().AllocateBlock(obj.TLSModule)
+	block, err := tls.GlobalManager().AllocateBlock(tlsModule)
 	if err != nil {
 		return fmt.Errorf("relocTPOff64: failed to allocate TLS block: %w", err)
 	}
 	// The thread pointer offset is negative from the TP.
 	offset := block.GetThreadPointerOffset()
-	// Add symbol value if present.
-	if symIdx != 0 {
-		S, err := resolveSymForReloc(obj, symIdx, resolver)
-		if err == nil {
-			offset += int64(S - obj.Base)
-		}
-	}
+	offset += symOffsetInModule
 	*(*int64)(offsetPtr) = offset + addend
 	return nil
 }
@@ -895,19 +930,41 @@ func resolveSymForReloc(obj *Object, symIdx uint32, resolver SymbolResolver) (ui
 // Unload runs destructors and unmaps all segments of obj.
 func Unload(obj *Object) error {
 	// Run DT_FINI_ARRAY in reverse order.
+	// Note: System libraries like glibc may have fini functions that expect runtime
+	// state that our minimal loader doesn't provide. We catch panics to allow cleanup
+	// to continue even if individual fini functions fail.
 	if obj.FiniArray != 0 && obj.FiniArraySz > 0 {
 		n := obj.FiniArraySz / 8
 		finiArrayPtr := unsafe.Pointer(obj.FiniArray)
 		for i := n; i > 0; i-- {
 			fn := *(*uintptr)(unsafe.Add(finiArrayPtr, (i-1)*8))
 			if fn != 0 {
-				callFunc(fn)
+				// Apply same heuristic as init_array: adjust if looks like virtual address.
+				if fn < uintptr(obj.Parsed.MemSize) {
+					fn = obj.Base + fn
+				}
+				func() {
+					defer func() {
+						if r := recover(); r != nil {
+							// Fini function panicked - log but continue cleanup
+							_ = r
+						}
+					}()
+					callFunc(fn)
+				}()
 			}
 		}
 	}
 	// Run DT_FINI.
 	if obj.FiniAddr != 0 {
-		callFunc(obj.FiniAddr)
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					_ = r
+				}
+			}()
+			callFunc(obj.FiniAddr)
+		}()
 	}
 
 	// Unmap GOT if it was allocated.

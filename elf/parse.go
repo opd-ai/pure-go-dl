@@ -60,14 +60,8 @@ func Parse(path string) (*ParsedObject, error) {
 		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
 	}
 
-	if ef.Class != elf.ELFCLASS64 {
-		return nil, fmt.Errorf("elf parse: %q: not a 64-bit ELF", path)
-	}
-	if ef.Machine != elf.EM_X86_64 {
-		return nil, fmt.Errorf("elf parse: %q: not x86-64 (got %v)", path, ef.Machine)
-	}
-	if ef.Type != elf.ET_DYN {
-		return nil, fmt.Errorf("elf parse: %q: not a shared object (type %v)", path, ef.Type)
+	if err := validateELFHeader(ef, path); err != nil {
+		return nil, err
 	}
 
 	obj := &ParsedObject{
@@ -76,9 +70,46 @@ func Parse(path string) (*ParsedObject, error) {
 		DynEntries: make(map[elf.DynTag]uint64),
 	}
 
-	// Collect program headers.
+	minVAddr, maxVAddr, err := collectProgramHeaders(ef, obj)
+	if err != nil {
+		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
+	}
+
+	obj.BaseVAddr = minVAddr
+	obj.MemSize = PageAlign(maxVAddr - minVAddr)
+
+	if err := readDynamicSection(f, obj); err != nil {
+		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
+	}
+
+	if err := resolveStringReferences(f, ef, obj); err != nil {
+		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
+	}
+
+	return obj, nil
+}
+
+// validateELFHeader checks that the ELF file is a 64-bit x86-64 shared object.
+func validateELFHeader(ef *elf.File, path string) error {
+	if ef.Class != elf.ELFCLASS64 {
+		return fmt.Errorf("elf parse: %q: not a 64-bit ELF", path)
+	}
+	if ef.Machine != elf.EM_X86_64 {
+		return fmt.Errorf("elf parse: %q: not x86-64 (got %v)", path, ef.Machine)
+	}
+	if ef.Type != elf.ET_DYN {
+		return fmt.Errorf("elf parse: %q: not a shared object (type %v)", path, ef.Type)
+	}
+	return nil
+}
+
+// collectProgramHeaders scans program headers and populates obj with
+// PT_LOAD, PT_DYNAMIC, PT_GNU_RELRO, and PT_TLS segments.
+// Returns the min and max virtual addresses of PT_LOAD segments.
+func collectProgramHeaders(ef *elf.File, obj *ParsedObject) (uint64, uint64, error) {
 	var minVAddr, maxVAddr uint64
 	first := true
+
 	for i := range ef.Progs {
 		ph := ef.Progs[i]
 		switch ph.Type {
@@ -110,26 +141,27 @@ func Parse(path string) (*ParsedObject, error) {
 	}
 
 	if len(obj.LoadSegments) == 0 {
-		return nil, fmt.Errorf("elf parse: %q: no PT_LOAD segments", path)
+		return 0, 0, fmt.Errorf("no PT_LOAD segments")
 	}
 	if obj.DynamicSeg == nil {
-		return nil, fmt.Errorf("elf parse: %q: no PT_DYNAMIC segment", path)
+		return 0, 0, fmt.Errorf("no PT_DYNAMIC segment")
 	}
 
-	obj.BaseVAddr = minVAddr
-	obj.MemSize = PageAlign(maxVAddr - minVAddr)
+	return minVAddr, maxVAddr, nil
+}
 
-	// Read the dynamic segment data from the file.
+// readDynamicSection reads the PT_DYNAMIC segment data and parses
+// dynamic entries into obj.DynEntries.
+func readDynamicSection(f *os.File, obj *ParsedObject) error {
 	dynProg := obj.DynamicSeg
 	obj.DynVAddr = dynProg.Vaddr
 
 	dynData := make([]byte, dynProg.Filesz)
 	if _, err := f.ReadAt(dynData, int64(dynProg.Off)); err != nil && err != io.EOF {
-		return nil, fmt.Errorf("elf parse: %q: read dynamic segment: %w", path, err)
+		return fmt.Errorf("read dynamic segment: %w", err)
 	}
 	obj.DynData = dynData
 
-	// Parse dynamic section entries (Elf64_Dyn: 8-byte tag + 8-byte value).
 	const dynEntSize = 16
 	for off := 0; off+dynEntSize <= len(dynData); off += dynEntSize {
 		tag := elf.DynTag(binary.LittleEndian.Uint64(dynData[off:]))
@@ -140,36 +172,43 @@ func Parse(path string) (*ParsedObject, error) {
 		obj.DynEntries[tag] = val
 	}
 
-	// Resolve DT_NEEDED names using the string table embedded in the file.
-	// DT_STRTAB is a virtual address; we resolve it by scanning PT_LOAD segments.
-	if strtabVA, ok := obj.DynEntries[elf.DT_STRTAB]; ok {
-		strtabData, err := readBytesAtVAddr(f, ef, strtabVA)
-		if err != nil {
-			return nil, fmt.Errorf("elf parse: %q: read DT_STRTAB: %w", path, err)
-		}
-		// Collect all DT_NEEDED entries (may appear multiple times — iterate raw).
-		for off := 0; off+dynEntSize <= len(dynData); off += dynEntSize {
-			tag := elf.DynTag(binary.LittleEndian.Uint64(dynData[off:]))
-			if tag == elf.DT_NULL {
-				break
-			}
-			if tag == elf.DT_NEEDED {
-				nameOff := int(binary.LittleEndian.Uint64(dynData[off+8:]))
-				name := readCString(strtabData, nameOff)
-				obj.Needed = append(obj.Needed, name)
-			}
-		}
+	return nil
+}
 
-		// Parse DT_RUNPATH and DT_RPATH from the string table.
-		if runpathOff, ok := obj.DynEntries[elf.DT_RUNPATH]; ok {
-			obj.Runpath = readCString(strtabData, int(runpathOff))
+// resolveStringReferences reads the string table (DT_STRTAB) and resolves
+// DT_NEEDED, DT_RUNPATH, and DT_RPATH entries.
+func resolveStringReferences(f *os.File, ef *elf.File, obj *ParsedObject) error {
+	strtabVA, ok := obj.DynEntries[elf.DT_STRTAB]
+	if !ok {
+		return nil
+	}
+
+	strtabData, err := readBytesAtVAddr(f, ef, strtabVA)
+	if err != nil {
+		return fmt.Errorf("read DT_STRTAB: %w", err)
+	}
+
+	const dynEntSize = 16
+	for off := 0; off+dynEntSize <= len(obj.DynData); off += dynEntSize {
+		tag := elf.DynTag(binary.LittleEndian.Uint64(obj.DynData[off:]))
+		if tag == elf.DT_NULL {
+			break
 		}
-		if rpathOff, ok := obj.DynEntries[elf.DT_RPATH]; ok {
-			obj.Rpath = readCString(strtabData, int(rpathOff))
+		if tag == elf.DT_NEEDED {
+			nameOff := int(binary.LittleEndian.Uint64(obj.DynData[off+8:]))
+			name := readCString(strtabData, nameOff)
+			obj.Needed = append(obj.Needed, name)
 		}
 	}
 
-	return obj, nil
+	if runpathOff, ok := obj.DynEntries[elf.DT_RUNPATH]; ok {
+		obj.Runpath = readCString(strtabData, int(runpathOff))
+	}
+	if rpathOff, ok := obj.DynEntries[elf.DT_RPATH]; ok {
+		obj.Rpath = readCString(strtabData, int(rpathOff))
+	}
+
+	return nil
 }
 
 // readBytesAtVAddr locates the PT_LOAD segment that covers vaddr and reads

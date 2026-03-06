@@ -163,13 +163,13 @@ func TestMultiThreadedTLSAccess(t *testing.T) {
 			// Lock goroutine to OS thread to get consistent thread ID
 			// Note: In real usage, C code would be running on actual OS threads
 			// For testing, we simulate this with goroutine thread IDs
-			
+
 			// Allocate TLS via __tls_get_addr simulation
 			idx := TLSIndex{
 				ModuleID: mod.ID,
 				Offset:   0,
 			}
-			
+
 			addr := GetTLSAddr(uintptr(unsafe.Pointer(&idx)))
 			if addr == 0 {
 				t.Errorf("Thread %d: GetTLSAddr returned null", threadNum)
@@ -307,7 +307,7 @@ func TestDynamicModuleGrowth(t *testing.T) {
 
 	// Access TLS for each module from the same thread
 	threadID := getCurrentThreadID()
-	
+
 	for i, mod := range modules {
 		idx := TLSIndex{ModuleID: mod.ID, Offset: 0}
 		addr := GetTLSAddr(uintptr(unsafe.Pointer(&idx)))

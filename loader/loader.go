@@ -717,7 +717,7 @@ func applyTlsld(obj *Object, r *relaEntry) error {
 	// For TLSLD, symIdx is typically 0 (no specific symbol).
 	// Use a special marker (0xFFFFFFFF) to avoid collision with real symbol indices.
 	const tlsldMarker = uint32(0xFFFFFFFF)
-	
+
 	// Allocate or retrieve GOT entry pair for TLSLD.
 	gotEntry, err := allocateGOTEntryPair(obj, tlsldMarker)
 	if err != nil {
@@ -728,7 +728,7 @@ func applyTlsld(obj *Object, r *relaEntry) error {
 	// DTPMOD64 = module ID
 	moduleID := obj.TLSModule.GetModuleID()
 	*(*uint64)(unsafe.Pointer(gotEntry)) = moduleID
-	
+
 	// Second entry is 0 (no symbol-specific offset for Local Dynamic)
 	*(*uint64)(unsafe.Pointer(gotEntry + 8)) = 0
 

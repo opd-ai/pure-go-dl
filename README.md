@@ -287,16 +287,24 @@ Run the test suite:
 # Build test libraries
 make -C testdata
 
-# Run all tests with race detector
-CGO_ENABLED=0 go test -race ./...
+# Run all tests
+CGO_ENABLED=0 go test ./...
 
 # Run specific package tests
 go test -v ./dl/
+
+# Enable optional system library tests (libm, libz, libc)
+PURE_GO_DL_TEST_SYSTEM_LIBS=1 go test ./dl/ ./loader/
 ```
+
+**Test Environment Variables:**
+- `PURE_GO_DL_TEST_SYSTEM_LIBS=1` — Enable optional tests for system libraries (libm.so.6, libz.so, libc.so.6). These tests are disabled by default due to potential compatibility issues with glibc initialization functions on different system configurations.
 
 The `testdata/` directory contains sample C libraries used for integration testing:
 - `libtest.so`: Simple add/square functions with constructor
 - `libreloc.so`: Tests internal function calls and relocations
+
+**Note:** The `-race` flag cannot be used with `CGO_ENABLED=0` (see Limitations section).
 
 ## Development
 

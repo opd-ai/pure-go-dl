@@ -4,6 +4,7 @@
 package dl
 
 import (
+	"debug/elf"
 	"fmt"
 	"io"
 	"sort"
@@ -53,6 +54,10 @@ func (globalResolver) Resolve(name string) (uintptr, error) {
 	defer mu.Unlock()
 	for _, lib := range globals {
 		if sym, ok := lib.obj.Symbols.Lookup(name); ok {
+			// If this is an IFUNC symbol, call the resolver to get the real address.
+			if sym.Type == elf.STT_GNU_IFUNC {
+				return loader.CallIfuncResolver(sym.Value), nil
+			}
 			return sym.Value, nil
 		}
 	}
@@ -192,10 +197,16 @@ func loadPath(path, soname string, flag Flag, visiting map[string]bool) (*Librar
 }
 
 // Sym returns the absolute address of the exported symbol name.
+// For STT_GNU_IFUNC symbols, this calls the resolver function and returns
+// the resolved address.
 func (l *Library) Sym(name string) (uintptr, error) {
 	sym, ok := l.obj.Symbols.Lookup(name)
 	if !ok {
 		return 0, fmt.Errorf("dl: symbol %q not found", name)
+	}
+	// If this is an IFUNC symbol, call the resolver to get the real address.
+	if sym.Type == elf.STT_GNU_IFUNC {
+		return loader.CallIfuncResolver(sym.Value), nil
 	}
 	return sym.Value, nil
 }

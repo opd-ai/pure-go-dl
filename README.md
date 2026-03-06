@@ -144,6 +144,7 @@ Decrements reference count and unloads the library when it reaches zero. Destruc
 - ✅ **M5: Dependencies** — Transitive dependency loading via DT_NEEDED
 - ✅ **M6: Init/Fini** — Constructor/destructor execution in correct order
 - ✅ **M7: Versioning** — GNU symbol versioning support
+- ✅ **M7.2: IFUNC** — Indirect function (IFUNC) resolution for CPU-optimized functions
 
 ### Integration Tests Passing
 
@@ -161,7 +162,6 @@ All tests run successfully with `CGO_ENABLED=0 go test -race ./...`:
 ### Not Yet Supported
 
 - **TLS (Thread-Local Storage)**: `__thread` and `_Thread_local` variables are not supported. Relocations R_X86_64_DTPMOD64, R_X86_64_DTPOFF64, R_X86_64_TPOFF64 will return errors.
-- **IFUNC Resolution**: `STT_GNU_IFUNC` symbols (CPU-optimized function selection) are not supported. R_X86_64_IRELATIVE relocations return errors.
 - **Lazy Binding**: Only eager binding (`RTLD_NOW` semantics) is implemented. `RTLD_LAZY` is explicitly a non-goal.
 - **Architecture Support**: Currently x86-64 only. ARM64 port planned (see ROADMAP Phase 7.4).
 
@@ -172,8 +172,9 @@ The loader successfully handles:
 - ✅ libz.so (compression)
 - ✅ Most glibc-based system libraries
 - ✅ Custom libraries compiled with `-fPIC -shared`
+- ✅ Libraries using IFUNC (GNU indirect functions for CPU-optimized variants)
 
-Libraries using TLS or IFUNC will fail to load with clear error messages indicating the unsupported feature.
+Libraries using TLS will fail to load with clear error messages indicating the unsupported feature.
 
 ## Testing
 
@@ -230,9 +231,12 @@ file pgldd-static  # Should show "statically linked"
 See [ROADMAP.md](ROADMAP.md) for detailed implementation phases and future features.
 
 **Upcoming work:**
-- IFUNC resolution support (HIGH priority — needed for glibc optimized functions)
 - TLS support (MEDIUM priority — needed for pthread-heavy libraries)
 - ARM64/aarch64 port (MEDIUM priority)
+
+**Recently completed:**
+- ✅ IFUNC resolution support (HIGH priority — needed for glibc optimized functions)
+- ✅ Symbol versioning (HIGH priority — needed for libc dependencies)
 
 **Non-goals:**
 - Lazy binding / PLT trampolines

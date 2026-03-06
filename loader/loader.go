@@ -412,9 +412,13 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			R_X86_64_GOTTPOFF, R_X86_64_TPOFF32:
 			return fmt.Errorf("TLS relocation type %d not supported at offset %#x", relocType, r.Offset)
 
-		// IFUNC relocations are not supported.
+		// IFUNC relocation: call the resolver function to get the real address.
 		case R_X86_64_IRELATIVE:
-			return fmt.Errorf("IFUNC relocation (R_X86_64_IRELATIVE) not supported at offset %#x", r.Offset)
+			// For R_X86_64_IRELATIVE, the addend points to the resolver function.
+			// We call it to get the actual function address.
+			resolverAddr := obj.Base + uintptr(addend)
+			resolvedAddr := CallIfuncResolver(resolverAddr)
+			*(*uintptr)(offsetPtr) = resolvedAddr
 
 		default:
 			return fmt.Errorf("unknown relocation type %d at offset %#x", relocType, r.Offset)

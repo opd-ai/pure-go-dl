@@ -60,6 +60,12 @@ type Object struct {
 
 	TLSModule *tls.Module // TLS module, nil if no PT_TLS segment
 
+	// GOT management for code-sequence TLS relocations (TLSGD, TLSLD).
+	// Maps symbol index to GOT offset for allocated entries.
+	GOTEntries map[uint32]uintptr // symIdx -> offset into GOT
+	GOTBase    uintptr             // base address of allocated GOT space
+	GOTSize    uintptr             // current size of GOT in bytes
+
 	RefCount int
 	Soname   string
 }
@@ -552,7 +558,7 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			}
 
 		case R_X86_64_TLSGD:
-			if err := applyTlsgd(obj, r); err != nil {
+			if err := applyTlsgd(obj, r, resolver); err != nil {
 				return err
 			}
 
@@ -614,30 +620,86 @@ func applyGottpoff(obj *Object, r *relaEntry, symIdx uint32, offsetPtr unsafe.Po
 	return nil
 }
 
+// allocateGOTEntryPair allocates a GOT entry pair (16 bytes) for a TLS symbol.
+// Returns the address of the first entry (DTPMOD64 entry).
+// The second entry (DTPOFF64) is at returned_address + 8.
+func allocateGOTEntryPair(obj *Object, symIdx uint32) (uintptr, error) {
+	// Check if already allocated.
+	if offset, exists := obj.GOTEntries[symIdx]; exists {
+		return obj.GOTBase + offset, nil
+	}
+
+	// Lazy-allocate GOT space on first use.
+	// We allocate a page of writable memory to hold GOT entries.
+	if obj.GOTBase == 0 {
+		const gotPageSize = 4096 // One page for GOT entries
+		addr, err := mmap.MapAnon(gotPageSize, mmap.ProtRead|mmap.ProtWrite)
+		if err != nil {
+			return 0, fmt.Errorf("failed to allocate GOT space: %w", err)
+		}
+		obj.GOTBase = addr
+		obj.GOTEntries = make(map[uint32]uintptr)
+	}
+
+	// Allocate 16 bytes (two uint64 entries) at current GOTSize offset.
+	if obj.GOTSize+16 > 4096 {
+		return 0, fmt.Errorf("GOT space exhausted (>4096 bytes)")
+	}
+
+	offset := obj.GOTSize
+	obj.GOTEntries[symIdx] = offset
+	obj.GOTSize += 16
+
+	entryAddr := obj.GOTBase + offset
+	return entryAddr, nil
+}
+
 // applyTlsgd handles R_X86_64_TLSGD relocations (General Dynamic TLS model).
-func applyTlsgd(obj *Object, r *relaEntry) error {
+func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 	// PC-relative reference to GOT entries for General Dynamic TLS model.
 	// Code: leaq x@tlsgd(%rip), %rdi; call __tls_get_addr
-	// The relocation patches the leaq instruction's PC-relative offset.
-	// Points to two consecutive GOT entries populated by DTPMOD64/DTPOFF64.
-	//
-	// Implementation note: In a full dynamic linker, the GOT entries would be
-	// allocated and managed separately. The DTPMOD64/DTPOFF64 relocations
-	// populate those entries, and TLSGD computes the PC-relative offset to them.
-	//
-	// Since we already handle DTPMOD64/DTPOFF64, libraries using those will work.
-	// TLSGD is an optimization/alternative path that we don't fully support yet.
-	// We provide a clear error message rather than silently failing.
+	// The relocation patches the leaq instruction's PC-relative offset
+	// to point to a pair of GOT entries containing [DTPMOD64, DTPOFF64].
 	if obj.TLSModule == nil {
 		return fmt.Errorf("R_X86_64_TLSGD relocation at %#x but library has no PT_TLS segment", r.Offset)
 	}
-	// TODO: Full implementation would require:
-	// 1. Track GOT entry allocation for each TLS symbol
-	// 2. Ensure DTPMOD64/DTPOFF64 have populated the entries
-	// 3. Compute PC-relative offset to the GOT entry pair
-	//
-	// For now, provide guidance in the error message.
-	return fmt.Errorf("R_X86_64_TLSGD relocation at offset %#x is not yet fully supported. This is a code-sequence relocation that requires GOT entry management. Most libraries use R_X86_64_DTPMOD64/DTPOFF64 instead, which are fully supported. Try compiling with -mtls-dialect=gnu2 or use -ftls-model=initial-exec.", r.Offset)
+
+	symIdx := uint32(r.Info >> 32)
+
+	// Allocate or retrieve GOT entry pair for this symbol.
+	gotEntry, err := allocateGOTEntryPair(obj, symIdx)
+	if err != nil {
+		return fmt.Errorf("R_X86_64_TLSGD at %#x: %w", r.Offset, err)
+	}
+
+	// Populate GOT entries: [DTPMOD64, DTPOFF64].
+	// DTPMOD64 = module ID
+	moduleID := obj.TLSModule.GetModuleID()
+	*(*uint64)(unsafe.Pointer(gotEntry)) = moduleID
+
+	// DTPOFF64 = symbol offset within TLS block
+	// For TLS symbols, st_value contains the offset within the PT_TLS segment.
+	// We need to resolve the symbol to get its TLS offset.
+	tlsOffset := uint64(r.Addend) // Base offset from addend
+	if symIdx != 0 {
+		// Get symbol value (TLS offset within PT_TLS)
+		symAddr := symAddress(obj, symIdx)
+		// For TLS symbols, st_value is already the offset, not an address
+		tlsOffset = uint64(int64(symAddr) + r.Addend)
+	}
+	*(*uint64)(unsafe.Pointer(gotEntry + 8)) = tlsOffset
+
+	// Compute PC-relative offset from relocation site to GOT entry.
+	// The instruction is: leaq symbol@tlsgd(%rip), %rdi
+	// We patch the 32-bit PC-relative offset in the instruction.
+	relocSite := obj.Base + uintptr(r.Offset)
+	pcRelOffset := int64(gotEntry) - int64(relocSite+4) // +4 for instruction size
+	
+	// Write the PC-relative offset to the relocation site.
+	offsetPtr := unsafe.Pointer(relocSite)
+	*(*int32)(offsetPtr) = int32(pcRelOffset)
+
+	return nil
 }
 
 // applyTlsld handles R_X86_64_TLSLD relocations (Local Dynamic TLS model).

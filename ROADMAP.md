@@ -414,23 +414,28 @@ Thread-Local Storage (TLS) support is partially implemented with recent enhancem
 - ✅ `__tls_get_addr` runtime function for dynamic TLS access (using purego.NewCallback)
 - ✅ TLS initialization data mapping (fixed page alignment bug)
 - ✅ R_X86_64_GOTTPOFF partial support (Initial Exec model, GOT-based with fallback)
+- ✅ R_X86_64_TLSGD relocation with GOT entry management (General Dynamic model code sequences)
+- ✅ GOT allocation infrastructure for code-sequence relocations
 
 **Not Yet Implemented:**
-- ⚠️  R_X86_64_TLSGD (General Dynamic) - recognized but returns helpful error with workarounds
 - ⚠️  R_X86_64_TLSLD (Local Dynamic) - recognized but returns helpful error with workarounds
-- ❌ Full GOT entry management for code sequence relocations
 - ❌ Per-thread TLS block management (currently single-threaded)
 - ❌ Dynamic Thread Vector (DTV) for multi-threaded access
+
+**Recently Completed:**
+- ✅ R_X86_64_TLSGD (General Dynamic) - full implementation with GOT entry management (2026-03-06)
+- ✅ GOT entry allocation infrastructure for code sequence relocations
 
 **Current Status:**
 
 Libraries with `PT_TLS` segments can be loaded and executed successfully. TLS variables
 can be accessed and modified through functions that use `__tls_get_addr`. The General
-Dynamic (GD) TLS access model is now supported via a C-callable callback created with
-purego.NewCallback.
+Dynamic (GD) TLS access model is now fully supported, including both the DTPMOD64/DTPOFF64
+relocations and the R_X86_64_TLSGD code sequence relocation. GOT entry management infrastructure
+is in place to support code-sequence TLS relocations.
 
-Most modern libraries use the DTPMOD64/DTPOFF64 relocations (which are fully supported)
-rather than the TLSGD/TLSLD code sequence relocations. When TLSGD/TLSLD are encountered,
+Most modern libraries use the DTPMOD64/DTPOFF64 relocations (which are fully supported).
+R_X86_64_TLSGD relocations (used by older TLS dialects) are now also fully supported. When TLSLD is encountered,
 clear error messages guide users to compile with `-mtls-dialect=gnu2` or
 `-ftls-model=initial-exec` to generate compatible relocations.
 
@@ -439,10 +444,10 @@ clear error messages guide users to compile with `-mtls-dialect=gnu2` or
 1. **Single-threaded only**: All TLS accesses use a pseudo thread ID (always 1). True
    per-thread storage would require gettid() syscall integration and runtime cooperation.
 
-2. **Code sequence relocations**: R_X86_64_TLSGD and R_X86_64_TLSLD are recognized but
-   not fully implemented. They require allocating and managing GOT entries, then computing
-   PC-relative offsets. Libraries using these relocations will receive clear error messages
-   with compilation flag suggestions. R_X86_64_GOTTPOFF has partial support with fallback.
+2. **Local Dynamic relocations**: R_X86_64_TLSLD is recognized but not yet implemented.
+   It requires similar GOT management to TLSGD. Libraries using TLSLD can be recompiled
+   with `-mtls-dialect=gnu2` to use DTPMOD64/DTPOFF64 instead, or with
+   `-ftls-model=initial-exec` for Initial Exec model.
 
 **Workarounds:**
 

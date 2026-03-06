@@ -69,3 +69,12 @@ func symBind(obj *Object, idx uint32) uint8 {
 	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
 	return sym.Info >> 4 // upper 4 bits = binding
 }
+
+// symAddress returns the symbol's value (address or TLS offset).
+func symAddress(obj *Object, idx uint32) uintptr {
+	if idx == 0 || obj.SymtabAddr == 0 {
+		return 0
+	}
+	sym := (*symbol.Elf64Sym)(unsafe.Add(unsafe.Pointer(obj.SymtabAddr), uintptr(idx)*24))
+	return uintptr(sym.Value)
+}

@@ -673,12 +673,12 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 		}
 
 		ctx := &relocContext{
-			obj:       obj,
-			r:         r,
-			symIdx:    relaSymIdx(r.Info),
-			offset:    obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr),
-			addend:    r.Addend,
-			resolver:  resolver,
+			obj:      obj,
+			r:        r,
+			symIdx:   relaSymIdx(r.Info),
+			offset:   obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr),
+			addend:   r.Addend,
+			resolver: resolver,
 		}
 		ctx.offsetPtr = unsafe.Pointer(ctx.offset)
 

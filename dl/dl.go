@@ -12,6 +12,7 @@ import (
 
 	"github.com/ebitengine/purego"
 	goelf "github.com/opd-ai/pure-go-dl/elf"
+	"github.com/opd-ai/pure-go-dl/internal/tls"
 	"github.com/opd-ai/pure-go-dl/loader"
 	"github.com/opd-ai/pure-go-dl/symbol"
 )
@@ -50,6 +51,11 @@ func init() {
 type globalResolver struct{}
 
 func (globalResolver) Resolve(name string) (uintptr, error) {
+	// Special case: provide __tls_get_addr for TLS support
+	if name == "__tls_get_addr" {
+		return tls.RegisterTLSGetAddr(), nil
+	}
+	
 	mu.Lock()
 	defer mu.Unlock()
 	for _, lib := range globals {

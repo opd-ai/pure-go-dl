@@ -12,6 +12,7 @@ import (
 
 	goelf "github.com/opd-ai/pure-go-dl/elf"
 	"github.com/opd-ai/pure-go-dl/internal/mmap"
+	"github.com/opd-ai/pure-go-dl/internal/tls"
 	"github.com/opd-ai/pure-go-dl/symbol"
 	"golang.org/x/sys/unix"
 )
@@ -56,6 +57,8 @@ type Object struct {
 	InitArraySz uint64
 	FiniArray   uintptr
 	FiniArraySz uint64
+
+	TLSModule *tls.Module // TLS module, nil if no PT_TLS segment
 
 	RefCount int
 	Soname   string
@@ -274,6 +277,39 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 		}
 	}
 
+	// Initialize TLS module if PT_TLS segment is present.
+	if tlsSeg := parsed.TLSSeg; tlsSeg != nil {
+		// Calculate the base address of TLS initialization data.
+		var tlsInitData uintptr
+		if tlsSeg.Filesz > 0 {
+			// Find which PT_LOAD segment contains the TLS initialization data.
+			for i := range obj.Segments {
+				seg := &obj.Segments[i]
+				// Check if TLS vaddr falls within this segment
+				segStart := parsed.BaseVAddr + parsed.LoadSegments[i].Vaddr
+				segEnd := segStart + parsed.LoadSegments[i].Memsz
+				if tlsSeg.Vaddr >= segStart && tlsSeg.Vaddr < segEnd {
+					offset := tlsSeg.Vaddr - segStart
+					tlsInitData = seg.Addr + uintptr(offset)
+					break
+				}
+			}
+		}
+
+		// Register the TLS module.
+		tlsModule, err := tls.GlobalManager().RegisterModule(
+			tlsSeg.Memsz,   // Total size (data + bss)
+			tlsSeg.Align,   // Alignment requirement
+			tlsSeg.Filesz,  // Initialized data size
+			tlsInitData,    // Pointer to initialization data
+		)
+		if err != nil {
+			_ = mmap.Unmap(base, uintptr(parsed.MemSize))
+			return nil, fmt.Errorf("loader: TLS registration failed: %w", err)
+		}
+		obj.TLSModule = tlsModule
+	}
+
 	// Apply relocations.
 	if err := processRelocations(obj, resolver); err != nil {
 		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
@@ -406,11 +442,114 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			}
 			*(*uint32)(offsetPtr) = uint32(int64(S) + addend - int64(offset))
 
-		// TLS relocations are not supported.
-		case R_X86_64_DTPMOD64, R_X86_64_DTPOFF64, R_X86_64_TPOFF64,
-			R_X86_64_TLSGD, R_X86_64_TLSLD, R_X86_64_DTPOFF32,
-			R_X86_64_GOTTPOFF, R_X86_64_TPOFF32:
-			return fmt.Errorf("TLS relocation type %d not supported at offset %#x", relocType, r.Offset)
+		// TLS relocations
+		case R_X86_64_DTPMOD64:
+			// Set module ID for TLS General Dynamic model.
+			// The module ID is used to index into the Dynamic Thread Vector (DTV).
+			if obj.TLSModule == nil {
+				return fmt.Errorf("R_X86_64_DTPMOD64 relocation at %#x but library has no PT_TLS segment", r.Offset)
+			}
+			*(*uint64)(offsetPtr) = obj.TLSModule.GetModuleID()
+
+		case R_X86_64_DTPOFF64:
+			// Set offset within the TLS block (module-relative offset).
+			// Used for General Dynamic TLS access model.
+			if obj.TLSModule == nil {
+				return fmt.Errorf("R_X86_64_DTPOFF64 relocation at %#x but library has no PT_TLS segment", r.Offset)
+			}
+			// For DTPOFF, we use the symbol value (if present) + addend.
+			// If no symbol, just use addend as the offset.
+			var symValue uint64
+			if symIdx != 0 {
+				S, err := resolveSymForReloc(obj, symIdx, resolver)
+				if err != nil {
+					// For TLS, if symbol not found, it might be module-local.
+					// Use the symbol from our own symbol table if available.
+					name := symName(obj, symIdx)
+					if name != "" {
+						if sym, ok := obj.Symbols.Lookup(name); ok {
+							// Symbol value is relative to module base.
+							// For TLS symbols, st_value is the offset within the TLS block.
+							symValue = uint64(sym.Value - obj.Base)
+						} else {
+							return fmt.Errorf("R_X86_64_DTPOFF64: TLS symbol %q not found", name)
+						}
+					}
+				} else {
+					symValue = uint64(S - obj.Base)
+				}
+			}
+			*(*int64)(offsetPtr) = int64(symValue) + addend
+
+		case R_X86_64_TPOFF64:
+			// Thread pointer relative offset (Local Exec or Initial Exec model).
+			// This is more complex as it requires knowing the thread-local storage layout.
+			if obj.TLSModule == nil {
+				return fmt.Errorf("R_X86_64_TPOFF64 relocation at %#x but library has no PT_TLS segment", r.Offset)
+			}
+			// For now, we allocate a TLS block and compute the offset.
+			// In a full implementation, this would be managed per-thread.
+			block, err := tls.GlobalManager().AllocateBlock(obj.TLSModule)
+			if err != nil {
+				return fmt.Errorf("R_X86_64_TPOFF64: failed to allocate TLS block: %w", err)
+			}
+			// The thread pointer offset is negative from the TP.
+			offset := block.GetThreadPointerOffset()
+			// Add symbol value if present.
+			if symIdx != 0 {
+				S, err := resolveSymForReloc(obj, symIdx, resolver)
+				if err == nil {
+					offset += int64(S - obj.Base)
+				}
+			}
+			*(*int64)(offsetPtr) = offset + addend
+
+		case R_X86_64_DTPOFF32:
+			// 32-bit version of DTPOFF64.
+			if obj.TLSModule == nil {
+				return fmt.Errorf("R_X86_64_DTPOFF32 relocation at %#x but library has no PT_TLS segment", r.Offset)
+			}
+			var symValue uint64
+			if symIdx != 0 {
+				S, err := resolveSymForReloc(obj, symIdx, resolver)
+				if err != nil {
+					name := symName(obj, symIdx)
+					if name != "" {
+						if sym, ok := obj.Symbols.Lookup(name); ok {
+							symValue = uint64(sym.Value - obj.Base)
+						} else {
+							return fmt.Errorf("R_X86_64_DTPOFF32: TLS symbol %q not found", name)
+						}
+					}
+				} else {
+					symValue = uint64(S - obj.Base)
+				}
+			}
+			*(*int32)(offsetPtr) = int32(int64(symValue) + addend)
+
+		case R_X86_64_TPOFF32:
+			// 32-bit version of TPOFF64.
+			if obj.TLSModule == nil {
+				return fmt.Errorf("R_X86_64_TPOFF32 relocation at %#x but library has no PT_TLS segment", r.Offset)
+			}
+			block, err := tls.GlobalManager().AllocateBlock(obj.TLSModule)
+			if err != nil {
+				return fmt.Errorf("R_X86_64_TPOFF32: failed to allocate TLS block: %w", err)
+			}
+			offset := block.GetThreadPointerOffset()
+			if symIdx != 0 {
+				S, err := resolveSymForReloc(obj, symIdx, resolver)
+				if err == nil {
+					offset += int64(S - obj.Base)
+				}
+			}
+			*(*int32)(offsetPtr) = int32(offset + addend)
+
+		case R_X86_64_TLSGD, R_X86_64_TLSLD, R_X86_64_GOTTPOFF:
+			// These are code sequence relocations used in optimized TLS access.
+			// They require code rewriting and are complex to implement.
+			// For now, return an error with guidance.
+			return fmt.Errorf("TLS code sequence relocation type %d at offset %#x not yet supported (requires code rewriting)", relocType, r.Offset)
 
 		// IFUNC relocation: call the resolver function to get the real address.
 		case R_X86_64_IRELATIVE:

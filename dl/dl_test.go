@@ -219,3 +219,36 @@ func TestRTLD_NOW_Flag(t *testing.T) {
 		t.Errorf("Library loaded with RTLD_NOW should not be global")
 	}
 }
+
+// TestTLSLibraryParsing tests that libraries with TLS segments can be loaded
+// and that TLS metadata is correctly parsed.
+func TestTLSLibraryParsing(t *testing.T) {
+	// Test loading a library with Thread-Local Storage (TLS).
+	// Full TLS runtime support (__tls_get_addr) is not yet implemented,
+	// but we should be able to load the library and parse its TLS segment.
+	lib, err := Open("../testdata/libtls.so")
+	if err != nil {
+		t.Fatalf("Open libtls.so failed: %v", err)
+	}
+	defer lib.Close()
+
+	// Verify the library loaded and has TLS module registered
+	if lib.obj.TLSModule == nil {
+		t.Error("Expected TLS module to be registered")
+	} else {
+		t.Logf("TLS module ID: %d, Size: %d, Align: %d",
+			lib.obj.TLSModule.ID,
+			lib.obj.TLSModule.Size,
+			lib.obj.TLSModule.Align)
+	}
+
+	// Verify we can look up TLS symbols
+	_, err = lib.Sym("get_tls_counter")
+	if err != nil {
+		t.Errorf("Sym(get_tls_counter) failed: %v", err)
+	}
+
+	// Note: Actually calling TLS functions requires __tls_get_addr support,
+	// which is not yet fully implemented. This test only verifies parsing.
+}
+

@@ -29,6 +29,7 @@ type ParsedObject struct {
 	LoadSegments []elf.ProgHeader
 	DynamicSeg   *elf.ProgHeader // PT_DYNAMIC
 	GNURelroSeg  *elf.ProgHeader // PT_GNU_RELRO (may be nil)
+	TLSSeg       *elf.ProgHeader // PT_TLS (may be nil)
 
 	// Dynamic section entries (tag -> value)
 	DynEntries map[elf.DynTag]uint64
@@ -102,6 +103,9 @@ func Parse(path string) (*ParsedObject, error) {
 		case elf.PT_GNU_RELRO:
 			hdr := ph.ProgHeader
 			obj.GNURelroSeg = &hdr
+		case elf.PT_TLS:
+			hdr := ph.ProgHeader
+			obj.TLSSeg = &hdr
 		}
 	}
 

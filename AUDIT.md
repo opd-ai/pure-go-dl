@@ -124,7 +124,7 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - loader/error_test.go — Error handling and edge case tests
   - Combined coverage: 60.3% (from 45.7%)
 
-- [ ] **[HIGH-03] No verification that pgldd CLI tool works as documented** — README.md:89-96, cmd/pgldd/main.go
+- [x] **[HIGH-03] No verification that pgldd CLI tool works as documented** — README.md:89-96, cmd/pgldd/main.go
   
   **Evidence:** The README provides example usage of `pgldd /lib/x86_64-linux-gnu/libm.so.6` but there are no automated tests verifying that the CLI tool actually runs and produces the expected output.
   
@@ -140,8 +140,18 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - README.md:92-96 — Example usage with no corresponding test
   
   **Recommendation:** Add `cmd/pgldd/main_test.go` with integration tests that invoke the tool on testdata libraries and validate the output format.
+  
+  **Resolution:** Comprehensive test suite added in cmd/pgldd/main_test.go with 7 tests covering:
+  - No arguments error handling
+  - Invalid library error handling
+  - Valid library loading and symbol output
+  - Output format verification
+  - Multiple library loading
+  - Binary build verification
+  - CGO_ENABLED=0 build verification
+  All tests pass. The 0% coverage is expected for CLI tools tested via subprocess execution.
 
-- [ ] **[HIGH-04] Reference counting test coverage insufficient** — dl/dl.go:236-260
+- [x] **[HIGH-04] Reference counting test coverage insufficient** — dl/dl.go:236-260
   
   **Evidence:** The README claims "Reference counting for proper cleanup" but only one test (`TestRefCounting`) validates this behavior. Complex scenarios like:
   - Multiple goroutines loading/closing the same library concurrently
@@ -157,6 +167,17 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - dl/dl_test.go:98-119 — `TestRefCounting` (only basic scenario)
   
   **Recommendation:** Add stress tests with `go test -race` covering concurrent Open/Close, dependency chains, and global resolver access.
+  
+  **Resolution:** Added comprehensive test suite in dl/refcount_test.go with 9 new tests:
+  - TestConcurrentRefCounting — 20 goroutines × 10 iterations opening/closing same library
+  - TestRefCountingWithDependencies — Reference counting with DT_NEEDED dependencies
+  - TestDoubleClose — Error handling for Close() called too many times
+  - TestRefCountRaceDetector — Simultaneous opens from 10 goroutines
+  - TestConcurrentLoadDifferentLibraries — Concurrent loading of multiple libraries
+  - TestRefCountingGlobalLibraries — RTLD_GLOBAL reference counting
+  - TestConcurrentOpenCloseStress — 2-second stress test with 50 goroutines
+  - TestRefCountWithSymbolLookup — Reference counting during symbol operations
+  All tests pass with `go test -race`. Zero regressions in complexity or duplication.
 
 ---
 

@@ -10,10 +10,14 @@ This document tracks audit status for all Go packages in the pure-go-dl project.
   - Documentation: 66.7% ⚠️ (2 missing godoc comments)
   - Overall: LOW risk, production-ready
 
+- [x] **symbol**: 4/6 gates passing — see [symbol/AUDIT.md](symbol/AUDIT.md)
+  - Test coverage: 34.5% ❌ (CRITICAL gap — needs +31pp)
+  - Documentation: 95.8% ✅ (excellent)
+  - Overall: MEDIUM risk, test coverage must improve before production
+
 ### Pending Audits
 - [ ] **dl** — Public API package (2 importers, 4 internal imports)
 - [ ] **loader** — Core loading/relocation engine (2 importers, 4 internal imports)
-- [ ] **symbol** — Symbol tables and hashing (3 importers)
 - [ ] **internal/mmap** — Memory mapping syscalls (3 importers)
 - [ ] **internal/tls** — Thread-Local Storage support (3 importers, 1 internal import)
 - [ ] **cmd/pgldd** — CLI tool
@@ -21,7 +25,7 @@ This document tracks audit status for all Go packages in the pure-go-dl project.
 ## Prioritization Rationale
 Packages ordered by integration surface (importers) and architectural criticality:
 1. **elf** ✅ — Foundational parsing (3 importers, zero internal deps)
-2. **symbol** — Symbol resolution (3 importers, zero internal deps)
+2. **symbol** ✅ — Symbol resolution (3 importers, zero internal deps)
 3. **internal/mmap** — Memory management primitive (3 importers)
 4. **internal/tls** — TLS support (3 importers)
 5. **dl** — Public API (2 importers)
@@ -39,10 +43,11 @@ Packages ordered by integration surface (importers) and architectural criticalit
 | Naming | 0 violations | Enforce Go conventions |
 
 ## Summary Statistics
-- **Audited:** 1/7 packages (14.3%)
-- **Passing all gates:** 0/1
+- **Audited:** 2/7 packages (28.6%)
+- **Passing all gates:** 0/2
 - **High-risk packages:** 0
-- **Blockers:** None
+- **Medium-risk packages:** 1 (symbol — test coverage critical gap)
+- **Blockers:** Symbol package test coverage must reach ≥65% before production deployment
 
 ---
 *Last updated: 2026-03-06*

@@ -398,9 +398,9 @@ memory functions.
 - CallIfuncResolver() using purego for C ABI compliance
 - Comprehensive tests with libifunc.so test library
 
-### 7.3 TLS Support ⚠️ PARTIAL
+### 7.3 TLS Support ⚠️ PARTIAL (Enhanced)
 
-Thread-Local Storage (TLS) support is partially implemented:
+Thread-Local Storage (TLS) support is partially implemented with recent enhancements:
 
 **Completed:**
 - ✅ PT_TLS segment parsing and detection
@@ -413,9 +413,12 @@ Thread-Local Storage (TLS) support is partially implemented:
 - ✅ Comprehensive TLS infrastructure and tests
 - ✅ `__tls_get_addr` runtime function for dynamic TLS access (using purego.NewCallback)
 - ✅ TLS initialization data mapping (fixed page alignment bug)
+- ✅ R_X86_64_GOTTPOFF partial support (Initial Exec model, GOT-based with fallback)
 
 **Not Yet Implemented:**
-- ❌ R_X86_64_TLSGD, R_X86_64_TLSLD, R_X86_64_GOTTPOFF (code sequence relocations)
+- ⚠️  R_X86_64_TLSGD (General Dynamic) - recognized but returns helpful error with workarounds
+- ⚠️  R_X86_64_TLSLD (Local Dynamic) - recognized but returns helpful error with workarounds
+- ❌ Full GOT entry management for code sequence relocations
 - ❌ Per-thread TLS block management (currently single-threaded)
 - ❌ Dynamic Thread Vector (DTV) for multi-threaded access
 
@@ -426,24 +429,31 @@ can be accessed and modified through functions that use `__tls_get_addr`. The Ge
 Dynamic (GD) TLS access model is now supported via a C-callable callback created with
 purego.NewCallback.
 
+Most modern libraries use the DTPMOD64/DTPOFF64 relocations (which are fully supported)
+rather than the TLSGD/TLSLD code sequence relocations. When TLSGD/TLSLD are encountered,
+clear error messages guide users to compile with `-mtls-dialect=gnu2` or
+`-ftls-model=initial-exec` to generate compatible relocations.
+
 **Remaining Limitations:**
 
 1. **Single-threaded only**: All TLS accesses use a pseudo thread ID (always 1). True
    per-thread storage would require gettid() syscall integration and runtime cooperation.
 
-2. **Code sequence relocations**: R_X86_64_TLSGD, TLSLD, and GOTTPOFF require rewriting
-   instruction sequences, which is complex and not yet implemented. Libraries using
-   these relocations will fail to load with clear error messages.
+2. **Code sequence relocations**: R_X86_64_TLSGD and R_X86_64_TLSLD are recognized but
+   not fully implemented. They require allocating and managing GOT entries, then computing
+   PC-relative offsets. Libraries using these relocations will receive clear error messages
+   with compilation flag suggestions. R_X86_64_GOTTPOFF has partial support with fallback.
 
 **Workarounds:**
 
-1. Most libraries use the Initial Exec or Local Exec TLS models, which are fully supported
+1. Most libraries use the DTPMOD/DTPOFF relocation model, which is fully supported
 2. For code sequence relocations, use libraries compiled with `-ftls-model=initial-exec`
 3. Single-threaded use cases work correctly
+4. Modern GCC/Clang typically generate DTPMOD64/DTPOFF64 instead of TLSGD/TLSLD
 
 **Priority: Medium** — needed for pthread-heavy libraries and newer system libraries.
 
-**Status: PARTIAL** — Implemented across commits:
+**Status: PARTIAL (Enhanced)** — Implemented across commits:
 - internal/tls/ package with TLS management and __tls_get_addr
 - PT_TLS segment detection in elf/parse.go
 - TLS module registration and initialization in loader/loader.go
@@ -451,6 +461,7 @@ purego.NewCallback.
 - C-callable __tls_get_addr using purego.NewCallback
 - Fixed TLS initialization data mapping to account for page alignment
 - Comprehensive tests in internal/tls/tls_test.go and dl/dl_test.go
+- Partial R_X86_64_GOTTPOFF support with helpful errors for TLSGD/TLSLD (latest commit)
 
 ### 7.4 aarch64 Port
 

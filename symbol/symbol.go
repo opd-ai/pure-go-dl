@@ -115,67 +115,86 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize, strt
 	if symtabAddr == 0 {
 		return fmt.Errorf("symbol: symtabAddr is 0")
 	}
-	if symtabSize == 0 {
-		// DT_SYMENT tells the entry size but DT_STRSZ is for the string table.
-		// Without DT_HASH or DT_GNU_HASH, we cannot compute the exact table size.
-		// Use maxFallbackSymbols as an upper bound and rely on early termination
-		// when we encounter the first all-zero entry (see continue below).
-		symtabSize = symEntSize * maxFallbackSymbols
-	}
-
+	symtabSize = computeSymtabSize(symtabSize)
 	n := symtabSize / symEntSize
 
 	for i := uint64(0); i < n; i++ {
-		// Calculate pointer to this symbol entry without using unsafe.Slice
-		// to avoid checkptr issues in tests
-		symPtr := unsafe.Add(unsafe.Pointer(symtabAddr), i*symEntSize)
-		s := (*Elf64Sym)(symPtr)
-
-		bind := elf.SymBind(s.Info >> 4)
-		symType := elf.SymType(s.Info & 0xf)
-
-		if s.Name == 0 && s.Value == 0 {
-			continue // null/empty entry
+		if err := t.loadSymbolEntry(symtabAddr, strtabAddr, i, strtabSize); err != nil {
+			return err
 		}
-		if bind != elf.STB_GLOBAL && bind != elf.STB_WEAK {
-			continue
-		}
-		if s.Shndx == uint16(elf.SHN_UNDEF) {
-			continue // undefined; resolved from elsewhere
-		}
-
-		name := ReadCStringMem(strtabAddr, uintptr(s.Name), uintptr(strtabSize))
-		if name == "" {
-			continue
-		}
-
-		sym := &Symbol{
-			Name:    name,
-			Value:   t.base + uintptr(s.Value),
-			Size:    s.Size,
-			Bind:    bind,
-			Type:    symType,
-			Section: elf.SectionIndex(s.Shndx),
-		}
-
-		// Add version information if available.
-		if t.versions != nil {
-			verIdx := t.versions.GetSymbolVersion(uint32(i))
-			sym.VerIdx = verIdx
-			if verIdx > 1 { // 0=local, 1=global/default, >1=specific version
-				sym.VerName = t.versions.GetVersionName(verIdx)
-			}
-		}
-
-		// When multiple versions of a symbol exist, prefer the default (non-hidden) version.
-		// Skip hidden versions if we already have a symbol with that name.
-		if t.shouldSkipSymbol(name, i) {
-			continue
-		}
-
-		t.symbols[name] = sym
 	}
 	return nil
+}
+
+// computeSymtabSize returns the symbol table size, using a fallback if unknown.
+func computeSymtabSize(symtabSize uint64) uint64 {
+	if symtabSize == 0 {
+		return symEntSize * maxFallbackSymbols
+	}
+	return symtabSize
+}
+
+// loadSymbolEntry processes a single symbol table entry.
+func (t *Table) loadSymbolEntry(symtabAddr, strtabAddr uintptr, idx uint64, strtabSize uint64) error {
+	symPtr := unsafe.Add(unsafe.Pointer(symtabAddr), idx*symEntSize)
+	s := (*Elf64Sym)(symPtr)
+
+	if !shouldProcessSymbol(s) {
+		return nil
+	}
+
+	name := ReadCStringMem(strtabAddr, uintptr(s.Name), uintptr(strtabSize))
+	if name == "" {
+		return nil
+	}
+
+	sym := t.buildSymbol(s, name, idx)
+	if t.shouldSkipSymbol(name, idx) {
+		return nil
+	}
+
+	t.symbols[name] = sym
+	return nil
+}
+
+// shouldProcessSymbol checks if a symbol entry should be processed.
+func shouldProcessSymbol(s *Elf64Sym) bool {
+	if s.Name == 0 && s.Value == 0 {
+		return false // null/empty entry
+	}
+	bind := elf.SymBind(s.Info >> 4)
+	if bind != elf.STB_GLOBAL && bind != elf.STB_WEAK {
+		return false
+	}
+	if s.Shndx == uint16(elf.SHN_UNDEF) {
+		return false // undefined; resolved from elsewhere
+	}
+	return true
+}
+
+// buildSymbol constructs a Symbol from an Elf64Sym entry.
+func (t *Table) buildSymbol(s *Elf64Sym, name string, idx uint64) *Symbol {
+	bind := elf.SymBind(s.Info >> 4)
+	symType := elf.SymType(s.Info & 0xf)
+
+	sym := &Symbol{
+		Name:    name,
+		Value:   t.base + uintptr(s.Value),
+		Size:    s.Size,
+		Bind:    bind,
+		Type:    symType,
+		Section: elf.SectionIndex(s.Shndx),
+	}
+
+	if t.versions != nil {
+		verIdx := t.versions.GetSymbolVersion(uint32(idx))
+		sym.VerIdx = verIdx
+		if verIdx > 1 {
+			sym.VerName = t.versions.GetVersionName(verIdx)
+		}
+	}
+
+	return sym
 }
 
 // shouldSkipSymbol determines if a symbol should be skipped during loading

@@ -121,28 +121,12 @@ func collectProgramHeaders(ef *elf.File, obj *ParsedObject) (uint64, uint64, err
 		ph := ef.Progs[i]
 		switch ph.Type {
 		case elf.PT_LOAD:
-			// Validate PT_LOAD segment
-			if ph.Filesz > ph.Memsz {
-				return 0, 0, fmt.Errorf("PT_LOAD segment %d: Filesz (%d) > Memsz (%d)", i, ph.Filesz, ph.Memsz)
-			}
-			// Check for address overflow
-			if ph.Vaddr > ^uint64(0)-ph.Memsz {
-				return 0, 0, fmt.Errorf("PT_LOAD segment %d: address overflow (Vaddr=0x%x, Memsz=0x%x)", i, ph.Vaddr, ph.Memsz)
+			if err := validatePTLoad(ph, i); err != nil {
+				return 0, 0, err
 			}
 			obj.LoadSegments = append(obj.LoadSegments, ph.ProgHeader)
-			end := ph.Vaddr + ph.Memsz
-			if first {
-				minVAddr = ph.Vaddr
-				maxVAddr = end
-				first = false
-			} else {
-				if ph.Vaddr < minVAddr {
-					minVAddr = ph.Vaddr
-				}
-				if end > maxVAddr {
-					maxVAddr = end
-				}
-			}
+			minVAddr, maxVAddr = updateAddressRange(minVAddr, maxVAddr, ph.Vaddr, ph.Memsz, first)
+			first = false
 		case elf.PT_DYNAMIC:
 			hdr := ph.ProgHeader
 			obj.DynamicSeg = &hdr
@@ -155,13 +139,43 @@ func collectProgramHeaders(ef *elf.File, obj *ParsedObject) (uint64, uint64, err
 		}
 	}
 
+	return validateRequiredSegments(obj, minVAddr, maxVAddr)
+}
+
+// validatePTLoad checks that a PT_LOAD segment is valid.
+func validatePTLoad(ph *elf.Prog, index int) error {
+	if ph.Filesz > ph.Memsz {
+		return fmt.Errorf("PT_LOAD segment %d: Filesz (%d) > Memsz (%d)", index, ph.Filesz, ph.Memsz)
+	}
+	if ph.Vaddr > ^uint64(0)-ph.Memsz {
+		return fmt.Errorf("PT_LOAD segment %d: address overflow (Vaddr=0x%x, Memsz=0x%x)", index, ph.Vaddr, ph.Memsz)
+	}
+	return nil
+}
+
+// updateAddressRange updates min/max address range from a PT_LOAD segment.
+func updateAddressRange(minVAddr, maxVAddr, vaddr, memsz uint64, first bool) (uint64, uint64) {
+	end := vaddr + memsz
+	if first {
+		return vaddr, end
+	}
+	if vaddr < minVAddr {
+		minVAddr = vaddr
+	}
+	if end > maxVAddr {
+		maxVAddr = end
+	}
+	return minVAddr, maxVAddr
+}
+
+// validateRequiredSegments checks that required segments are present.
+func validateRequiredSegments(obj *ParsedObject, minVAddr, maxVAddr uint64) (uint64, uint64, error) {
 	if len(obj.LoadSegments) == 0 {
 		return 0, 0, fmt.Errorf("no PT_LOAD segments")
 	}
 	if obj.DynamicSeg == nil {
 		return 0, 0, fmt.Errorf("no PT_DYNAMIC segment")
 	}
-
 	return minVAddr, maxVAddr, nil
 }
 
@@ -206,72 +220,75 @@ func readDynamicSection(f *os.File, obj *ParsedObject) error {
 // validateDynEntries performs basic sanity checks on critical dynamic tag values
 // to prevent out-of-bounds access and other malformed ELF issues.
 func validateDynEntries(obj *ParsedObject) error {
+	if err := validateAddressTags(obj); err != nil {
+		return err
+	}
+	return validateSizeTags(obj)
+}
+
+// validateAddressTags checks that address-type dynamic tags are within valid ranges.
+func validateAddressTags(obj *ParsedObject) error {
 	maxVAddr := obj.BaseVAddr + obj.MemSize
-
-	// Helper function to validate address-type tags
-	validateAddr := func(tag elf.DynTag) error {
-		if val, ok := obj.DynEntries[tag]; ok {
-			// Value of 0 is explicitly invalid for address tags
-			if val == 0 {
-				return fmt.Errorf("invalid %v: address is zero", tag)
-			}
-			// Value should be within the loadable address space
-			// Note: We can't validate against individual PT_LOAD segments here,
-			// but we can at least check against the overall range
-			if val < obj.BaseVAddr || val >= maxVAddr {
-				return fmt.Errorf("invalid %v: address 0x%x out of range [0x%x, 0x%x)",
-					tag, val, obj.BaseVAddr, maxVAddr)
-			}
-		}
-		return nil
-	}
-
-	// Validate address-type dynamic tags
 	addressTags := []elf.DynTag{
-		elf.DT_SYMTAB,
-		elf.DT_STRTAB,
-		elf.DT_RELA,
-		elf.DT_JMPREL,
-		elf.DT_HASH,
-		elf.DT_GNU_HASH,
-		elf.DT_INIT,
-		elf.DT_FINI,
-		elf.DT_INIT_ARRAY,
-		elf.DT_FINI_ARRAY,
-		elf.DT_VERSYM,
-		elf.DT_VERDEF,
-		elf.DT_VERNEED,
+		elf.DT_SYMTAB, elf.DT_STRTAB, elf.DT_RELA, elf.DT_JMPREL,
+		elf.DT_HASH, elf.DT_GNU_HASH, elf.DT_INIT, elf.DT_FINI,
+		elf.DT_INIT_ARRAY, elf.DT_FINI_ARRAY, elf.DT_VERSYM,
+		elf.DT_VERDEF, elf.DT_VERNEED,
 	}
-
 	for _, tag := range addressTags {
-		if err := validateAddr(tag); err != nil {
+		if err := validateAddressTag(obj, tag, maxVAddr); err != nil {
 			return err
 		}
 	}
+	return nil
+}
 
-	// Validate size-related tags are reasonable
-	if strsz, ok := obj.DynEntries[elf.DT_STRSZ]; ok {
-		if strsz == 0 {
-			return fmt.Errorf("invalid DT_STRSZ: size is zero")
-		}
-		// String table shouldn't be larger than entire mapped region
-		if strsz > obj.MemSize {
-			return fmt.Errorf("invalid DT_STRSZ: size 0x%x exceeds memory size 0x%x", strsz, obj.MemSize)
+// validateAddressTag checks a single address tag for validity.
+func validateAddressTag(obj *ParsedObject, tag elf.DynTag, maxVAddr uint64) error {
+	val, ok := obj.DynEntries[tag]
+	if !ok {
+		return nil
+	}
+	if val == 0 {
+		return fmt.Errorf("invalid %v: address is zero", tag)
+	}
+	if val < obj.BaseVAddr || val >= maxVAddr {
+		return fmt.Errorf("invalid %v: address 0x%x out of range [0x%x, 0x%x)",
+			tag, val, obj.BaseVAddr, maxVAddr)
+	}
+	return nil
+}
+
+// validateSizeTags checks that size-related tags don't exceed memory bounds.
+func validateSizeTags(obj *ParsedObject) error {
+	sizeTags := []struct {
+		tag  elf.DynTag
+		name string
+	}{
+		{elf.DT_STRSZ, "DT_STRSZ"},
+		{elf.DT_RELASZ, "DT_RELASZ"},
+		{elf.DT_PLTRELSZ, "DT_PLTRELSZ"},
+	}
+	for _, st := range sizeTags {
+		if err := validateSizeTag(obj, st.tag, st.name); err != nil {
+			return err
 		}
 	}
+	return nil
+}
 
-	if relasz, ok := obj.DynEntries[elf.DT_RELASZ]; ok {
-		if relasz > obj.MemSize {
-			return fmt.Errorf("invalid DT_RELASZ: size 0x%x exceeds memory size 0x%x", relasz, obj.MemSize)
-		}
+// validateSizeTag checks a single size tag for validity.
+func validateSizeTag(obj *ParsedObject, tag elf.DynTag, name string) error {
+	size, ok := obj.DynEntries[tag]
+	if !ok {
+		return nil
 	}
-
-	if pltrelsz, ok := obj.DynEntries[elf.DT_PLTRELSZ]; ok {
-		if pltrelsz > obj.MemSize {
-			return fmt.Errorf("invalid DT_PLTRELSZ: size 0x%x exceeds memory size 0x%x", pltrelsz, obj.MemSize)
-		}
+	if tag == elf.DT_STRSZ && size == 0 {
+		return fmt.Errorf("invalid %s: size is zero", name)
 	}
-
+	if size > obj.MemSize {
+		return fmt.Errorf("invalid %s: size 0x%x exceeds memory size 0x%x", name, size, obj.MemSize)
+	}
 	return nil
 }
 

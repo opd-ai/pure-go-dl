@@ -57,7 +57,6 @@ type globalResolver struct{}
 // When multiple libraries define the same symbol, strong (GLOBAL/LOCAL) symbols
 // take precedence over weak (WEAK) symbols per ELF linking rules.
 func (globalResolver) Resolve(name string) (uintptr, error) {
-	// Special case: provide __tls_get_addr for TLS support
 	if name == "__tls_get_addr" {
 		return tls.RegisterTLSGetAddr(), nil
 	}
@@ -65,40 +64,17 @@ func (globalResolver) Resolve(name string) (uintptr, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	// Search for the symbol, preferring strong symbols over weak ones.
-	// First pass: look for a strong (non-weak) symbol.
-	for _, lib := range globals {
-		if sym, ok := lib.obj.Symbols.Lookup(name); ok {
-			if sym.Bind != elf.STB_WEAK {
-				// Found a strong symbol - use it immediately.
-				if sym.Type == elf.STT_GNU_IFUNC {
-					return loader.CallIfuncResolver(sym.Value), nil
-				}
-				return sym.Value, nil
-			}
-		}
+	addr, err := searchGlobalsForSymbol(name, false)
+	if err != nil {
+		return 0, err
 	}
-
-	// Second pass: if no strong symbol found, accept a weak symbol.
-	for _, lib := range globals {
-		if sym, ok := lib.obj.Symbols.Lookup(name); ok {
-			if sym.Bind == elf.STB_WEAK {
-				if sym.Type == elf.STT_GNU_IFUNC {
-					return loader.CallIfuncResolver(sym.Value), nil
-				}
-				return sym.Value, nil
-			}
-		}
-	}
-
-	return 0, fmt.Errorf("dl: undefined symbol %q", name)
+	return addr, nil
 }
 
 // ResolveWithLibrary looks up a symbol in all RTLD_GLOBAL libraries and returns
 // both its address and the providing library's Object for TLS module tracking.
 // Returns nil Object for runtime-provided symbols like __tls_get_addr.
 func (globalResolver) ResolveWithLibrary(name string) (uintptr, *loader.Object, error) {
-	// Special case: runtime-provided symbols have no associated library.
 	if name == "__tls_get_addr" {
 		return tls.RegisterTLSGetAddr(), nil, nil
 	}
@@ -106,35 +82,49 @@ func (globalResolver) ResolveWithLibrary(name string) (uintptr, *loader.Object, 
 	mu.Lock()
 	defer mu.Unlock()
 
-	// Search for the symbol, preferring strong symbols over weak ones.
-	// First pass: look for a strong (non-weak) symbol.
+	return searchGlobalsWithLibrary(name)
+}
+
+// searchGlobalsForSymbol searches for a symbol in global libraries, preferring strong over weak.
+func searchGlobalsForSymbol(name string, returnLibrary bool) (uintptr, error) {
+	// First pass: look for strong symbols
 	for _, lib := range globals {
-		if sym, ok := lib.obj.Symbols.Lookup(name); ok {
-			if sym.Bind != elf.STB_WEAK {
-				// Found a strong symbol - use it immediately.
-				addr := sym.Value
-				if sym.Type == elf.STT_GNU_IFUNC {
-					addr = loader.CallIfuncResolver(sym.Value)
-				}
-				return addr, lib.obj, nil
-			}
+		if sym, ok := lib.obj.Symbols.Lookup(name); ok && sym.Bind != elf.STB_WEAK {
+			return resolveSymbolAddr(sym), nil
 		}
 	}
-
-	// Second pass: if no strong symbol found, accept a weak symbol.
+	// Second pass: accept weak symbols
 	for _, lib := range globals {
-		if sym, ok := lib.obj.Symbols.Lookup(name); ok {
-			if sym.Bind == elf.STB_WEAK {
-				addr := sym.Value
-				if sym.Type == elf.STT_GNU_IFUNC {
-					addr = loader.CallIfuncResolver(sym.Value)
-				}
-				return addr, lib.obj, nil
-			}
+		if sym, ok := lib.obj.Symbols.Lookup(name); ok && sym.Bind == elf.STB_WEAK {
+			return resolveSymbolAddr(sym), nil
 		}
 	}
+	return 0, fmt.Errorf("dl: undefined symbol %q", name)
+}
 
+// searchGlobalsWithLibrary searches for a symbol and returns both address and providing library.
+func searchGlobalsWithLibrary(name string) (uintptr, *loader.Object, error) {
+	// First pass: look for strong symbols
+	for _, lib := range globals {
+		if sym, ok := lib.obj.Symbols.Lookup(name); ok && sym.Bind != elf.STB_WEAK {
+			return resolveSymbolAddr(sym), lib.obj, nil
+		}
+	}
+	// Second pass: accept weak symbols
+	for _, lib := range globals {
+		if sym, ok := lib.obj.Symbols.Lookup(name); ok && sym.Bind == elf.STB_WEAK {
+			return resolveSymbolAddr(sym), lib.obj, nil
+		}
+	}
 	return 0, nil, fmt.Errorf("dl: undefined symbol %q", name)
+}
+
+// resolveSymbolAddr returns the symbol address, resolving IFUNCs if needed.
+func resolveSymbolAddr(sym *symbol.Symbol) uintptr {
+	if sym.Type == elf.STT_GNU_IFUNC {
+		return loader.CallIfuncResolver(sym.Value)
+	}
+	return sym.Value
 }
 
 // Open loads the shared library identified by name (path or soname).

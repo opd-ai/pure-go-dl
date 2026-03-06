@@ -43,53 +43,75 @@ func splitPaths(paths string) []string {
 // runpath and rpath are colon-separated path lists from DT_RUNPATH/DT_RPATH
 // of the requesting library. They may be empty.
 func findLibrary(name, runpath, rpath string) (string, error) {
-	// If name is already an absolute or relative path, use it directly.
-	if filepath.IsAbs(name) || strings.ContainsRune(name, '/') {
-		if _, err := os.Stat(name); err == nil {
-			return name, nil
-		}
-		return "", fmt.Errorf("dl: library not found: %q", name)
+	if path, err := checkDirectPath(name); path != "" || err != nil {
+		return path, err
 	}
 
-	var searchPaths []string
-
-	// 1. DT_RUNPATH (modern, takes precedence over LD_LIBRARY_PATH)
-	searchPaths = append(searchPaths, splitPaths(runpath)...)
-
-	// 2. LD_LIBRARY_PATH
-	searchPaths = append(searchPaths, splitPaths(os.Getenv("LD_LIBRARY_PATH"))...)
-
-	// Try paths from RUNPATH and LD_LIBRARY_PATH first
-	for _, dir := range searchPaths {
-		candidate := filepath.Join(dir, name)
-		if _, err := os.Stat(candidate); err == nil {
-			return candidate, nil
-		}
-	}
-
-	// 3. /etc/ld.so.cache lookup (O(1) map lookup)
-	if cachedPath := lookupInCache(name); cachedPath != "" {
-		if _, err := os.Stat(cachedPath); err == nil {
-			return cachedPath, nil
-		}
-	}
-
-	// 4. DT_RPATH (legacy, lower priority than cache)
-	rpathDirs := splitPaths(rpath)
-	for _, dir := range rpathDirs {
-		candidate := filepath.Join(dir, name)
-		if _, err := os.Stat(candidate); err == nil {
-			return candidate, nil
-		}
-	}
-
-	// 5. Default system paths (fallback)
-	for _, dir := range defaultSearchPaths {
-		candidate := filepath.Join(dir, name)
-		if _, err := os.Stat(candidate); err == nil {
-			return candidate, nil
-		}
+	searchPaths := buildSearchPaths(runpath, rpath)
+	if path := searchInPaths(name, searchPaths); path != "" {
+		return path, nil
 	}
 
 	return "", fmt.Errorf("dl: library %q not found in search paths", name)
+}
+
+// checkDirectPath returns the path if name is absolute or contains a slash.
+// Returns ("", nil) if not a direct path; (path, nil) if found; ("", error) if not found.
+func checkDirectPath(name string) (string, error) {
+	if !filepath.IsAbs(name) && !strings.ContainsRune(name, '/') {
+		return "", nil // Not a direct path, continue searching
+	}
+	if _, err := os.Stat(name); err == nil {
+		return name, nil
+	}
+	return "", fmt.Errorf("dl: library not found: %q", name)
+}
+
+// buildSearchPaths constructs the ordered list of directories to search.
+func buildSearchPaths(runpath, rpath string) []struct {
+	dirs     []string
+	useCache bool
+} {
+	return []struct {
+		dirs     []string
+		useCache bool
+	}{
+		{splitPaths(runpath), false},                      // 1. DT_RUNPATH
+		{splitPaths(os.Getenv("LD_LIBRARY_PATH")), false}, // 2. LD_LIBRARY_PATH
+		{nil, true},                                       // 3. /etc/ld.so.cache
+		{splitPaths(rpath), false},                        // 4. DT_RPATH
+		{defaultSearchPaths, false},                       // 5. Default paths
+	}
+}
+
+// searchInPaths searches for name in the ordered list of search locations.
+func searchInPaths(name string, searchPaths []struct {
+	dirs     []string
+	useCache bool
+}) string {
+	for _, sp := range searchPaths {
+		if sp.useCache {
+			if cachedPath := lookupInCache(name); cachedPath != "" {
+				if _, err := os.Stat(cachedPath); err == nil {
+					return cachedPath
+				}
+			}
+			continue
+		}
+		if path := searchInDirs(name, sp.dirs); path != "" {
+			return path
+		}
+	}
+	return ""
+}
+
+// searchInDirs searches for name in a list of directories.
+func searchInDirs(name string, dirs []string) string {
+	for _, dir := range dirs {
+		candidate := filepath.Join(dir, name)
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+	return ""
 }

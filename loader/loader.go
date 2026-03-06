@@ -146,66 +146,97 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 
 // mapSegments maps all PT_LOAD segments from the file descriptor into memory.
 func mapSegments(obj *Object, parsed *goelf.ParsedObject, fd int) error {
-	base := obj.Base
 	for _, ph := range parsed.LoadSegments {
-		alignedVAddr := pageDown(ph.Vaddr)
-		alignedFileOff := pageDown(ph.Off)
-		leading := ph.Vaddr - alignedVAddr
-		alignedFileSize := pageUp(ph.Filesz + leading)
-		alignedMemSize := pageUp(ph.Memsz + leading)
-
-		prot := elfProt(ph.Flags)
-		mapAddr := base + uintptr(alignedVAddr-parsed.BaseVAddr)
-
-		mapProt := prot
-		if ph.Memsz > ph.Filesz {
-			mapProt |= mmap.ProtWrite
+		if err := mapSegment(obj, parsed, ph, fd); err != nil {
+			return err
 		}
+	}
+	return nil
+}
 
-		if ph.Filesz > 0 {
-			_, err := mmap.MapFixed(
-				mapAddr, uintptr(alignedFileSize),
-				mapProt, mmap.MapPrivate,
-				fd, int64(alignedFileOff),
-			)
-			if err != nil {
-				return fmt.Errorf("loader: map segment at 0x%x: %w", mapAddr, err)
-			}
+// mapSegment maps a single PT_LOAD segment into memory.
+func mapSegment(obj *Object, parsed *goelf.ParsedObject, ph elf.ProgHeader, fd int) error {
+	alignedVAddr := pageDown(ph.Vaddr)
+	alignedFileOff := pageDown(ph.Off)
+	leading := ph.Vaddr - alignedVAddr
+	alignedFileSize := pageUp(ph.Filesz + leading)
+	alignedMemSize := pageUp(ph.Memsz + leading)
+
+	prot := elfProt(ph.Flags)
+	mapAddr := obj.Base + uintptr(alignedVAddr-parsed.BaseVAddr)
+	mapProt := computeMapProt(prot, ph.Memsz, ph.Filesz)
+
+	if err := mapFileRegion(mapAddr, alignedFileSize, mapProt, fd, alignedFileOff); err != nil {
+		return err
+	}
+	if err := mapBSSRegion(mapAddr, ph, alignedFileSize, alignedMemSize, prot, mapProt); err != nil {
+		return err
+	}
+
+	obj.Segments = append(obj.Segments, Segment{
+		Addr:     mapAddr,
+		Size:     uintptr(alignedMemSize),
+		Prot:     prot,
+		FileOff:  alignedFileOff,
+		MemSize:  ph.Memsz,
+		FileSize: ph.Filesz,
+	})
+	return nil
+}
+
+// computeMapProt returns the effective protection flags for mapping.
+func computeMapProt(prot int, memsz, filesz uint64) int {
+	if memsz > filesz {
+		return prot | mmap.ProtWrite
+	}
+	return prot
+}
+
+// mapFileRegion maps the file-backed portion of a segment.
+func mapFileRegion(mapAddr uintptr, alignedFileSize uint64, mapProt, fd int, alignedFileOff uint64) error {
+	if alignedFileSize == 0 {
+		return nil
+	}
+	_, err := mmap.MapFixed(
+		mapAddr, uintptr(alignedFileSize),
+		mapProt, mmap.MapPrivate,
+		fd, int64(alignedFileOff),
+	)
+	if err != nil {
+		return fmt.Errorf("loader: map segment at 0x%x: %w", mapAddr, err)
+	}
+	return nil
+}
+
+// mapBSSRegion maps the BSS (zero-initialized) portion and restores protection.
+func mapBSSRegion(mapAddr uintptr, ph elf.ProgHeader, alignedFileSize, alignedMemSize uint64, prot, mapProt int) error {
+	if ph.Memsz <= ph.Filesz {
+		return nil
+	}
+
+	tailStart := mapAddr + uintptr(alignedFileSize)
+	tailSize := uintptr(alignedMemSize) - uintptr(alignedFileSize)
+	if tailSize > 0 {
+		_, err := mmap.MapFixed(
+			tailStart, tailSize,
+			mapProt, mmap.MapPrivate|mmap.MapAnonymous,
+			-1, 0,
+		)
+		if err != nil {
+			return fmt.Errorf("loader: map BSS at 0x%x: %w", tailStart, err)
 		}
+	}
 
-		if ph.Memsz > ph.Filesz {
-			tailStart := mapAddr + uintptr(alignedFileSize)
-			tailSize := uintptr(alignedMemSize) - uintptr(alignedFileSize)
-			if tailSize > 0 {
-				_, err := mmap.MapFixed(
-					tailStart, tailSize,
-					mapProt, mmap.MapPrivate|mmap.MapAnonymous,
-					-1, 0,
-				)
-				if err != nil {
-					return fmt.Errorf("loader: map BSS at 0x%x: %w", tailStart, err)
-				}
-			}
-			bssStart := mapAddr + uintptr(ph.Vaddr-alignedVAddr) + uintptr(ph.Filesz)
-			pageEnd := mapAddr + uintptr(alignedFileSize)
-			if pageEnd > bssStart {
-				zeroMem(bssStart, pageEnd-bssStart)
-			}
-			if prot != mapProt {
-				if err := mmap.Protect(mapAddr, uintptr(alignedMemSize), prot); err != nil {
-					return fmt.Errorf("loader: mprotect segment: %w", err)
-				}
-			}
+	bssStart := mapAddr + uintptr(ph.Vaddr-pageDown(ph.Vaddr)) + uintptr(ph.Filesz)
+	pageEnd := mapAddr + uintptr(alignedFileSize)
+	if pageEnd > bssStart {
+		zeroMem(bssStart, pageEnd-bssStart)
+	}
+
+	if prot != mapProt {
+		if err := mmap.Protect(mapAddr, uintptr(alignedMemSize), prot); err != nil {
+			return fmt.Errorf("loader: mprotect segment: %w", err)
 		}
-
-		obj.Segments = append(obj.Segments, Segment{
-			Addr:     mapAddr,
-			Size:     uintptr(alignedMemSize),
-			Prot:     prot,
-			FileOff:  alignedFileOff,
-			MemSize:  ph.Memsz,
-			FileSize: ph.Filesz,
-		})
 	}
 	return nil
 }
@@ -382,43 +413,42 @@ func finalizeObject(obj *Object, parsed *goelf.ParsedObject, resolver SymbolReso
 	if err := processRelocations(obj, resolver); err != nil {
 		return fmt.Errorf("loader: relocations: %w", err)
 	}
+	applyRELROProtection(obj, parsed)
+	runConstructors(obj)
+	return nil
+}
 
-	if relro := parsed.GNURelroSeg; relro != nil {
-		if relro.Vaddr >= parsed.BaseVAddr {
-			relroAddr := obj.Base + uintptr(relro.Vaddr-parsed.BaseVAddr)
-			relroSize := uintptr(pageUp(relro.Memsz))
-			if err := mmap.Protect(relroAddr, relroSize, mmap.ProtRead); err != nil {
-				// RELRO is a defensive security feature; don't fail loading if it fails.
-				// In some environments (e.g., tests, containers), mprotect may not work.
-				// Silently continue - the library is still functional, just not hardened.
-				_ = err
-			}
-		}
+// applyRELROProtection applies read-only protection to GNU_RELRO segment.
+func applyRELROProtection(obj *Object, parsed *goelf.ParsedObject) {
+	if relro := parsed.GNURelroSeg; relro != nil && relro.Vaddr >= parsed.BaseVAddr {
+		relroAddr := obj.Base + uintptr(relro.Vaddr-parsed.BaseVAddr)
+		relroSize := uintptr(pageUp(relro.Memsz))
+		_ = mmap.Protect(relroAddr, relroSize, mmap.ProtRead)
 	}
+}
 
+// runConstructors executes DT_INIT and DT_INIT_ARRAY initialization functions.
+func runConstructors(obj *Object) {
 	if obj.InitAddr != 0 {
 		callFunc(obj.InitAddr)
 	}
-	if obj.InitArray != 0 && obj.InitArraySz > 0 {
-		n := obj.InitArraySz / 8
-		initArrayPtr := unsafe.Pointer(obj.InitArray)
-		for i := uint64(0); i < n; i++ {
-			fn := *(*uintptr)(unsafe.Add(initArrayPtr, i*8))
-			if fn != 0 {
-				// For system libraries like glibc, init_array entries may not have
-				// R_X86_64_RELATIVE relocations and contain raw virtual addresses.
-				// Detect this case and adjust by base address.
-				// Heuristic: if fn looks like a virtual address within the library's
-				// address space (less than MemSize), it needs base adjustment.
-				if fn < uintptr(obj.Parsed.MemSize) {
-					fn = obj.Base + fn
-				}
-				callFunc(fn)
-			}
+	runInitArray(obj)
+}
+
+// runInitArray executes DT_INIT_ARRAY initialization functions.
+func runInitArray(obj *Object) {
+	if obj.InitArray == 0 || obj.InitArraySz == 0 {
+		return
+	}
+	n := obj.InitArraySz / 8
+	initArrayPtr := unsafe.Pointer(obj.InitArray)
+	for i := uint64(0); i < n; i++ {
+		fn := *(*uintptr)(unsafe.Add(initArrayPtr, i*8))
+		if fn != 0 {
+			fn = adjustFunctionAddr(fn, obj)
+			callFunc(fn)
 		}
 	}
-
-	return nil
 }
 
 // processRelocations applies all RELA and JMPREL relocations in obj.
@@ -1015,56 +1045,72 @@ func resolveSymForReloc(obj *Object, symIdx uint32, resolver SymbolResolver) (ui
 
 // Unload runs destructors and unmaps all segments of obj.
 func Unload(obj *Object) error {
-	// Run DT_FINI_ARRAY in reverse order.
-	// Note: System libraries like glibc may have fini functions that expect runtime
-	// state that our minimal loader doesn't provide. We catch panics to allow cleanup
-	// to continue even if individual fini functions fail.
-	if obj.FiniArray != 0 && obj.FiniArraySz > 0 {
-		n := obj.FiniArraySz / 8
-		finiArrayPtr := unsafe.Pointer(obj.FiniArray)
-		for i := n; i > 0; i-- {
-			fn := *(*uintptr)(unsafe.Add(finiArrayPtr, (i-1)*8))
-			if fn != 0 {
-				// Apply same heuristic as init_array: adjust if looks like virtual address.
-				if fn < uintptr(obj.Parsed.MemSize) {
-					fn = obj.Base + fn
-				}
-				func() {
-					defer func() {
-						if r := recover(); r != nil {
-							// Fini function panicked - log but continue cleanup
-							_ = r
-						}
-					}()
-					callFunc(fn)
-				}()
-			}
-		}
+	runFiniCallbacks(obj)
+	if err := unmapGOTPages(obj); err != nil {
+		return err
 	}
-	// Run DT_FINI.
-	if obj.FiniAddr != 0 {
-		func() {
-			defer func() {
-				if r := recover(); r != nil {
-					_ = r
-				}
-			}()
-			callFunc(obj.FiniAddr)
-		}()
-	}
-
-	// Unmap all GOT pages if allocated.
-	if len(obj.GOTPages) > 0 {
-		const gotPageSize = 4096
-		for _, pageAddr := range obj.GOTPages {
-			if err := mmap.Unmap(pageAddr, gotPageSize); err != nil {
-				return fmt.Errorf("failed to unmap GOT page at %#x: %w", pageAddr, err)
-			}
-		}
-	}
-
-	// Unmap everything.
 	return mmap.Unmap(obj.Base, uintptr(obj.Parsed.MemSize))
+}
+
+// runFiniCallbacks executes DT_FINI_ARRAY and DT_FINI destructors.
+func runFiniCallbacks(obj *Object) {
+	runFiniArray(obj)
+	runFiniFunction(obj)
+}
+
+// runFiniArray executes DT_FINI_ARRAY in reverse order with panic recovery.
+func runFiniArray(obj *Object) {
+	if obj.FiniArray == 0 || obj.FiniArraySz == 0 {
+		return
+	}
+	n := obj.FiniArraySz / 8
+	finiArrayPtr := unsafe.Pointer(obj.FiniArray)
+	for i := n; i > 0; i-- {
+		fn := *(*uintptr)(unsafe.Add(finiArrayPtr, (i-1)*8))
+		if fn != 0 {
+			fn = adjustFunctionAddr(fn, obj)
+			callFuncSafe(fn)
+		}
+	}
+}
+
+// runFiniFunction executes DT_FINI with panic recovery.
+func runFiniFunction(obj *Object) {
+	if obj.FiniAddr != 0 {
+		callFuncSafe(obj.FiniAddr)
+	}
+}
+
+// adjustFunctionAddr converts virtual addresses to absolute addresses.
+func adjustFunctionAddr(fn uintptr, obj *Object) uintptr {
+	if fn < uintptr(obj.Parsed.MemSize) {
+		return obj.Base + fn
+	}
+	return fn
+}
+
+// callFuncSafe calls fn with panic recovery to allow cleanup to continue.
+func callFuncSafe(fn uintptr) {
+	defer func() {
+		if r := recover(); r != nil {
+			_ = r // Ignore panics during cleanup
+		}
+	}()
+	callFunc(fn)
+}
+
+// unmapGOTPages unmaps all dynamically allocated GOT pages.
+func unmapGOTPages(obj *Object) error {
+	if len(obj.GOTPages) == 0 {
+		return nil
+	}
+	const gotPageSize = 4096
+	for _, pageAddr := range obj.GOTPages {
+		if err := mmap.Unmap(pageAddr, gotPageSize); err != nil {
+			return fmt.Errorf("failed to unmap GOT page at %#x: %w", pageAddr, err)
+		}
+	}
+	return nil
 }
 
 // zeroMem zeroes count bytes starting at addr.

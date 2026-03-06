@@ -139,6 +139,85 @@ func (l *Library) Close() error
 
 Decrements reference count and unloads the library when it reaches zero. Destructors are run in reverse dependency order.
 
+### Advanced Usage
+
+The `loader` package provides low-level APIs for direct control over library loading and symbol resolution. These are typically used when building custom dynamic linkers or when you need finer control than the `dl` package provides.
+
+#### Direct Loading
+
+```go
+import "github.com/opd-ai/pure-go-dl/loader"
+
+func Load(path string, resolver SymbolResolver) (*Object, error)
+```
+
+Maps a shared object into memory and applies relocations. The `resolver` is used to look up symbols from already-loaded libraries. Returns an `Object` representing the fully loaded library.
+
+```go
+func Unload(obj *Object) error
+```
+
+Runs destructors and unmaps all segments of a loaded object. Should be called when the library is no longer needed.
+
+#### Symbol Resolution Interface
+
+```go
+type SymbolResolver interface {
+    Resolve(name string) (uintptr, error)
+    ResolveWithLibrary(name string) (uintptr, *Object, error)
+}
+```
+
+Custom symbol resolvers can implement this interface to control how undefined symbols are resolved during relocation. The `ResolveWithLibrary` method returns both the symbol address and the providing library's `Object` (needed for TLS module tracking).
+
+#### Loaded Object Structure
+
+```go
+type Object struct {
+    Parsed   *goelf.ParsedObject
+    Base     uintptr
+    Segments []Segment
+    Symbols  *symbol.Table
+    // ... additional fields for relocations, TLS, GOT management
+}
+```
+
+Represents a fully loaded shared object with its memory mappings, symbol table, and runtime metadata. The `Object` is returned by `Load()` and passed to `Unload()`.
+
+#### Memory Segment Information
+
+```go
+type Segment struct {
+    Addr     uintptr
+    Size     uintptr
+    Prot     int
+    FileOff  uint64
+    MemSize  uint64
+    FileSize uint64
+}
+```
+
+Describes a single mapped `PT_LOAD` region from the ELF file. Each `Object` contains a slice of segments representing all loaded memory regions.
+
+#### Symbol Table Introspection
+
+```go
+func (l *Library) PrintSymbols(w io.Writer)
+```
+
+Prints all exported symbols from the library to the provided writer in the format `0x{address}  {symbol_name}`, sorted alphabetically by symbol name. Useful for debugging and introspection.
+
+Example:
+```go
+lib, _ := dl.Open("/lib/x86_64-linux-gnu/libm.so.6")
+defer lib.Close()
+lib.PrintSymbols(os.Stdout)
+// Output:
+// 0x00007f1234567890  sin
+// 0x00007f12345678a0  cos
+// ...
+```
+
 ## Current Status
 
 ### Completed Milestones

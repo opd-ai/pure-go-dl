@@ -33,8 +33,15 @@ This document tracks audit status for all Go packages in the pure-go-dl project.
   - Naming: 4 violations ⚠️ (RTLD_* constants intentionally use POSIX names)
   - Overall: LOW risk, production-ready
 
+- [x] **loader**: 4/6 gates passing — see [loader/AUDIT.md](loader/AUDIT.md)
+  - Test coverage: 65.7% ✅ (meets threshold by 0.7pp margin)
+  - Documentation: 100% ✅ (perfect — all 3 exported symbols + comprehensive package doc)
+  - Function length: 3 functions >30 lines ⚠️ (advisory only — TLS orchestration complexity)
+  - Naming: 139 violations ⚠️ (ELF relocation constants intentionally use ABI names)
+  - **Race detector failure:** ❌ HIGH severity — checkptr violation in bounds_violation_test.go
+  - Overall: MEDIUM risk, **critical race issue must be fixed before production**
+
 ### Pending Audits
-- [ ] **loader** — Core loading/relocation engine (2 importers, 4 internal imports)
 - [ ] **cmd/pgldd** — CLI tool
 
 ## Prioritization Rationale
@@ -58,12 +65,14 @@ Packages ordered by integration surface (importers) and architectural criticalit
 | Naming | 0 violations | Enforce Go conventions |
 
 ## Summary Statistics
-- **Audited:** 5/7 packages (71.4%)
-- **Passing all gates:** 1/5 (internal/mmap)
+- **Audited:** 6/7 packages (85.7%)
+- **Passing all gates:** 1/6 (internal/mmap)
 - **High-risk packages:** 0
-- **Medium-risk packages:** 1 (symbol — test coverage critical gap)
+- **Medium-risk packages:** 2 (symbol — test coverage gap; loader — race detector failure)
 - **Low-risk packages:** 4 (elf, internal/mmap, internal/tls, dl)
-- **Blockers:** Symbol package test coverage must reach ≥65% before production deployment
+- **Blockers:**
+  1. **CRITICAL:** Loader race detector failure (checkptr violation) must be fixed
+  2. Symbol package test coverage must reach ≥65% before production deployment
 
 ---
 *Last updated: 2026-03-06*

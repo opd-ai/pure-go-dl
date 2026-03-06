@@ -54,6 +54,8 @@ type globalResolver struct{}
 // It searches RTLD_GLOBAL libraries in load order and returns the first match.
 // Special symbols like __tls_get_addr are provided by the runtime.
 // IFUNC symbols are automatically resolved by calling their resolver functions.
+// When multiple libraries define the same symbol, strong (GLOBAL/LOCAL) symbols
+// take precedence over weak (WEAK) symbols per ELF linking rules.
 func (globalResolver) Resolve(name string) (uintptr, error) {
 	// Special case: provide __tls_get_addr for TLS support
 	if name == "__tls_get_addr" {
@@ -62,15 +64,33 @@ func (globalResolver) Resolve(name string) (uintptr, error) {
 
 	mu.Lock()
 	defer mu.Unlock()
+
+	// Search for the symbol, preferring strong symbols over weak ones.
+	// First pass: look for a strong (non-weak) symbol.
 	for _, lib := range globals {
 		if sym, ok := lib.obj.Symbols.Lookup(name); ok {
-			// If this is an IFUNC symbol, call the resolver to get the real address.
-			if sym.Type == elf.STT_GNU_IFUNC {
-				return loader.CallIfuncResolver(sym.Value), nil
+			if sym.Bind != elf.STB_WEAK {
+				// Found a strong symbol - use it immediately.
+				if sym.Type == elf.STT_GNU_IFUNC {
+					return loader.CallIfuncResolver(sym.Value), nil
+				}
+				return sym.Value, nil
 			}
-			return sym.Value, nil
 		}
 	}
+
+	// Second pass: if no strong symbol found, accept a weak symbol.
+	for _, lib := range globals {
+		if sym, ok := lib.obj.Symbols.Lookup(name); ok {
+			if sym.Bind == elf.STB_WEAK {
+				if sym.Type == elf.STT_GNU_IFUNC {
+					return loader.CallIfuncResolver(sym.Value), nil
+				}
+				return sym.Value, nil
+			}
+		}
+	}
+
 	return 0, fmt.Errorf("dl: undefined symbol %q", name)
 }
 

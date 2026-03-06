@@ -166,6 +166,87 @@ func TestWeakSymbolsResolveToZero(t *testing.T) {
 	}
 }
 
+func TestWeakStrongSymbolPrecedence(t *testing.T) {
+	// This test verifies that when both weak and strong symbols are defined,
+	// the strong symbol takes precedence during symbol resolution.
+	//
+	// Scenario:
+	// - libweak_provider.so defines get_value() as WEAK (returns 100)
+	// - libstrong_provider.so defines get_value() as GLOBAL/STRONG (returns 200)
+	// - libweak_user.so calls get_value()
+	//
+	// Expected behavior when both are loaded as RTLD_GLOBAL:
+	// libweak_user should call the strong version (200, not 100)
+
+	// First, load both providers as RTLD_GLOBAL
+	weakLib, err := Open("../testdata/libweak_provider.so", RTLD_GLOBAL)
+	if err != nil {
+		t.Fatalf("Failed to load weak provider: %v", err)
+	}
+	defer weakLib.Close()
+
+	strongLib, err := Open("../testdata/libstrong_provider.so", RTLD_GLOBAL)
+	if err != nil {
+		t.Fatalf("Failed to load strong provider: %v", err)
+	}
+	defer strongLib.Close()
+
+	// Now load the user library which has an undefined reference to get_value
+	userLib, err := Open("../testdata/libweak_user.so")
+	if err != nil {
+		t.Fatalf("Failed to load user library: %v", err)
+	}
+	defer userLib.Close()
+
+	// Bind and call the function
+	var callGetValue func() int
+	err = userLib.Bind("call_get_value", &callGetValue)
+	if err != nil {
+		t.Fatalf("Failed to bind call_get_value: %v", err)
+	}
+
+	result := callGetValue()
+
+	// The strong symbol should take precedence, so result should be 200
+	if result != 200 {
+		t.Errorf("Weak/strong precedence failed: got %d, expected 200 (strong symbol)", result)
+		t.Logf("This indicates that weak symbols are not being properly overridden by strong symbols")
+	}
+
+	// Also test the reverse order: load strong first, then weak
+	// This ensures that the first-loaded symbol doesn't always win
+	t.Run("StrongLoadedFirst", func(t *testing.T) {
+		strongLib2, err := Open("../testdata/libstrong_provider.so", RTLD_GLOBAL)
+		if err != nil {
+			t.Fatalf("Failed to load strong provider: %v", err)
+		}
+		defer strongLib2.Close()
+
+		weakLib2, err := Open("../testdata/libweak_provider.so", RTLD_GLOBAL)
+		if err != nil {
+			t.Fatalf("Failed to load weak provider: %v", err)
+		}
+		defer weakLib2.Close()
+
+		userLib2, err := Open("../testdata/libweak_user.so")
+		if err != nil {
+			t.Fatalf("Failed to load user library: %v", err)
+		}
+		defer userLib2.Close()
+
+		var callGetValue2 func() int
+		err = userLib2.Bind("call_get_value", &callGetValue2)
+		if err != nil {
+			t.Fatalf("Failed to bind call_get_value: %v", err)
+		}
+
+		result2 := callGetValue2()
+		if result2 != 200 {
+			t.Errorf("Weak/strong precedence failed (strong loaded first): got %d, expected 200", result2)
+		}
+	})
+}
+
 func TestRunpathRpathParsing(t *testing.T) {
 	// Test that RUNPATH and RPATH are correctly parsed from ELF files.
 	// We'll load a library and verify its ParsedObject contains the paths.

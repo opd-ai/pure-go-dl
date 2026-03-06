@@ -275,7 +275,7 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - Fixed symbol loading logic in symbol/symbol.go to prefer non-hidden (default) versions
   All 4 new test functions pass, confirming correct version resolution behavior.
 
-- [ ] **[MEDIUM-05] Weak symbol test only checks "undefined weak", not "defined weak override"** — dl/dl_test.go:136-156
+- [x] **[MEDIUM-05] Weak symbol test only checks "undefined weak", not "defined weak override"** — dl/dl_test.go:136-156
   
   **Evidence:** `TestWeakSymbolsResolveToZero` verifies that undefined weak symbols resolve to address 0, which is correct per ELF spec. However, it doesn't test the scenario where:
   - Library A defines a weak symbol `foo`
@@ -289,6 +289,8 @@ Additionally, **system library compatibility claims (libm.so.6, libz.so) are not
   - loader/loader.go:775-780 — Weak symbol handling (bind == 2)
   
   **Recommendation:** Add test libraries with overlapping weak/strong symbols and verify symbol resolution precedence.
+  
+  **Resolution:** FIXED — Added test libraries (libweak_provider.so, libstrong_provider.so, libweak_user.so) and comprehensive test `TestWeakStrongSymbolPrecedence` that verifies strong symbols override weak symbols in both load orders. Modified `globalResolver.Resolve()` to use two-pass lookup: first pass finds strong symbols, second pass accepts weak symbols if no strong symbol exists. All tests pass.
 
 ---
 

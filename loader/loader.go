@@ -63,8 +63,8 @@ type Object struct {
 	// GOT management for code-sequence TLS relocations (TLSGD, TLSLD).
 	// Maps symbol index to GOT offset for allocated entries.
 	GOTEntries map[uint32]uintptr // symIdx -> offset into GOT
-	GOTBase    uintptr             // base address of allocated GOT space
-	GOTSize    uintptr             // current size of GOT in bytes
+	GOTBase    uintptr            // base address of allocated GOT space
+	GOTSize    uintptr            // current size of GOT in bytes
 
 	RefCount int
 	Soname   string
@@ -694,7 +694,7 @@ func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 	// We patch the 32-bit PC-relative offset in the instruction.
 	relocSite := obj.Base + uintptr(r.Offset)
 	pcRelOffset := int64(gotEntry) - int64(relocSite+4) // +4 for instruction size
-	
+
 	// Write the PC-relative offset to the relocation site.
 	offsetPtr := unsafe.Pointer(relocSite)
 	*(*int32)(offsetPtr) = int32(pcRelOffset)

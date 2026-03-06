@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.24', '1.25']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: ${{ matrix.go-version }}
+
+    - name: Install build dependencies
+      run: sudo apt-get update && sudo apt-get install -y build-essential gcc
+
+    - name: Build test libraries
+      run: make -C testdata
+
+    - name: Build
+      run: CGO_ENABLED=0 go build ./...
+
+    - name: Build CLI tool
+      run: CGO_ENABLED=0 go build -o pgldd ./cmd/pgldd
+
+    - name: Verify CGO_ENABLED=0 build
+      run: |
+        # Verify the binary was built with CGO_ENABLED=0
+        go version -m pgldd | grep "CGO_ENABLED=0" || (echo "ERROR: pgldd was not built with CGO_ENABLED=0" && exit 1)
+        echo "✓ pgldd built with CGO_ENABLED=0"
+
+    - name: Run tests
+      run: CGO_ENABLED=0 go test -v -coverprofile=coverage.out ./...
+
+    - name: Check test coverage
+      run: |
+        go tool cover -func=coverage.out
+        COVERAGE=$(go tool cover -func=coverage.out | grep total | awk '{print $3}' | sed 's/%//')
+        echo "Total coverage: ${COVERAGE}%"
+        if (( $(echo "$COVERAGE < 60.0" | bc -l) )); then
+          echo "ERROR: Coverage ${COVERAGE}% is below threshold 60%"
+          exit 1
+        fi
+
+    - name: Run go vet
+      run: |
+        # Run go vet and capture output
+        # Note: unsafe.Pointer warnings are expected and documented in UNSAFE_POINTER_USAGE.md
+        go vet ./... 2>&1 | tee vet.log || true
+        
+        # Check for unexpected warnings (anything NOT about unsafe.Pointer)
+        if grep -v "possible misuse of unsafe.Pointer" vet.log | grep "\.go:[0-9]\+:" ; then
+          echo "ERROR: Unexpected go vet warnings found"
+          exit 1
+        fi
+        echo "All go vet warnings are expected unsafe.Pointer warnings (see UNSAFE_POINTER_USAGE.md)"
+
+    - name: Check formatting
+      run: |
+        if [ -n "$(gofmt -l .)" ]; then
+          echo "ERROR: Code is not formatted. Run 'gofmt -w .'"
+          gofmt -l .
+          exit 1
+        fi
+
+    - name: Upload coverage
+      uses: codecov/codecov-action@v4
+      if: matrix.go-version == '1.24'
+      with:
+        files: ./coverage.out
+        flags: unittests
+        fail_ci_if_error: false
+
+  build-matrix:
+    name: Build on multiple architectures
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [amd64, arm64]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Build for ${{ matrix.goos }}/${{ matrix.goarch }}
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: go build -v ./...
+
+    - name: Build CLI for ${{ matrix.goos }}/${{ matrix.goarch }}
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+        CGO_ENABLED: 0
+      run: go build -v -o pgldd-${{ matrix.goarch }} ./cmd/pgldd

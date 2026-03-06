@@ -735,6 +735,11 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 		return nil
 	}
 
+	// Validate that relocation table size is properly aligned to entry size
+	if tableSize%relaEntSize != 0 {
+		return fmt.Errorf("relocation table size %d is not aligned to entry size %d", tableSize, relaEntSize)
+	}
+
 	n := tableSize / relaEntSize
 	rels := unsafe.Slice((*relaEntry)(unsafe.Pointer(tableAddr)), n)
 

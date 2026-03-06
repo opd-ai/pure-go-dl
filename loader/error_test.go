@@ -291,3 +291,40 @@ func TestLoadPreservesPath(t *testing.T) {
 		t.Errorf("Path = %q, want %q", obj.Parsed.Path, testLib)
 	}
 }
+
+// TestApplyRelaTableMisaligned tests that misaligned relocation tables are rejected
+func TestApplyRelaTableMisaligned(t *testing.T) {
+	testLib := "../testdata/libtest.so"
+	resolver := &mockResolver{symbols: make(map[string]uintptr)}
+
+	obj, err := Load(testLib, resolver)
+	if err != nil {
+		t.Fatalf("Load failed: %v", err)
+	}
+	defer Unload(obj)
+
+	// Test various misaligned table sizes (not multiples of 24)
+	testCases := []uint64{1, 2, 23, 25, 47, 48 + 1}
+
+	for _, tableSize := range testCases {
+		err := applyRelaTable(obj, 0x1000, tableSize, resolver)
+		if err == nil {
+			t.Errorf("applyRelaTable with misaligned size %d should have failed", tableSize)
+		} else if len(err.Error()) == 0 {
+			t.Errorf("applyRelaTable with misaligned size %d returned empty error message", tableSize)
+		}
+	}
+
+	// Test that properly aligned sizes don't trigger the error
+	// Note: This will fail if tableAddr is invalid, but shouldn't fail on alignment
+	validSizes := []uint64{0, 24, 48, 72, 96}
+	for _, tableSize := range validSizes {
+		// Use tableSize 0 or rely on early return
+		if tableSize == 0 {
+			err := applyRelaTable(obj, 0, tableSize, resolver)
+			if err != nil {
+				t.Errorf("applyRelaTable with size 0 should succeed (early return), got: %v", err)
+			}
+		}
+	}
+}

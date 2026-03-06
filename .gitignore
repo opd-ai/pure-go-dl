@@ -20,6 +20,18 @@ coverage.*
 *.coverprofile
 profile.cov
 
+# Analysis and metrics artifacts
+*-baseline.json
+*-current.json
+*-final.json
+*-new.json
+*-post.json
+baseline*.json
+metrics.json
+post*.json
+pre-cleanup.json
+audit-baseline.json
+
 # Dependency directories (remove the comment below to include it)
 # vendor/
 

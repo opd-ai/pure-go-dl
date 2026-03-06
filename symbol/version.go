@@ -23,10 +23,10 @@ type VersionDefinition struct {
 type VersionTable struct {
 	// Requirements: versions this library needs from its dependencies
 	Requirements map[uint16]*VersionRequirement
-	
+
 	// Definitions: versions this library provides (export side)
 	Definitions map[uint16]*VersionDefinition
-	
+
 	// SymbolVersions: maps symbol index → version index (from DT_VERSYM)
 	SymbolVersions []uint16
 }
@@ -83,25 +83,27 @@ func (vt *VersionTable) ParseVersionTables(
 // Each Verneed has a linked list of Vernaux entries describing specific versions.
 //
 // Verneed structure:
-//   uint16 vn_version  (version of structure, always 1)
-//   uint16 vn_cnt      (number of Vernaux entries)
-//   uint32 vn_file     (string table offset for library name)
-//   uint32 vn_aux      (offset to first Vernaux)
-//   uint32 vn_next     (offset to next Verneed, 0 if last)
+//
+//	uint16 vn_version  (version of structure, always 1)
+//	uint16 vn_cnt      (number of Vernaux entries)
+//	uint32 vn_file     (string table offset for library name)
+//	uint32 vn_aux      (offset to first Vernaux)
+//	uint32 vn_next     (offset to next Verneed, 0 if last)
 //
 // Vernaux structure:
-//   uint32 vna_hash    (hash of version name)
-//   uint16 vna_flags   (flags)
-//   uint16 vna_other   (version index)
-//   uint32 vna_name    (string table offset)
-//   uint32 vna_next    (offset to next Vernaux, 0 if last)
+//
+//	uint32 vna_hash    (hash of version name)
+//	uint16 vna_flags   (flags)
+//	uint16 vna_other   (version index)
+//	uint32 vna_name    (string table offset)
+//	uint32 vna_next    (offset to next Vernaux, 0 if last)
 func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uintptr) error {
 	current := addr
 	for i := uint64(0); i < count; i++ {
 		// Read Verneed header (16 bytes).
 		vnVersion := *(*uint16)(unsafe.Pointer(current))
 		vnCnt := *(*uint16)(unsafe.Pointer(current + 2))
-		_ = *(*uint32)(unsafe.Pointer(current + 4))  // vn_file (library name, not used for index)
+		_ = *(*uint32)(unsafe.Pointer(current + 4)) // vn_file (library name, not used for index)
 		vnAux := *(*uint32)(unsafe.Pointer(current + 8))
 		vnNext := *(*uint32)(unsafe.Pointer(current + 12))
 
@@ -113,8 +115,8 @@ func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uint
 		auxCurrent := current + uintptr(vnAux)
 		for j := uint16(0); j < vnCnt; j++ {
 			// Read Vernaux (20 bytes).
-			_ = *(*uint32)(unsafe.Pointer(auxCurrent))       // vna_hash
-			_ = *(*uint16)(unsafe.Pointer(auxCurrent + 4))   // vna_flags
+			_ = *(*uint32)(unsafe.Pointer(auxCurrent))     // vna_hash
+			_ = *(*uint16)(unsafe.Pointer(auxCurrent + 4)) // vna_flags
 			vnaOther := *(*uint16)(unsafe.Pointer(auxCurrent + 6))
 			vnaName := *(*uint32)(unsafe.Pointer(auxCurrent + 8))
 			vnaNext := *(*uint32)(unsafe.Pointer(auxCurrent + 12))
@@ -143,26 +145,28 @@ func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uint
 // Each Verdef entry describes a version this library provides.
 //
 // Verdef structure:
-//   uint16 vd_version  (version of structure, always 1)
-//   uint16 vd_flags    (flags: VER_FLG_BASE if base version)
-//   uint16 vd_ndx      (version index)
-//   uint16 vd_cnt      (number of Verdaux entries)
-//   uint32 vd_hash     (hash of version name)
-//   uint32 vd_aux      (offset to first Verdaux)
-//   uint32 vd_next     (offset to next Verdef, 0 if last)
+//
+//	uint16 vd_version  (version of structure, always 1)
+//	uint16 vd_flags    (flags: VER_FLG_BASE if base version)
+//	uint16 vd_ndx      (version index)
+//	uint16 vd_cnt      (number of Verdaux entries)
+//	uint32 vd_hash     (hash of version name)
+//	uint32 vd_aux      (offset to first Verdaux)
+//	uint32 vd_next     (offset to next Verdef, 0 if last)
 //
 // Verdaux structure:
-//   uint32 vda_name    (string table offset)
-//   uint32 vda_next    (offset to next Verdaux, 0 if last)
+//
+//	uint32 vda_name    (string table offset)
+//	uint32 vda_next    (offset to next Verdaux, 0 if last)
 func (vt *VersionTable) parseVerdef(addr uintptr, count uint64, strtabAddr uintptr) error {
 	current := addr
 	for i := uint64(0); i < count; i++ {
 		// Read Verdef header (20 bytes).
 		vdVersion := *(*uint16)(unsafe.Pointer(current))
-		_ = *(*uint16)(unsafe.Pointer(current + 2))  // vd_flags
+		_ = *(*uint16)(unsafe.Pointer(current + 2)) // vd_flags
 		vdNdx := *(*uint16)(unsafe.Pointer(current + 4))
-		_ = *(*uint16)(unsafe.Pointer(current + 6))  // vd_cnt
-		_ = *(*uint32)(unsafe.Pointer(current + 8))  // vd_hash
+		_ = *(*uint16)(unsafe.Pointer(current + 6)) // vd_cnt
+		_ = *(*uint32)(unsafe.Pointer(current + 8)) // vd_hash
 		vdAux := *(*uint32)(unsafe.Pointer(current + 12))
 		vdNext := *(*uint32)(unsafe.Pointer(current + 16))
 

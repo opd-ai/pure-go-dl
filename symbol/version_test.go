@@ -29,7 +29,7 @@ func TestVersionTable_GetSymbolVersion(t *testing.T) {
 
 	// Simulate loading some symbol versions.
 	vt.SymbolVersions = []uint16{0, 1, 2, 0x8003} // 0x8003 has hidden bit set
-	
+
 	if ver := vt.GetSymbolVersion(0); ver != 0 {
 		t.Errorf("Symbol 0: expected version 0, got %d", ver)
 	}

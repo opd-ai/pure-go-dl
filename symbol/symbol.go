@@ -8,14 +8,14 @@ import (
 
 // Symbol represents a single ELF symbol after loading.
 type Symbol struct {
-	Name       string
-	Value      uintptr // absolute address (base + st_value)
-	Size       uint64
-	Bind       elf.SymBind
-	Type       elf.SymType
-	Section    elf.SectionIndex // mirrors st_shndx; use elf.SHN_* constants
-	VerIdx     uint16            // version index from DT_VERSYM
-	VerName    string            // version name (e.g., "GLIBC_2.2.5")
+	Name    string
+	Value   uintptr // absolute address (base + st_value)
+	Size    uint64
+	Bind    elf.SymBind
+	Type    elf.SymType
+	Section elf.SectionIndex // mirrors st_shndx; use elf.SHN_* constants
+	VerIdx  uint16           // version index from DT_VERSYM
+	VerName string           // version name (e.g., "GLIBC_2.2.5")
 }
 
 // Table is a name-to-Symbol index for a loaded shared object.

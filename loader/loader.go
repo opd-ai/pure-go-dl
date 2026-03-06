@@ -103,11 +103,8 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 	if err != nil {
 		return nil, fmt.Errorf("loader: open %q: %w", path, err)
 	}
-	// Keep fd open until all segments are mapped; MAP_PRIVATE lets us close early.
 	defer f.Close()
-	fd := int(f.Fd())
 
-	// Reserve the entire virtual address span as PROT_NONE.
 	base, err := mmap.MapAnon(uintptr(parsed.MemSize), mmap.ProtNone)
 	if err != nil {
 		return nil, fmt.Errorf("loader: reserve address space: %w", err)
@@ -120,63 +117,74 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 		RefCount: 1,
 	}
 
-	// Map each PT_LOAD segment over the reservation.
+	if err := mapSegments(obj, parsed, int(f.Fd())); err != nil {
+		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
+		return nil, err
+	}
+
+	if err := populateObject(obj, parsed); err != nil {
+		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
+		return nil, err
+	}
+
+	if err := finalizeObject(obj, parsed, resolver); err != nil {
+		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
+		return nil, err
+	}
+
+	return obj, nil
+}
+
+// mapSegments maps all PT_LOAD segments from the file descriptor into memory.
+func mapSegments(obj *Object, parsed *goelf.ParsedObject, fd int) error {
+	base := obj.Base
 	for _, ph := range parsed.LoadSegments {
-		// Page-align the file offset and vaddr downward, extend size accordingly.
 		alignedVAddr := pageDown(ph.Vaddr)
 		alignedFileOff := pageDown(ph.Off)
-		leading := ph.Vaddr - alignedVAddr // bytes between aligned start and actual start
+		leading := ph.Vaddr - alignedVAddr
 		alignedFileSize := pageUp(ph.Filesz + leading)
 		alignedMemSize := pageUp(ph.Memsz + leading)
 
 		prot := elfProt(ph.Flags)
 		mapAddr := base + uintptr(alignedVAddr-parsed.BaseVAddr)
 
-		// We need write permission to zero BSS, so temporarily add PROT_WRITE.
 		mapProt := prot
 		if ph.Memsz > ph.Filesz {
 			mapProt |= mmap.ProtWrite
 		}
 
 		if ph.Filesz > 0 {
-			_, err = mmap.MapFixed(
+			_, err := mmap.MapFixed(
 				mapAddr, uintptr(alignedFileSize),
 				mapProt, mmap.MapPrivate,
 				fd, int64(alignedFileOff),
 			)
 			if err != nil {
-				_ = mmap.Unmap(base, uintptr(parsed.MemSize))
-				return nil, fmt.Errorf("loader: map segment at 0x%x: %w", mapAddr, err)
+				return fmt.Errorf("loader: map segment at 0x%x: %w", mapAddr, err)
 			}
 		}
 
-		// If memsz > filesz, the remainder (BSS) must be zeroed.
 		if ph.Memsz > ph.Filesz {
-			// Ensure the anonymous tail is mapped.
 			tailStart := mapAddr + uintptr(alignedFileSize)
 			tailSize := uintptr(alignedMemSize) - uintptr(alignedFileSize)
 			if tailSize > 0 {
-				_, err = mmap.MapFixed(
+				_, err := mmap.MapFixed(
 					tailStart, tailSize,
 					mapProt, mmap.MapPrivate|mmap.MapAnonymous,
 					-1, 0,
 				)
 				if err != nil {
-					_ = mmap.Unmap(base, uintptr(parsed.MemSize))
-					return nil, fmt.Errorf("loader: map BSS at 0x%x: %w", tailStart, err)
+					return fmt.Errorf("loader: map BSS at 0x%x: %w", tailStart, err)
 				}
 			}
-			// Zero the partial-page gap between end-of-file-data and page boundary.
 			bssStart := mapAddr + uintptr(ph.Vaddr-alignedVAddr) + uintptr(ph.Filesz)
 			pageEnd := mapAddr + uintptr(alignedFileSize)
 			if pageEnd > bssStart {
 				zeroMem(bssStart, pageEnd-bssStart)
 			}
-			// Restore original protection if we added write.
 			if prot != mapProt {
 				if err := mmap.Protect(mapAddr, uintptr(alignedMemSize), prot); err != nil {
-					_ = mmap.Unmap(base, uintptr(parsed.MemSize))
-					return nil, fmt.Errorf("loader: mprotect segment: %w", err)
+					return fmt.Errorf("loader: mprotect segment: %w", err)
 				}
 			}
 		}
@@ -190,13 +198,16 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 			FileSize: ph.Filesz,
 		})
 	}
+	return nil
+}
 
-	// Helper: virtual-address → absolute address.
+// populateObject computes dynamic section addresses, loads symbols, and initializes TLS.
+func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
+	base := obj.Base
 	toAbs := func(vaddr uint64) uintptr {
 		return base + uintptr(vaddr-parsed.BaseVAddr)
 	}
 
-	// Compute absolute addresses for all dynamic section pointer tags.
 	dynTags := parsed.DynEntries
 	if v, ok := dynTags[elf.DT_SYMTAB]; ok {
 		obj.SymtabAddr = toAbs(v)
@@ -247,55 +258,40 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 		obj.Soname = symbol.ReadCStringMem(obj.StrtabAddr, uintptr(v))
 	}
 
-	// Build symbol table. DT_STRSZ gives the string-table size; we derive the
-	// symbol-table size from the gap between DT_SYMTAB and DT_STRTAB when
-	// DT_SYMENT is available.
 	var symtabSize uint64
 	if syment, ok := dynTags[elf.DT_SYMENT]; ok && syment == 24 {
 		if _, ok := dynTags[elf.DT_STRSZ]; ok && obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
-			// Heuristic: symbol table ends where string table begins (common layout).
 			if obj.StrtabAddr > obj.SymtabAddr {
 				symtabSize = uint64(obj.StrtabAddr - obj.SymtabAddr)
 			}
 		}
 	}
 
-	// Parse version information before loading symbols.
 	symCount := symtabSize / 24
 	if symCount > 0 && obj.StrtabAddr != 0 {
 		vt, err := symbol.ParseVersionInfo(dynTags, base, obj.StrtabAddr, symCount)
 		if err == nil && vt != nil {
 			obj.Symbols.SetVersionTable(vt)
 		}
-		// Non-fatal: continue even if version parsing fails.
 	}
 
 	if obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
 		if err := obj.Symbols.LoadFromDynamic(obj.SymtabAddr, obj.StrtabAddr, symtabSize); err != nil {
-			// Non-fatal: continue without full symbol table.
 			_ = err
 		}
 	}
 
-	// Initialize TLS module if PT_TLS segment is present.
 	if tlsSeg := parsed.TLSSeg; tlsSeg != nil {
-		// Calculate the base address of TLS initialization data.
 		var tlsInitData uintptr
 		if tlsSeg.Filesz > 0 {
-			// Find which PT_LOAD segment contains the TLS initialization data.
 			for i := range obj.Segments {
 				seg := &obj.Segments[i]
-				// Check if TLS vaddr falls within this segment
 				loadSeg := &parsed.LoadSegments[i]
 				segStart := parsed.BaseVAddr + loadSeg.Vaddr
 				segEnd := segStart + loadSeg.Memsz
 				if tlsSeg.Vaddr >= segStart && tlsSeg.Vaddr < segEnd {
-					// seg.Addr is the page-aligned map address, but the segment's actual
-					// data starts at an offset due to page alignment.
 					alignedVAddr := pageDown(loadSeg.Vaddr)
 					leading := loadSeg.Vaddr - alignedVAddr
-
-					// Calculate offset from the segment's actual start (not page-aligned start)
 					offset := tlsSeg.Vaddr - loadSeg.Vaddr
 					tlsInitData = seg.Addr + uintptr(leading) + uintptr(offset)
 					break
@@ -303,39 +299,37 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 			}
 		}
 
-		// Register the TLS module.
 		tlsModule, err := tls.GlobalManager().RegisterModule(
-			tlsSeg.Memsz,  // Total size (data + bss)
-			tlsSeg.Align,  // Alignment requirement
-			tlsSeg.Filesz, // Initialized data size
-			tlsInitData,   // Pointer to initialization data
+			tlsSeg.Memsz,
+			tlsSeg.Align,
+			tlsSeg.Filesz,
+			tlsInitData,
 		)
 		if err != nil {
-			_ = mmap.Unmap(base, uintptr(parsed.MemSize))
-			return nil, fmt.Errorf("loader: TLS registration failed: %w", err)
+			return fmt.Errorf("loader: TLS registration failed: %w", err)
 		}
 		obj.TLSModule = tlsModule
 	}
 
-	// Apply relocations.
+	return nil
+}
+
+// finalizeObject applies relocations, RELRO protection, and runs constructors.
+func finalizeObject(obj *Object, parsed *goelf.ParsedObject, resolver SymbolResolver) error {
 	if err := processRelocations(obj, resolver); err != nil {
-		_ = mmap.Unmap(base, uintptr(parsed.MemSize))
-		return nil, fmt.Errorf("loader: relocations: %w", err)
+		return fmt.Errorf("loader: relocations: %w", err)
 	}
 
-	// Apply GNU RELRO: make protected regions read-only.
 	if relro := parsed.GNURelroSeg; relro != nil {
 		if relro.Vaddr >= parsed.BaseVAddr {
-			relroAddr := base + uintptr(relro.Vaddr-parsed.BaseVAddr)
+			relroAddr := obj.Base + uintptr(relro.Vaddr-parsed.BaseVAddr)
 			relroSize := uintptr(pageUp(relro.Memsz))
 			if err := mmap.Protect(relroAddr, relroSize, mmap.ProtRead); err != nil {
-				// Non-fatal warning; the library is still usable.
 				_ = err
 			}
 		}
 	}
 
-	// Run constructors: DT_INIT first, then DT_INIT_ARRAY in forward order.
 	if obj.InitAddr != 0 {
 		callFunc(obj.InitAddr)
 	}
@@ -350,7 +344,7 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 		}
 	}
 
-	return obj, nil
+	return nil
 }
 
 // processRelocations applies all RELA and JMPREL relocations in obj.

@@ -251,4 +251,3 @@ func TestTLSLibraryParsing(t *testing.T) {
 	// Note: Actually calling TLS functions requires __tls_get_addr support,
 	// which is not yet fully implemented. This test only verifies parsing.
 }
-

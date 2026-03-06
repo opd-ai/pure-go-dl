@@ -55,7 +55,7 @@ func (globalResolver) Resolve(name string) (uintptr, error) {
 	if name == "__tls_get_addr" {
 		return tls.RegisterTLSGetAddr(), nil
 	}
-	
+
 	mu.Lock()
 	defer mu.Unlock()
 	for _, lib := range globals {

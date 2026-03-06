@@ -298,10 +298,10 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 
 		// Register the TLS module.
 		tlsModule, err := tls.GlobalManager().RegisterModule(
-			tlsSeg.Memsz,   // Total size (data + bss)
-			tlsSeg.Align,   // Alignment requirement
-			tlsSeg.Filesz,  // Initialized data size
-			tlsInitData,    // Pointer to initialization data
+			tlsSeg.Memsz,  // Total size (data + bss)
+			tlsSeg.Align,  // Alignment requirement
+			tlsSeg.Filesz, // Initialized data size
+			tlsInitData,   // Pointer to initialization data
 		)
 		if err != nil {
 			_ = mmap.Unmap(base, uintptr(parsed.MemSize))

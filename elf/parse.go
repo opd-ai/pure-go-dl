@@ -1,3 +1,6 @@
+// Package elf extends the standard library's debug/elf with additional ELF parsing
+// functionality needed for dynamic linking, including GNU hash tables, symbol versioning,
+// and dynamic section parsing.
 package elf
 
 import (

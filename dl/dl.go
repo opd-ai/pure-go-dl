@@ -1,3 +1,6 @@
+// Package dl provides dlopen/dlsym/dlclose semantics for loading ELF shared objects
+// from a CGO_ENABLED=0 Go binary. It enables statically-linked Go applications to load
+// and call native C libraries at runtime without requiring cgo or dynamic linking.
 package dl
 
 import (

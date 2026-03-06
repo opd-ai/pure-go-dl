@@ -1,3 +1,5 @@
+// Package mmap provides low-level memory mapping syscall helpers for ELF segment loading.
+// It wraps unix.Mmap and related syscalls with type-safe interfaces.
 package mmap
 
 import (

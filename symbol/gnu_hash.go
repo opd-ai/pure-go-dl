@@ -1,3 +1,5 @@
+// Package symbol provides symbol table parsing, hashing, and lookup for ELF shared objects.
+// It supports both GNU hash and SysV hash tables, as well as GNU symbol versioning.
 package symbol
 
 import (

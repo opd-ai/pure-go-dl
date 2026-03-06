@@ -1,3 +1,6 @@
+// Package loader implements the core ELF loading, relocation, and linking logic.
+// It handles memory mapping of PT_LOAD segments, processing relocations, executing
+// constructors/destructors, and managing library dependencies.
 package loader
 
 import "github.com/ebitengine/purego"

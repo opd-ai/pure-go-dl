@@ -44,6 +44,10 @@ func TestGnuHash(t *testing.T) {
 }
 
 func TestSysvLookup(t *testing.T) {
+	if symbol.RaceEnabled {
+		t.Skip("Skipping synthetic memory test with -race (checkptr incompatible)")
+	}
+
 	// Create a minimal SysV hash table in memory.
 	// Structure:
 	//   uint32 nbuckets

@@ -123,10 +123,13 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 	}
 
 	n := symtabSize / symEntSize
-	syms := unsafe.Slice((*Elf64Sym)(unsafe.Pointer(symtabAddr)), n)
 
 	for i := uint64(0); i < n; i++ {
-		s := &syms[i]
+		// Calculate pointer to this symbol entry without using unsafe.Slice
+		// to avoid checkptr issues in tests
+		symPtr := unsafe.Add(unsafe.Pointer(symtabAddr), i*symEntSize)
+		s := (*Elf64Sym)(symPtr)
+		
 		bind := elf.SymBind(s.Info >> 4)
 		symType := elf.SymType(s.Info & 0xf)
 

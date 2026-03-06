@@ -20,6 +20,10 @@ func TestVersionTable_ParseVersionTables(t *testing.T) {
 }
 
 func TestVersionTable_ParseVerneed(t *testing.T) {
+	if RaceEnabled {
+		t.Skip("Skipping synthetic memory test with -race (checkptr incompatible)")
+	}
+
 	// Create a simple Verneed chain in memory.
 	// String table for version names.
 	strtab := []byte("\x00GLIBC_2.2.5\x00GLIBC_2.17\x00")
@@ -96,6 +100,10 @@ func TestVersionTable_ParseVerneed(t *testing.T) {
 }
 
 func TestVersionTable_ParseVerdef(t *testing.T) {
+	if RaceEnabled {
+		t.Skip("Skipping synthetic memory test with -race (checkptr incompatible)")
+	}
+
 	// Create a simple Verdef chain in memory.
 	strtab := []byte("\x00MYLIB_1.0\x00MYLIB_2.0\x00")
 	strtabAddr := uintptr(unsafe.Pointer(&strtab[0]))

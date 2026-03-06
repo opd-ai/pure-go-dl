@@ -371,7 +371,7 @@ flag and whose destructor clears it. Confirm the flag is set after
 Each of these is independently valuable. Prioritize based on what
 real-world libraries you need to load.
 
-### 7.1 Symbol Versioning
+### 7.1 Symbol Versioning ✅ COMPLETE
 
 Many system libraries (especially glibc's `libc.so.6`) use GNU
 symbol versioning. Without this, you cannot correctly resolve
@@ -380,6 +380,14 @@ symbols like `stat` which have multiple versions. Parse
 version requirement, match it during lookup.
 
 **Priority: High** — needed for loading anything that depends on libc.
+
+**Status: COMPLETE** — Implemented in commit 20fd837:
+- VersionTable infrastructure in symbol/version.go
+- ParseVersionTables() for DT_VERSYM, DT_VERNEED, and DT_VERDEF parsing
+- Symbol version tracking (VerIdx, VerName fields)
+- LookupVersion() for versioned symbol resolution
+- Integrated into loader.Load() and LoadFromDynamic()
+- Comprehensive tests in symbol/version_test.go
 
 ### 7.2 IFUNC Resolution ✅ COMPLETE
 

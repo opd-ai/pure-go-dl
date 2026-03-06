@@ -50,6 +50,10 @@ func init() {
 // globalResolver implements loader.SymbolResolver over the globals list.
 type globalResolver struct{}
 
+// Resolve looks up a symbol in all RTLD_GLOBAL libraries and returns its address.
+// It searches RTLD_GLOBAL libraries in load order and returns the first match.
+// Special symbols like __tls_get_addr are provided by the runtime.
+// IFUNC symbols are automatically resolved by calling their resolver functions.
 func (globalResolver) Resolve(name string) (uintptr, error) {
 	// Special case: provide __tls_get_addr for TLS support
 	if name == "__tls_get_addr" {

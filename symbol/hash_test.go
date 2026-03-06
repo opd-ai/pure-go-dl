@@ -59,10 +59,10 @@ func TestSysvLookup(t *testing.T) {
 	const symEntSize = 24
 	symbolBuf := make([]byte, 10*symEntSize)
 	symbols := (*[10]symbol.Elf64Sym)(unsafe.Pointer(&symbolBuf[0]))
-	
+
 	// Symbol 0: NULL
 	symbols[0] = symbol.Elf64Sym{}
-	
+
 	// Symbol 1: cos
 	symbols[1] = symbol.Elf64Sym{
 		Name:  1,
@@ -71,7 +71,7 @@ func TestSysvLookup(t *testing.T) {
 		Value: 0x1000,
 		Size:  16,
 	}
-	
+
 	// Symbol 2: sin
 	symbols[2] = symbol.Elf64Sym{
 		Name:  5,
@@ -80,7 +80,7 @@ func TestSysvLookup(t *testing.T) {
 		Value: 0x2000,
 		Size:  16,
 	}
-	
+
 	symtabAddr := uintptr(unsafe.Pointer(&symbols[0]))
 
 	// Create SysV hash table:

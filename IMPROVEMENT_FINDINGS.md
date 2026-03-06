@@ -10,7 +10,7 @@ This analysis identifies **15+ actionable improvements** across 6 packages (dl, 
 
 ## 1. CRITICAL SECURITY CONCERNS
 
-### 1.1 Integer Overflow in RelaEnt Calculation (HIGH SEVERITY)
+### 1.1 Integer Overflow in RelaEnt Calculation ✅ COMPLETE
 
 **File**: `loader/loader.go`, lines 738-739
 ```go
@@ -37,7 +37,7 @@ n := tableSize / relaEntSize
 
 ---
 
-### 1.2 Bounds Validation Missing in Symbol Index Lookup (HIGH SEVERITY)
+### 1.2 Bounds Validation Missing in Symbol Index Lookup ✅ COMPLETE
 
 **File**: `loader/reloc.go`, lines 16-40
 ```go
@@ -70,7 +70,7 @@ func symName(obj *Object, idx uint32) string {
 
 ---
 
-### 1.3 String Table Bounds Not Validated (MEDIUM SEVERITY)
+### 1.3 String Table Bounds Not Validated ✅ COMPLETE
 
 **File**: `loader/reloc.go`, line 21
 ```go
@@ -100,7 +100,7 @@ func ReadCStringMem(base, offset, limit uintptr) string {
 
 ---
 
-### 1.4 Relocation Offset Not Validated (MEDIUM SEVERITY)
+### 1.4 Relocation Offset Not Validated ✅ COMPLETE
 
 **File**: `loader/loader.go`, lines 743-751
 ```go
@@ -137,7 +137,29 @@ if r.Offset < obj.Parsed.BaseVAddr || r.Offset >= maxOffset {
 
 ---
 
-### 1.5 DynEntries Key Validation Missing (MEDIUM SEVERITY)
+### 1.5 DynEntries Key Validation Missing ✅ COMPLETE
+
+**File**: `elf/parse.go`, lines 165-173 → **FIXED** in lines 208-281
+
+**Issue**: ✅ **RESOLVED** (2026-03-06)
+- No validation that dynamic tag values (addresses) were within valid ranges
+- DT_SYMTAB/DT_STRTAB/DT_RELA could be 0 or point outside mapped segments
+- Code silently accepted invalid offsets that would cause OOB reads later
+
+**Solution Implemented**:
+- Added validateDynEntries() function that validates all critical dynamic tags
+- Address-type tags (DT_SYMTAB, DT_STRTAB, DT_RELA, DT_JMPREL, etc.) now checked:
+  - Must be non-zero
+  - Must fall within [BaseVAddr, BaseVAddr+MemSize) range
+- Size-type tags (DT_STRSZ, DT_RELASZ, DT_PLTRELSZ) validated:
+  - DT_STRSZ must be non-zero if present
+  - Sizes must not exceed total MemSize
+- Validation occurs immediately after parsing dynamic section
+- Clear error messages identify which tag is invalid and why
+
+**Impact**: Malformed ELF files with invalid dynamic tags now fail early with clear errors instead of causing OOB access during loading.
+
+---
 
 **File**: `elf/parse.go`, lines 165-173
 ```go
@@ -203,7 +225,7 @@ func allocateGOTEntryPair(obj *Object, symIdx uint32) (uintptr, error) {
 
 ## 2. ERROR HANDLING GAPS
 
-### 2.1 Silent Relocation Errors in RelocationTags (HIGH PRIORITY)
+### 2.1 Silent Relocation Errors in RelocationTags ✅ COMPLETE
 
 **File**: `loader/loader.go`, lines 239-255
 ```go
@@ -245,7 +267,7 @@ func populateRelocationTags(...) error {
 
 ---
 
-### 2.2 Missing Error Handling in Symbol Table Loading (MEDIUM PRIORITY)
+### 2.2 Missing Error Handling in Symbol Table Loading ✅ COMPLETE
 
 **File**: `loader/loader.go`, lines 303-307
 ```go
@@ -409,7 +431,7 @@ if obj.MemSize == 0 {
 
 ---
 
-### 3.3 Dynamic Segment Not Validated for Completeness (MEDIUM SEVERITY)
+### 3.3 Dynamic Segment Not Validated for Completeness ✅ COMPLETE
 
 **File**: `elf/parse.go`, lines 155-176
 ```go

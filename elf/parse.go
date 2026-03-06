@@ -195,6 +195,83 @@ func readDynamicSection(f *os.File, obj *ParsedObject) error {
 		return fmt.Errorf("dynamic segment missing DT_NULL terminator")
 	}
 
+	// Validate critical dynamic tags point within valid address ranges
+	if err := validateDynEntries(obj); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateDynEntries performs basic sanity checks on critical dynamic tag values
+// to prevent out-of-bounds access and other malformed ELF issues.
+func validateDynEntries(obj *ParsedObject) error {
+	maxVAddr := obj.BaseVAddr + obj.MemSize
+
+	// Helper function to validate address-type tags
+	validateAddr := func(tag elf.DynTag) error {
+		if val, ok := obj.DynEntries[tag]; ok {
+			// Value of 0 is explicitly invalid for address tags
+			if val == 0 {
+				return fmt.Errorf("invalid %v: address is zero", tag)
+			}
+			// Value should be within the loadable address space
+			// Note: We can't validate against individual PT_LOAD segments here,
+			// but we can at least check against the overall range
+			if val < obj.BaseVAddr || val >= maxVAddr {
+				return fmt.Errorf("invalid %v: address 0x%x out of range [0x%x, 0x%x)", 
+					tag, val, obj.BaseVAddr, maxVAddr)
+			}
+		}
+		return nil
+	}
+
+	// Validate address-type dynamic tags
+	addressTags := []elf.DynTag{
+		elf.DT_SYMTAB,
+		elf.DT_STRTAB,
+		elf.DT_RELA,
+		elf.DT_JMPREL,
+		elf.DT_HASH,
+		elf.DT_GNU_HASH,
+		elf.DT_INIT,
+		elf.DT_FINI,
+		elf.DT_INIT_ARRAY,
+		elf.DT_FINI_ARRAY,
+		elf.DT_VERSYM,
+		elf.DT_VERDEF,
+		elf.DT_VERNEED,
+	}
+
+	for _, tag := range addressTags {
+		if err := validateAddr(tag); err != nil {
+			return err
+		}
+	}
+
+	// Validate size-related tags are reasonable
+	if strsz, ok := obj.DynEntries[elf.DT_STRSZ]; ok {
+		if strsz == 0 {
+			return fmt.Errorf("invalid DT_STRSZ: size is zero")
+		}
+		// String table shouldn't be larger than entire mapped region
+		if strsz > obj.MemSize {
+			return fmt.Errorf("invalid DT_STRSZ: size 0x%x exceeds memory size 0x%x", strsz, obj.MemSize)
+		}
+	}
+
+	if relasz, ok := obj.DynEntries[elf.DT_RELASZ]; ok {
+		if relasz > obj.MemSize {
+			return fmt.Errorf("invalid DT_RELASZ: size 0x%x exceeds memory size 0x%x", relasz, obj.MemSize)
+		}
+	}
+
+	if pltrelsz, ok := obj.DynEntries[elf.DT_PLTRELSZ]; ok {
+		if pltrelsz > obj.MemSize {
+			return fmt.Errorf("invalid DT_PLTRELSZ: size 0x%x exceeds memory size 0x%x", pltrelsz, obj.MemSize)
+		}
+	}
+
 	return nil
 }
 

@@ -45,7 +45,7 @@ type Object struct {
 
 	// Adjusted (absolute) addresses of key dynamic tables.
 	SymtabAddr  uintptr
-	SymtabSize  uint64  // size of symbol table in bytes
+	SymtabSize  uint64 // size of symbol table in bytes
 	StrtabAddr  uintptr
 	HashAddr    uintptr // SysV DT_HASH, 0 if absent
 	GnuHashAddr uintptr // DT_GNU_HASH, 0 if absent

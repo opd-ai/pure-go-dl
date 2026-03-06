@@ -348,10 +348,10 @@ func TestSymbolIndexBoundsChecking(t *testing.T) {
 
 	// Test out-of-bounds indices
 	oobIndices := []uint32{
-		uint32(obj.SymtabSize / 24),       // exactly one past the end
-		uint32(obj.SymtabSize/24) + 1,     // one more past the end
-		uint32(obj.SymtabSize/24) + 100,   // far past the end
-		0xFFFFFFFF,                         // maximum uint32
+		uint32(obj.SymtabSize / 24),     // exactly one past the end
+		uint32(obj.SymtabSize/24) + 1,   // one more past the end
+		uint32(obj.SymtabSize/24) + 100, // far past the end
+		0xFFFFFFFF,                      // maximum uint32
 	}
 
 	for _, idx := range oobIndices {
@@ -382,4 +382,3 @@ func TestSymbolIndexBoundsChecking(t *testing.T) {
 		_ = symAddress(obj, 1)
 	}
 }
-

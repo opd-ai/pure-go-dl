@@ -27,10 +27,10 @@ func TestRelocationOffsetBoundsChecking(t *testing.T) {
 
 	// Test case 1: Offset before BaseVAddr
 	beforeBaseOffset := baseVAddr - 1
-	
+
 	// Test case 2: Offset at exact upper boundary (should fail - must be strictly less)
 	atUpperBound := baseVAddr + memSize
-	
+
 	// Test case 3: Offset beyond upper boundary
 	beyondUpperBound := baseVAddr + memSize + 0x1000
 

@@ -29,7 +29,7 @@ go get github.com/opd-ai/pure-go-dl
 
 **Requirements:**
 - Go 1.24 or later
-- x86-64 Linux target platform
+- Linux target platform (x86-64 or ARM64/aarch64)
 - `CGO_ENABLED=0` (statically-linked Go binary)
 
 ## Quick Start
@@ -139,13 +139,14 @@ Decrements reference count and unloads the library when it reaches zero. Destruc
 - ✅ **M0: Foundations** — Syscall helpers, repository structure
 - ✅ **M1: Memory Map** — PT_LOAD segment mapping, BSS zero-fill
 - ✅ **M2: Symbols** — GNU hash and SysV hash lookup
-- ✅ **M3: Relocations** — x86-64 relocation types (RELATIVE, GLOB_DAT, JUMP_SLOT, COPY, etc.)
+- ✅ **M3: Relocations** — x86-64 and ARM64 relocation types (RELATIVE, GLOB_DAT, JUMP_SLOT, COPY, etc.)
 - ✅ **M4: First Call** — Successfully calls native functions from CGO_ENABLED=0 binary
 - ✅ **M5: Dependencies** — Transitive dependency loading via DT_NEEDED
 - ✅ **M6: Init/Fini** — Constructor/destructor execution in correct order
 - ✅ **M7: Versioning** — GNU symbol versioning support
 - ✅ **M7.2: IFUNC** — Indirect function (IFUNC) resolution for CPU-optimized functions
 - ✅ **M7.3: TLS** — Full multi-threaded Thread-Local Storage support with Dynamic Thread Vector (DTV)
+- ✅ **M7.4: ARM64 Port** — Full aarch64/ARM64 architecture support for Linux
 
 ### Integration Tests Passing
 
@@ -164,7 +165,6 @@ All tests run successfully with `CGO_ENABLED=0 go test ./...`:
 ### Not Yet Supported
 
 - **Lazy Binding**: Only eager binding (`RTLD_NOW` semantics) is implemented. `RTLD_LAZY` is explicitly a non-goal.
-- **Architecture Support**: Currently x86-64 only. ARM64 port planned (see ROADMAP Phase 7.4).
 
 ### Library Compatibility
 
@@ -230,10 +230,8 @@ file pgldd-static  # Should show "statically linked"
 
 See [ROADMAP.md](ROADMAP.md) for detailed implementation phases and future features.
 
-**Upcoming work:**
-- ARM64/aarch64 port (MEDIUM priority)
-
 **Recently completed:**
+- ✅ ARM64/aarch64 port (MEDIUM priority — needed for Linux ARM servers and container-free deployment)
 - ✅ Multi-threaded TLS support with Dynamic Thread Vector (DTV) (MEDIUM priority — needed for pthread-heavy libraries)
 - ✅ IFUNC resolution support (HIGH priority — needed for glibc optimized functions)
 - ✅ Symbol versioning (HIGH priority — needed for libc dependencies)

@@ -466,12 +466,17 @@ TLS relocations.
 - Comprehensive tests in internal/tls/tls_test.go and dl/dl_test.go
 - Multi-threaded test suite with isolation and DTV growth verification
 
-### 7.4 aarch64 Port
+### 7.4 aarch64 Port ✅ COMPLETE
 
 The loader is architecture-specific in two places: relocation
 types and calling convention bridges. Factor these behind an
 interface early (Phase 3) so porting is a matter of adding a
 new relocation table and a new trampoline, not restructuring.
+
+**Status**: Completed. Architecture-specific relocation constants are now
+factored into build-tag-gated files (reloc_amd64.go, reloc_arm64.go) with
+generic relocation type aliases used in the main loader code. The calling
+convention bridge (purego) already supports both x86-64 and ARM64 transparently.
 
 **Priority: Medium** — valuable for Linux ARM servers and
 container-free deployment there.

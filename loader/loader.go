@@ -384,34 +384,34 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 		addend := r.Addend
 
 		switch relocType {
-		case R_X86_64_NONE:
+		case relocNone:
 			// nothing
 
-		case R_X86_64_RELATIVE:
+		case relocRelative:
 			*(*uintptr)(offsetPtr) = obj.Base + uintptr(addend)
 
-		case R_X86_64_64:
+		case reloc64:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
 			*(*uint64)(offsetPtr) = uint64(S) + uint64(addend)
 
-		case R_X86_64_GLOB_DAT:
+		case relocGlobDat:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
 			*(*uintptr)(offsetPtr) = S
 
-		case R_X86_64_JUMP_SLOT:
+		case relocJumpSlot:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
 			*(*uintptr)(offsetPtr) = S
 
-		case R_X86_64_COPY:
+		case relocCopy:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
@@ -422,27 +422,27 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			name := symName(obj, symIdx)
 			sym, ok := obj.Symbols.Lookup(name)
 			if !ok {
-				return fmt.Errorf("R_X86_64_COPY: symbol %q not found in symbol table", name)
+				return fmt.Errorf("relocCopy: symbol %q not found in symbol table", name)
 			}
 			dst := unsafe.Slice((*byte)(offsetPtr), sym.Size)
 			src := unsafe.Slice((*byte)(unsafe.Pointer(S)), sym.Size)
 			copy(dst, src)
 
-		case R_X86_64_32:
+		case reloc32:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
 			*(*uint32)(offsetPtr) = uint32(uint64(S) + uint64(addend))
 
-		case R_X86_64_32S:
+		case reloc32S:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
 			}
 			*(*int32)(offsetPtr) = int32(int64(S) + addend)
 
-		case R_X86_64_PC32, R_X86_64_PLT32:
+		case relocPC32, relocPLT32:
 			S, err := resolveSymForReloc(obj, symIdx, resolver)
 			if err != nil {
 				return err
@@ -450,19 +450,19 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			*(*uint32)(offsetPtr) = uint32(int64(S) + addend - int64(offset))
 
 		// TLS relocations
-		case R_X86_64_DTPMOD64:
+		case relocDTPMod64:
 			// Set module ID for TLS General Dynamic model.
 			// The module ID is used to index into the Dynamic Thread Vector (DTV).
 			if obj.TLSModule == nil {
-				return fmt.Errorf("R_X86_64_DTPMOD64 relocation at %#x but library has no PT_TLS segment", r.Offset)
+				return fmt.Errorf("relocDTPMod64 relocation at %#x but library has no PT_TLS segment", r.Offset)
 			}
 			*(*uint64)(offsetPtr) = obj.TLSModule.GetModuleID()
 
-		case R_X86_64_DTPOFF64:
+		case relocDTPOff64:
 			// Set offset within the TLS block (module-relative offset).
 			// Used for General Dynamic TLS access model.
 			if obj.TLSModule == nil {
-				return fmt.Errorf("R_X86_64_DTPOFF64 relocation at %#x but library has no PT_TLS segment", r.Offset)
+				return fmt.Errorf("relocDTPOff64 relocation at %#x but library has no PT_TLS segment", r.Offset)
 			}
 			// For DTPOFF, we use the symbol value (if present) + addend.
 			// If no symbol, just use addend as the offset.
@@ -479,7 +479,7 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 							// For TLS symbols, st_value is the offset within the TLS block.
 							symValue = uint64(sym.Value - obj.Base)
 						} else {
-							return fmt.Errorf("R_X86_64_DTPOFF64: TLS symbol %q not found", name)
+							return fmt.Errorf("relocDTPOff64: TLS symbol %q not found", name)
 						}
 					}
 				} else {
@@ -488,17 +488,17 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			}
 			*(*int64)(offsetPtr) = int64(symValue) + addend
 
-		case R_X86_64_TPOFF64:
+		case relocTPOff64:
 			// Thread pointer relative offset (Local Exec or Initial Exec model).
 			// This is more complex as it requires knowing the thread-local storage layout.
 			if obj.TLSModule == nil {
-				return fmt.Errorf("R_X86_64_TPOFF64 relocation at %#x but library has no PT_TLS segment", r.Offset)
+				return fmt.Errorf("relocTPOff64 relocation at %#x but library has no PT_TLS segment", r.Offset)
 			}
 			// For now, we allocate a TLS block and compute the offset.
 			// In a full implementation, this would be managed per-thread.
 			block, err := tls.GlobalManager().AllocateBlock(obj.TLSModule)
 			if err != nil {
-				return fmt.Errorf("R_X86_64_TPOFF64: failed to allocate TLS block: %w", err)
+				return fmt.Errorf("relocTPOff64: failed to allocate TLS block: %w", err)
 			}
 			// The thread pointer offset is negative from the TP.
 			offset := block.GetThreadPointerOffset()
@@ -511,10 +511,10 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			}
 			*(*int64)(offsetPtr) = offset + addend
 
-		case R_X86_64_DTPOFF32:
+		case relocDTPOff32:
 			// 32-bit version of DTPOFF64.
 			if obj.TLSModule == nil {
-				return fmt.Errorf("R_X86_64_DTPOFF32 relocation at %#x but library has no PT_TLS segment", r.Offset)
+				return fmt.Errorf("relocDTPOff32 relocation at %#x but library has no PT_TLS segment", r.Offset)
 			}
 			var symValue uint64
 			if symIdx != 0 {
@@ -525,7 +525,7 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 						if sym, ok := obj.Symbols.Lookup(name); ok {
 							symValue = uint64(sym.Value - obj.Base)
 						} else {
-							return fmt.Errorf("R_X86_64_DTPOFF32: TLS symbol %q not found", name)
+							return fmt.Errorf("relocDTPOff32: TLS symbol %q not found", name)
 						}
 					}
 				} else {
@@ -534,14 +534,14 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			}
 			*(*int32)(offsetPtr) = int32(int64(symValue) + addend)
 
-		case R_X86_64_TPOFF32:
+		case relocTPOff32:
 			// 32-bit version of TPOFF64.
 			if obj.TLSModule == nil {
-				return fmt.Errorf("R_X86_64_TPOFF32 relocation at %#x but library has no PT_TLS segment", r.Offset)
+				return fmt.Errorf("relocTPOff32 relocation at %#x but library has no PT_TLS segment", r.Offset)
 			}
 			block, err := tls.GlobalManager().AllocateBlock(obj.TLSModule)
 			if err != nil {
-				return fmt.Errorf("R_X86_64_TPOFF32: failed to allocate TLS block: %w", err)
+				return fmt.Errorf("relocTPOff32: failed to allocate TLS block: %w", err)
 			}
 			offset := block.GetThreadPointerOffset()
 			if symIdx != 0 {
@@ -552,24 +552,24 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 			}
 			*(*int32)(offsetPtr) = int32(offset + addend)
 
-		case R_X86_64_GOTTPOFF:
+		case relocGOTTPOff:
 			if err := applyGottpoff(obj, r, symIdx, offsetPtr, addend, resolver); err != nil {
 				return err
 			}
 
-		case R_X86_64_TLSGD:
+		case relocTLSGD:
 			if err := applyTlsgd(obj, r, resolver); err != nil {
 				return err
 			}
 
-		case R_X86_64_TLSLD:
+		case relocTLSLD:
 			if err := applyTlsld(obj, r); err != nil {
 				return err
 			}
 
 		// IFUNC relocation: call the resolver function to get the real address.
-		case R_X86_64_IRELATIVE:
-			// For R_X86_64_IRELATIVE, the addend points to the resolver function.
+		case relocIRelative:
+			// For relocIRelative, the addend points to the resolver function.
 			// We call it to get the actual function address.
 			resolverAddr := obj.Base + uintptr(addend)
 			resolvedAddr := CallIfuncResolver(resolverAddr)
@@ -582,14 +582,14 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 	return nil
 }
 
-// applyGottpoff handles R_X86_64_GOTTPOFF relocations (PC-relative GOT reference for Initial Exec TLS).
+// applyGottpoff handles relocGOTTPOff relocations (PC-relative GOT reference for Initial Exec TLS).
 func applyGottpoff(obj *Object, r *relaEntry, symIdx uint32, offsetPtr unsafe.Pointer, addend int64, resolver SymbolResolver) error {
 	// PC-relative GOT reference for Initial Exec TLS model.
 	// Code: movq x@gottpoff(%rip), %reg
 	// The relocation patches a 32-bit PC-relative offset in the instruction.
 	// The offset points to a GOT entry containing the TP offset for the symbol.
 	if obj.TLSModule == nil {
-		return fmt.Errorf("R_X86_64_GOTTPOFF relocation at %#x but library has no PT_TLS segment", r.Offset)
+		return fmt.Errorf("relocGOTTPOff relocation at %#x but library has no PT_TLS segment", r.Offset)
 	}
 	// For simplicity, we treat this as a PC-relative offset calculation.
 	// The symbol should point to a GOT entry that will be/is populated with TP offset.
@@ -604,7 +604,7 @@ func applyGottpoff(obj *Object, r *relaEntry, symIdx uint32, offsetPtr unsafe.Po
 			// Fall back to computing TP offset directly.
 			block, err := tls.GlobalManager().AllocateBlock(obj.TLSModule)
 			if err != nil {
-				return fmt.Errorf("R_X86_64_GOTTPOFF: failed to allocate TLS block: %w", err)
+				return fmt.Errorf("relocGOTTPOff: failed to allocate TLS block: %w", err)
 			}
 			// Write TP offset directly as the "GOT entry value".
 			// This is a simplification that works when the GOT entry is co-located.
@@ -654,14 +654,14 @@ func allocateGOTEntryPair(obj *Object, symIdx uint32) (uintptr, error) {
 	return entryAddr, nil
 }
 
-// applyTlsgd handles R_X86_64_TLSGD relocations (General Dynamic TLS model).
+// applyTlsgd handles relocTLSGD relocations (General Dynamic TLS model).
 func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 	// PC-relative reference to GOT entries for General Dynamic TLS model.
 	// Code: leaq x@tlsgd(%rip), %rdi; call __tls_get_addr
 	// The relocation patches the leaq instruction's PC-relative offset
 	// to point to a pair of GOT entries containing [DTPMOD64, DTPOFF64].
 	if obj.TLSModule == nil {
-		return fmt.Errorf("R_X86_64_TLSGD relocation at %#x but library has no PT_TLS segment", r.Offset)
+		return fmt.Errorf("relocTLSGD relocation at %#x but library has no PT_TLS segment", r.Offset)
 	}
 
 	symIdx := uint32(r.Info >> 32)
@@ -669,7 +669,7 @@ func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 	// Allocate or retrieve GOT entry pair for this symbol.
 	gotEntry, err := allocateGOTEntryPair(obj, symIdx)
 	if err != nil {
-		return fmt.Errorf("R_X86_64_TLSGD at %#x: %w", r.Offset, err)
+		return fmt.Errorf("relocTLSGD at %#x: %w", r.Offset, err)
 	}
 
 	// Populate GOT entries: [DTPMOD64, DTPOFF64].
@@ -702,7 +702,7 @@ func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 	return nil
 }
 
-// applyTlsld handles R_X86_64_TLSLD relocations (Local Dynamic TLS model).
+// applyTlsld handles relocTLSLD relocations (Local Dynamic TLS model).
 func applyTlsld(obj *Object, r *relaEntry) error {
 	// PC-relative reference to GOT entries for Local Dynamic TLS model.
 	// Code: leaq symbol@tlsld(%rip), %rdi; call __tls_get_addr
@@ -711,7 +711,7 @@ func applyTlsld(obj *Object, r *relaEntry) error {
 	// Unlike TLSGD, TLSLD doesn't reference a specific symbol - it gets
 	// the base address of the module's TLS block.
 	if obj.TLSModule == nil {
-		return fmt.Errorf("R_X86_64_TLSLD relocation at %#x but library has no PT_TLS segment", r.Offset)
+		return fmt.Errorf("relocTLSLD relocation at %#x but library has no PT_TLS segment", r.Offset)
 	}
 
 	// For TLSLD, symIdx is typically 0 (no specific symbol).
@@ -721,7 +721,7 @@ func applyTlsld(obj *Object, r *relaEntry) error {
 	// Allocate or retrieve GOT entry pair for TLSLD.
 	gotEntry, err := allocateGOTEntryPair(obj, tlsldMarker)
 	if err != nil {
-		return fmt.Errorf("R_X86_64_TLSLD at %#x: %w", r.Offset, err)
+		return fmt.Errorf("relocTLSLD at %#x: %w", r.Offset, err)
 	}
 
 	// Populate GOT entries: [DTPMOD64, 0].
@@ -746,7 +746,7 @@ func applyTlsld(obj *Object, r *relaEntry) error {
 }
 
 // resolveSymForReloc returns the absolute address of the symbol at symIdx.
-// If symIdx is 0, returns 0 (used for R_X86_64_RELATIVE which has no symbol).
+// If symIdx is 0, returns 0 (used for relocRelative which has no symbol).
 // Weak symbols (STB_WEAK) resolve to 0 if not found, per ELF specification.
 func resolveSymForReloc(obj *Object, symIdx uint32, resolver SymbolResolver) (uintptr, error) {
 	if symIdx == 0 {

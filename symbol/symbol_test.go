@@ -391,10 +391,10 @@ func TestLoadFromDynamic_WithVersionInfo(t *testing.T) {
 // BenchmarkTableLookup measures symbol lookup performance.
 func BenchmarkTableLookup(b *testing.B) {
 	table := NewTable(0x1000)
-	
+
 	// Add 1000 symbols to make it realistic
 	for i := 0; i < 1000; i++ {
-		name := string(rune('a' + (i % 26))) + string(rune('0' + (i / 26)))
+		name := string(rune('a'+(i%26))) + string(rune('0'+(i/26)))
 		sym := &Symbol{
 			Name:  name,
 			Value: uintptr(0x1000 + i*16),
@@ -404,7 +404,7 @@ func BenchmarkTableLookup(b *testing.B) {
 		}
 		table.AddSymbol(name, sym)
 	}
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
@@ -432,7 +432,7 @@ func BenchmarkTableAddSymbol(b *testing.B) {
 func BenchmarkReadCStringMem(b *testing.B) {
 	testData := []byte("benchmark_test_string\x00")
 	baseAddr := uintptr(unsafe.Pointer(&testData[0]))
-	
+
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {

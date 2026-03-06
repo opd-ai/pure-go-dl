@@ -115,8 +115,8 @@ func (vt *VersionTable) parseVerneed(addr uintptr, count uint64, strtabAddr uint
 		auxCurrent := unsafe.Add(current, uintptr(vnAux))
 		for j := uint16(0); j < vnCnt; j++ {
 			// Read Vernaux (20 bytes).
-			_ = *(*uint32)(auxCurrent)                      // vna_hash
-			_ = *(*uint16)(unsafe.Add(auxCurrent, 4))       // vna_flags
+			_ = *(*uint32)(auxCurrent)                // vna_hash
+			_ = *(*uint16)(unsafe.Add(auxCurrent, 4)) // vna_flags
 			vnaOther := *(*uint16)(unsafe.Add(auxCurrent, 6))
 			vnaName := *(*uint32)(unsafe.Add(auxCurrent, 8))
 			vnaNext := *(*uint32)(unsafe.Add(auxCurrent, 12))
@@ -163,10 +163,10 @@ func (vt *VersionTable) parseVerdef(addr uintptr, count uint64, strtabAddr uintp
 	for i := uint64(0); i < count; i++ {
 		// Read Verdef header (20 bytes).
 		vdVersion := *(*uint16)(current)
-		_ = *(*uint16)(unsafe.Add(current, 2))  // vd_flags
+		_ = *(*uint16)(unsafe.Add(current, 2)) // vd_flags
 		vdNdx := *(*uint16)(unsafe.Add(current, 4))
-		_ = *(*uint16)(unsafe.Add(current, 6))  // vd_cnt
-		_ = *(*uint32)(unsafe.Add(current, 8))  // vd_hash
+		_ = *(*uint16)(unsafe.Add(current, 6)) // vd_cnt
+		_ = *(*uint32)(unsafe.Add(current, 8)) // vd_hash
 		vdAux := *(*uint32)(unsafe.Add(current, 12))
 		vdNext := *(*uint32)(unsafe.Add(current, 16))
 

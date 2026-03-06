@@ -748,8 +748,10 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 
 	for i := uint64(0); i < n; i++ {
 		r := &rels[i]
-		if r.Offset < obj.Parsed.BaseVAddr {
-			return fmt.Errorf("relocation offset %#x is before base virtual address %#x", r.Offset, obj.Parsed.BaseVAddr)
+		// Validate relocation offset is within mapped memory range
+		maxOffset := obj.Parsed.BaseVAddr + obj.Parsed.MemSize
+		if r.Offset < obj.Parsed.BaseVAddr || r.Offset >= maxOffset {
+			return fmt.Errorf("relocation offset %#x out of range [%#x, %#x)", r.Offset, obj.Parsed.BaseVAddr, maxOffset)
 		}
 
 		ctx := &relocContext{

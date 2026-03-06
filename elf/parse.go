@@ -75,8 +75,15 @@ func Parse(path string) (*ParsedObject, error) {
 		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
 	}
 
+	// Validate MemSize calculation
+	if maxVAddr < minVAddr {
+		return nil, fmt.Errorf("invalid segment layout: maxVAddr=0x%x < minVAddr=0x%x", maxVAddr, minVAddr)
+	}
 	obj.BaseVAddr = minVAddr
 	obj.MemSize = PageAlign(maxVAddr - minVAddr)
+	if obj.MemSize == 0 {
+		return nil, fmt.Errorf("computed MemSize is zero")
+	}
 
 	if err := readDynamicSection(f, obj); err != nil {
 		return nil, fmt.Errorf("elf parse: %q: %w", path, err)
@@ -114,6 +121,14 @@ func collectProgramHeaders(ef *elf.File, obj *ParsedObject) (uint64, uint64, err
 		ph := ef.Progs[i]
 		switch ph.Type {
 		case elf.PT_LOAD:
+			// Validate PT_LOAD segment
+			if ph.Filesz > ph.Memsz {
+				return 0, 0, fmt.Errorf("PT_LOAD segment %d: Filesz (%d) > Memsz (%d)", i, ph.Filesz, ph.Memsz)
+			}
+			// Check for address overflow
+			if ph.Vaddr > ^uint64(0)-ph.Memsz {
+				return 0, 0, fmt.Errorf("PT_LOAD segment %d: address overflow (Vaddr=0x%x, Memsz=0x%x)", i, ph.Vaddr, ph.Memsz)
+			}
 			obj.LoadSegments = append(obj.LoadSegments, ph.ProgHeader)
 			end := ph.Vaddr + ph.Memsz
 			if first {
@@ -163,13 +178,21 @@ func readDynamicSection(f *os.File, obj *ParsedObject) error {
 	obj.DynData = dynData
 
 	const dynEntSize = 16
+	obj.DynEntries = make(map[elf.DynTag]uint64)
+
+	foundNull := false
 	for off := 0; off+dynEntSize <= len(dynData); off += dynEntSize {
 		tag := elf.DynTag(binary.LittleEndian.Uint64(dynData[off:]))
 		val := binary.LittleEndian.Uint64(dynData[off+8:])
 		if tag == elf.DT_NULL {
+			foundNull = true
 			break
 		}
 		obj.DynEntries[tag] = val
+	}
+
+	if !foundNull {
+		return fmt.Errorf("dynamic segment missing DT_NULL terminator")
 	}
 
 	return nil

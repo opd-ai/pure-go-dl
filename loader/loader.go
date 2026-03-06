@@ -300,7 +300,7 @@ func populateSoname(obj *Object, dynTags map[elf.DynTag]uint64) {
 }
 
 // initializeSymbolTable calculates symbol table size, parses version info, and loads symbols.
-func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uintptr) {
+func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uintptr) error {
 	var symtabSize uint64
 	if syment, ok := dynTags[elf.DT_SYMENT]; ok && syment == 24 {
 		if _, ok := dynTags[elf.DT_STRSZ]; ok && obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
@@ -322,9 +322,10 @@ func initializeSymbolTable(obj *Object, dynTags map[elf.DynTag]uint64, base uint
 
 	if obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
 		if err := obj.Symbols.LoadFromDynamic(obj.SymtabAddr, obj.StrtabAddr, symtabSize, obj.StrtabSize); err != nil {
-			_ = err
+			return fmt.Errorf("symbol table load failed: %w", err)
 		}
 	}
+	return nil
 }
 
 // setupTLS registers a TLS module if the object has a PT_TLS segment.
@@ -373,7 +374,9 @@ func populateObject(obj *Object, parsed *goelf.ParsedObject) error {
 	if err := populateDynamicTags(obj, parsed.DynEntries, toAbs); err != nil {
 		return fmt.Errorf("loader: dynamic tags validation failed: %w", err)
 	}
-	initializeSymbolTable(obj, parsed.DynEntries, base)
+	if err := initializeSymbolTable(obj, parsed.DynEntries, base); err != nil {
+		return fmt.Errorf("loader: symbol table initialization failed: %w", err)
+	}
 	return setupTLS(obj, parsed)
 }
 
@@ -388,6 +391,9 @@ func finalizeObject(obj *Object, parsed *goelf.ParsedObject, resolver SymbolReso
 			relroAddr := obj.Base + uintptr(relro.Vaddr-parsed.BaseVAddr)
 			relroSize := uintptr(pageUp(relro.Memsz))
 			if err := mmap.Protect(relroAddr, relroSize, mmap.ProtRead); err != nil {
+				// RELRO is a defensive security feature; don't fail loading if it fails.
+				// In some environments (e.g., tests, containers), mprotect may not work.
+				// Silently continue - the library is still functional, just not hardened.
 				_ = err
 			}
 		}

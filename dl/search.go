@@ -102,7 +102,8 @@ func searchInPaths(name string, searchPaths []struct {
 func searchInSearchPath(name string, sp struct {
 	dirs     []string
 	useCache bool
-}) string {
+},
+) string {
 	if sp.useCache {
 		return searchInCacheIfExists(name)
 	}

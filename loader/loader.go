@@ -460,7 +460,7 @@ func findTLSInitData(obj *Object, parsed *goelf.ParsedObject, tlsSeg *elf.ProgHe
 }
 
 // calculateTLSDataAddress computes the TLS data address from segment offsets.
-func calculateTLSDataAddress(seg *Segment, loadSeg *elf.ProgHeader, tlsSeg *elf.ProgHeader) uintptr {
+func calculateTLSDataAddress(seg *Segment, loadSeg, tlsSeg *elf.ProgHeader) uintptr {
 	alignedVAddr := pageDown(loadSeg.Vaddr)
 	leading := loadSeg.Vaddr - alignedVAddr
 	offset := tlsSeg.Vaddr - loadSeg.Vaddr

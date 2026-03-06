@@ -174,37 +174,30 @@ func validateDynTag(tag elf.DynTag, val uint64, maxVAddr uint64) error {
 
 ---
 
-### 1.6 GOT Size Exhaustion Not Gracefully Handled (MEDIUM SEVERITY)
+### 1.6 GOT Size Exhaustion Not Gracefully Handled ✅ COMPLETE
 
-**File**: `loader/loader.go`, lines 830-832
+**File**: `loader/loader.go`, lines 848-891
 ```go
-if obj.GOTSize+16 > 4096 {
-    return 0, fmt.Errorf("GOT space exhausted (>4096 bytes)")
+// Dynamically allocates additional GOT pages when needed.
+func allocateGOTEntryPair(obj *Object, symIdx uint32) (uintptr, error) {
+    // ... dynamic page allocation logic ...
 }
 ```
 
-**Issue**:
-- Allocation fails hard when GOT fills up (only 256 TLS symbols max).
-- For libraries with many TLS symbols, this causes load failure.
-- No attempt to allocate additional GOT pages.
-- No warning in documentation.
+**Issue**: ✅ **RESOLVED** (2026-03-06)
+- Allocation failed hard when GOT filled up (only 256 TLS symbols max).
+- For libraries with many TLS symbols, this caused load failure.
 
-**Risk**: Libraries with >256 TLS symbols cannot be loaded.
+**Solution Implemented**:
+- Added GOTPages slice to Object struct to track multiple GOT memory regions
+- Modified allocateGOTEntryPair to dynamically allocate new 4KB pages when needed
+- Updated Unload to properly cleanup all GOT pages
+- Added comprehensive test suite (loader/got_expansion_test.go) with 3 test cases:
+  - TestGOTExpansion_MultiplePages: Verifies allocation of 300 TLS symbols across 2 pages
+  - TestGOTExpansion_IdempotentAllocation: Ensures same symbol returns same address
+  - TestGOTExpansion_PageBoundary: Tests correct allocation across page boundaries
 
-**Fix**: Implement dynamic GOT page allocation:
-```go
-const pageSize = 4096
-if obj.GOTSize+16 > obj.GOTCapacity {
-    newCapacity := obj.GOTCapacity + pageSize
-    newAddr, err := mmap.MapAnon(pageSize, mmap.ProtRead|mmap.ProtWrite)
-    if err != nil {
-        return 0, fmt.Errorf("failed to allocate additional GOT: %w", err)
-    }
-    // Link new page to existing GOT
-    obj.GOTPages = append(obj.GOTPages, newAddr)
-    obj.GOTCapacity = newCapacity
-}
-```
+**Impact**: Libraries with unlimited TLS symbols can now be loaded without hard limits.
 
 ---
 

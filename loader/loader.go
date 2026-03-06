@@ -71,6 +71,7 @@ type Object struct {
 	GOTEntries map[uint32]uintptr // symIdx -> offset into GOT
 	GOTBase    uintptr            // base address of allocated GOT space
 	GOTSize    uintptr            // current size of GOT in bytes
+	GOTPages   []uintptr          // additional GOT pages for dynamic expansion
 
 	RefCount int
 	Soname   string
@@ -843,6 +844,7 @@ func applyGottpoff(obj *Object, r *relaEntry, symIdx uint32, offsetPtr unsafe.Po
 // allocateGOTEntryPair allocates a GOT entry pair (16 bytes) for a TLS symbol.
 // Returns the address of the first entry (DTPMOD64 entry).
 // The second entry (DTPOFF64) is at returned_address + 8.
+// Dynamically allocates additional GOT pages when needed.
 func allocateGOTEntryPair(obj *Object, symIdx uint32) (uintptr, error) {
 	// Check if already allocated.
 	if offset, exists := obj.GOTEntries[symIdx]; exists {
@@ -859,18 +861,34 @@ func allocateGOTEntryPair(obj *Object, symIdx uint32) (uintptr, error) {
 		}
 		obj.GOTBase = addr
 		obj.GOTEntries = make(map[uint32]uintptr)
+		obj.GOTPages = []uintptr{addr} // Track the initial page
+	}
+
+	// Calculate current page index and offset within page.
+	const gotPageSize = 4096
+	requiredSize := obj.GOTSize + 16
+
+	// Check if we need to allocate a new page.
+	totalAllocated := uintptr(len(obj.GOTPages)) * gotPageSize
+	if requiredSize > totalAllocated {
+		newAddr, err := mmap.MapAnon(gotPageSize, mmap.ProtRead|mmap.ProtWrite)
+		if err != nil {
+			return 0, fmt.Errorf("failed to allocate additional GOT page: %w", err)
+		}
+		obj.GOTPages = append(obj.GOTPages, newAddr)
 	}
 
 	// Allocate 16 bytes (two uint64 entries) at current GOTSize offset.
-	if obj.GOTSize+16 > 4096 {
-		return 0, fmt.Errorf("GOT space exhausted (>4096 bytes)")
-	}
-
 	offset := obj.GOTSize
 	obj.GOTEntries[symIdx] = offset
 	obj.GOTSize += 16
 
-	entryAddr := obj.GOTBase + offset
+	// Compute the actual address: base + offset for first page,
+	// or corresponding address in additional pages.
+	pageIndex := offset / gotPageSize
+	pageOffset := offset % gotPageSize
+	entryAddr := obj.GOTPages[pageIndex] + pageOffset
+
 	return entryAddr, nil
 }
 
@@ -1039,11 +1057,13 @@ func Unload(obj *Object) error {
 		}()
 	}
 
-	// Unmap GOT if it was allocated.
-	if obj.GOTBase != 0 {
+	// Unmap all GOT pages if allocated.
+	if len(obj.GOTPages) > 0 {
 		const gotPageSize = 4096
-		if err := mmap.Unmap(obj.GOTBase, gotPageSize); err != nil {
-			return fmt.Errorf("failed to unmap GOT: %w", err)
+		for _, pageAddr := range obj.GOTPages {
+			if err := mmap.Unmap(pageAddr, gotPageSize); err != nil {
+				return fmt.Errorf("failed to unmap GOT page at %#x: %w", pageAddr, err)
+			}
 		}
 	}
 

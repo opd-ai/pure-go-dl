@@ -67,27 +67,44 @@ func parseCache(path string) (*ldCache, error) {
 		return nil, err
 	}
 
-	// Minimum size check: at least header size
-	if len(data) < int(unsafe.Sizeof(cacheHeader{})) {
-		return nil, fmt.Errorf("ld.so.cache: file too small")
+	if err := validateCacheData(data); err != nil {
+		return nil, err
 	}
 
-	// Check magic
-	if !bytes.HasPrefix(data, []byte(cacheHeaderMagic)) {
-		return nil, fmt.Errorf("ld.so.cache: invalid magic (expected %q)", cacheHeaderMagic)
-	}
-
-	// Parse header
-	var header cacheHeader
-	if err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &header); err != nil {
-		return nil, fmt.Errorf("ld.so.cache: failed to read header: %w", err)
+	header, err := parseCacheHeader(data)
+	if err != nil {
+		return nil, err
 	}
 
 	if header.NumLibs == 0 {
 		return &ldCache{entries: make(map[string]string)}, nil
 	}
 
-	// Calculate offsets
+	return parseCacheEntries(data, header)
+}
+
+// validateCacheData checks file size and magic header.
+func validateCacheData(data []byte) error {
+	if len(data) < int(unsafe.Sizeof(cacheHeader{})) {
+		return fmt.Errorf("ld.so.cache: file too small")
+	}
+	if !bytes.HasPrefix(data, []byte(cacheHeaderMagic)) {
+		return fmt.Errorf("ld.so.cache: invalid magic (expected %q)", cacheHeaderMagic)
+	}
+	return nil
+}
+
+// parseCacheHeader reads and validates the cache file header.
+func parseCacheHeader(data []byte) (*cacheHeader, error) {
+	var header cacheHeader
+	if err := binary.Read(bytes.NewReader(data), binary.LittleEndian, &header); err != nil {
+		return nil, fmt.Errorf("ld.so.cache: failed to read header: %w", err)
+	}
+	return &header, nil
+}
+
+// parseCacheEntries reads all cache entries and builds the library map.
+func parseCacheEntries(data []byte, header *cacheHeader) (*ldCache, error) {
 	headerSize := int(unsafe.Sizeof(cacheHeader{}))
 	entriesSize := int(header.NumLibs) * int(unsafe.Sizeof(cacheEntry{}))
 	stringsOffset := headerSize + entriesSize
@@ -97,8 +114,6 @@ func parseCache(path string) (*ldCache, error) {
 	}
 
 	stringTable := data[stringsOffset:]
-
-	// Parse entries
 	cache := &ldCache{
 		entries: make(map[string]string, int(header.NumLibs)),
 	}
@@ -112,40 +127,33 @@ func parseCache(path string) (*ldCache, error) {
 			return nil, fmt.Errorf("ld.so.cache: failed to read entry %d: %w", i, err)
 		}
 
-		// DEBUG (disabled)
-		// fmt.Printf("Entry %d: Flags=0x%04x KeyOff=%d ValOff=%d\n", i, entry.Flags, entry.KeyOffset, entry.ValueOffset)
-
-		// Filter: We only want ELF libc6 libraries for x86-64
-		// Check if this is a libc6 library (required flags check)
-		if (entry.Flags & flagRequiredMask) != flagLibc6 {
-			// fmt.Printf("  Skip: type check failed (0x%04x != 0x%04x)\n", entry.Flags&flagRequiredMask, flagLibc6)
+		if !shouldIncludeEntry(&entry) {
 			continue
 		}
 
-		// Check architecture: accept x86-64 or unspecified (for compatibility)
-		arch := entry.Flags & flagArchMask
-		if arch != 0 && arch != flagX8664 {
-			// fmt.Printf("  Skip: arch check failed (0x%04x != 0x%04x)\n", arch, flagX8664)
-			continue
-		}
-
-		// Extract soname
 		soname, err := extractString(stringTable, entry.KeyOffset)
 		if err != nil {
-			continue // Skip malformed entries
+			continue
 		}
 
-		// Extract path
 		path, err := extractString(stringTable, entry.ValueOffset)
 		if err != nil {
-			continue // Skip malformed entries
+			continue
 		}
 
-		// Store mapping (later entries with same soname override earlier ones)
 		cache.entries[soname] = path
 	}
 
 	return cache, nil
+}
+
+// shouldIncludeEntry filters cache entries by architecture and library type.
+func shouldIncludeEntry(entry *cacheEntry) bool {
+	if (entry.Flags & flagRequiredMask) != flagLibc6 {
+		return false
+	}
+	arch := entry.Flags & flagArchMask
+	return arch == 0 || arch == flagX8664
 }
 
 // extractString extracts a null-terminated string from data at the given offset.

@@ -911,6 +911,8 @@ func Unload(obj *Object) error {
 }
 
 // zeroMem zeroes count bytes starting at addr.
+//
+//go:nocheckptr
 func zeroMem(addr, count uintptr) {
 	sl := unsafe.Slice((*byte)(unsafe.Pointer(addr)), count)
 	for i := range sl {

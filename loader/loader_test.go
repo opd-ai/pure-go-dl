@@ -2,9 +2,11 @@ package loader
 
 import (
 	"debug/elf"
+	"syscall"
 	"testing"
 	"unsafe"
 
+	"github.com/opd-ai/pure-go-dl/internal/mmap"
 	"golang.org/x/sys/unix"
 )
 
@@ -117,19 +119,26 @@ func TestPageUp(t *testing.T) {
 }
 
 func TestZeroMem(t *testing.T) {
-	// Allocate a small buffer
-	size := 100
-	buf := make([]byte, size)
+	// Use mmap'd memory like the real code does, to avoid checkptr violations
+	size := uintptr(4096) // One page
+	addr, err := mmap.Map(0, size, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_PRIVATE|syscall.MAP_ANONYMOUS, -1, 0)
+	if err != nil {
+		t.Fatalf("mmap failed: %v", err)
+	}
+	defer mmap.Unmap(addr, size)
+
+	// Create a slice view of the mmap'd region
+	buf := unsafe.Slice((*byte)(unsafe.Pointer(addr)), size)
 
 	// Fill with non-zero data
 	for i := range buf {
-		buf[i] = byte(i + 1) // Start at 1 to avoid accidental zeros
+		buf[i] = byte((i % 255) + 1) // Start at 1 to avoid accidental zeros
 	}
 
-	// Zero a portion
-	addr := uintptr(unsafe.Pointer(&buf[10]))
-	count := uintptr(50)
-	zeroMem(addr, count)
+	// Zero a portion in the middle
+	zeroStart := uintptr(10)
+	zeroCount := uintptr(50)
+	zeroMem(addr+zeroStart, zeroCount)
 
 	// Check that the region was zeroed
 	for i := 10; i < 60; i++ {
@@ -140,13 +149,13 @@ func TestZeroMem(t *testing.T) {
 
 	// Check that regions outside weren't touched
 	for i := 0; i < 10; i++ {
-		expected := byte(i + 1)
+		expected := byte((i % 255) + 1)
 		if buf[i] != expected {
 			t.Errorf("buf[%d] = %d, want %d (should not be modified)", i, buf[i], expected)
 		}
 	}
-	for i := 60; i < size; i++ {
-		expected := byte(i + 1)
+	for i := 60; i < 100; i++ {
+		expected := byte((i % 255) + 1)
 		if buf[i] != expected {
 			t.Errorf("buf[%d] = %d, want %d (should not be modified)", i, buf[i], expected)
 		}

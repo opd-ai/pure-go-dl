@@ -169,12 +169,16 @@ Step 6 (parallel) ───────────────────┼
                                   Step 7
 ```
 
-## Out of Scope (Future Milestones)
+## Completed Beyond M4 (Post-Launch Features)
 
-Per project backlog analysis, the following are explicitly deferred:
-- **TLS support** (ROADMAP Phase 7.3, LOW priority)
-- **IFUNC resolution** (ROADMAP Phase 7.2, HIGH priority but complex)
-- **aarch64 port** (ROADMAP Phase 7.4, MEDIUM priority)
+The following advanced features were initially out of scope for M4 but have since been completed:
+- ✅ **TLS support** (ROADMAP Phase 7.3) — Full multi-threaded TLS with Dynamic Thread Vector (DTV)
+- ✅ **IFUNC resolution** (ROADMAP Phase 7.2) — STT_GNU_IFUNC and R_X86_64_IRELATIVE support
+- ✅ **aarch64 port** (ROADMAP Phase 7.4) — Complete ARM64/aarch64 architecture support
+
+## Non-Goals (Permanent)
+
+The following remain explicitly out of scope:
 - **Lazy binding / RTLD_LAZY** (ROADMAP non-goal)
 - **LD_AUDIT / LD_PRELOAD** (ROADMAP non-goal)
 

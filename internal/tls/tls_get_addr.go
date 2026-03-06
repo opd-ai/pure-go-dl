@@ -86,6 +86,8 @@ func getCurrentThreadID() uint64 {
 
 // GetTLSAddr implements the __tls_get_addr function.
 // It takes a pointer to TLSIndex and returns the address of the TLS variable.
+//
+//go:nocheckptr
 func GetTLSAddr(indexPtr uintptr) uintptr {
 	idx := (*TLSIndex)(unsafe.Pointer(indexPtr))
 

@@ -1,10 +1,12 @@
 # pure-go-dl
 
-A Pure-Go ELF dynamic linker that enables loading native shared libraries (`.so` files) from statically-linked Go binaries built with `CGO_ENABLED=0`.
+A CGO-free ELF dynamic linker that enables loading native shared libraries (`.so` files) from Go binaries built with `CGO_ENABLED=0`.
 
 ## Overview
 
-**pure-go-dl** provides `dlopen`/`dlsym`/`dlclose` semantics for x86-64 Linux without requiring cgo or dynamic linking. It allows Go applications to load and call native C libraries at runtime while remaining fully statically linked.
+**pure-go-dl** provides `dlopen`/`dlsym`/`dlclose` semantics for x86-64 and ARM64 Linux without requiring cgo at build time. It allows Go applications to load and call native C libraries at runtime while avoiding the complexity of cgo compilation.
+
+**Important:** While this library is built with `CGO_ENABLED=0` (no cgo compiler required), the resulting binaries are **not statically linked**. They require standard system libraries (`libc.so.6`, `libdl.so.2`, `libpthread.so.0`) at runtime due to the [purego](https://github.com/ebitengine/purego) dependency which uses assembly trampolines to call system `dlopen`/`dlsym`.
 
 **Key Features:**
 - ✅ Load ELF shared objects from `CGO_ENABLED=0` binaries
@@ -17,9 +19,10 @@ A Pure-Go ELF dynamic linker that enables loading native shared libraries (`.so`
 - ✅ Library search paths (`DT_RUNPATH`, `DT_RPATH`, `LD_LIBRARY_PATH`, `/etc/ld.so.cache`)
 
 **Why This Exists:**
-- Deploy single-binary Go applications that can still load platform-specific libraries (GPU drivers, system libraries)
-- Avoid cgo build complexity in containerized/embedded environments
-- Enable runtime plugin systems without dynamic linking the Go binary itself
+- Build Go applications without the cgo compiler while still loading platform-specific libraries (GPU drivers, system libraries)
+- Avoid cgo cross-compilation complexity in containerized/embedded build environments
+- Enable runtime plugin systems in `CGO_ENABLED=0` binaries
+- Simplify builds for environments where cgo is unavailable or problematic
 
 ## Installation
 
@@ -27,10 +30,14 @@ A Pure-Go ELF dynamic linker that enables loading native shared libraries (`.so`
 go get github.com/opd-ai/pure-go-dl
 ```
 
-**Requirements:**
+**Build Requirements:**
 - Go 1.24 or later
-- Linux target platform (x86-64 or ARM64/aarch64)
-- `CGO_ENABLED=0` (statically-linked Go binary)
+- `CGO_ENABLED=0` (no cgo compiler needed)
+
+**Runtime Requirements:**
+- Linux (x86-64 or ARM64/aarch64)
+- Standard system libraries: `libc.so.6`, `libdl.so.2`, `libpthread.so.0`
+- Note: Binaries are **dynamically linked** despite being built with `CGO_ENABLED=0`
 
 ## Quick Start
 
@@ -162,6 +169,24 @@ All tests run successfully with `CGO_ENABLED=0 go test ./...`:
 
 ## Limitations
 
+### Runtime Dependencies
+
+Despite being built with `CGO_ENABLED=0`, binaries using pure-go-dl are **not statically linked**. They require the following system libraries at runtime:
+
+- `libc.so.6` (glibc)
+- `libdl.so.2` (dynamic linker interface)
+- `libpthread.so.0` (POSIX threads)
+
+This is due to the [purego](https://github.com/ebitengine/purego) dependency, which uses assembly trampolines to invoke system `dlopen`/`dlsym` calls. While you avoid the cgo **compiler** dependency (simplifying builds), you still require a standard Linux runtime environment.
+
+**What this means for deployment:**
+- ✅ No need for cgo during builds (simpler CI/CD, cross-compilation)
+- ✅ No C compiler toolchain required in build environment
+- ❌ Cannot deploy to environments without glibc (e.g., Alpine Linux without glibc compatibility)
+- ❌ Binaries are not "single-file standalone" — they need system libraries
+
+If you need truly static binaries, consider using cgo with static linking flags instead.
+
 ### Not Yet Supported
 
 - **Lazy Binding**: Only eager binding (`RTLD_NOW` semantics) is implemented. `RTLD_LAZY` is explicitly a non-goal.
@@ -221,9 +246,9 @@ go build ./...
 # Build CLI tool
 go build -o pgldd ./cmd/pgldd
 
-# Verify CGO_ENABLED=0 works
-CGO_ENABLED=0 go build -o pgldd-static ./cmd/pgldd
-file pgldd-static  # Should show "statically linked"
+# Verify CGO_ENABLED=0 works (produces dynamically-linked binary)
+CGO_ENABLED=0 go build -o pgldd-nocgo ./cmd/pgldd
+file pgldd-nocgo  # Shows "dynamically linked" (expected due to purego)
 ```
 
 ## Roadmap

@@ -1,0 +1,5631 @@
+{
+  "metadata": {
+    "repository": "",
+    "generated_at": "0001-01-01T00:00:00Z",
+    "analysis_time": 0,
+    "files_processed": 0,
+    "tool_version": "",
+    "go_version": ""
+  },
+  "overview": {
+    "total_lines_of_code": 0,
+    "total_functions": 0,
+    "total_methods": 0,
+    "total_structs": 0,
+    "total_interfaces": 0,
+    "total_packages": 0,
+    "total_files": 0
+  },
+  "functions": [
+    {
+      "name": "relaSymIdx",
+      "package": "loader",
+      "file": "loader/reloc_arm64.go",
+      "line": 117,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 0,
+        "code": 0,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "relaType",
+      "package": "loader",
+      "file": "loader/reloc_arm64.go",
+      "line": 118,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 0,
+        "code": 0,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "callFunc",
+      "package": "loader",
+      "file": "loader/call.go",
+      "line": 12,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 3,
+        "code": 3,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.5
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 263,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "CallIfuncResolver",
+      "package": "loader",
+      "file": "loader/call.go",
+      "line": 25,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 3,
+        "code": 3,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 400,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "init",
+      "package": "symbol",
+      "file": "symbol/race_on.go",
+      "line": 5,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "parseCache",
+      "package": "dl",
+      "file": "dl/ldcache.go",
+      "line": 64,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 84,
+        "code": 52,
+        "comments": 15,
+        "blank": 17
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 13,
+        "cognitive": 13,
+        "nesting_depth": 2,
+        "overall": 17.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 46,
+        "has_example": false,
+        "quality_score": 0.18400000000000002
+      }
+    },
+    {
+      "name": "extractString",
+      "package": "dl",
+      "file": "dl/ldcache.go",
+      "line": 152,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 8,
+        "comments": 0,
+        "blank": 2
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 79,
+        "has_example": false,
+        "quality_score": 0.31600000000000006
+      }
+    },
+    {
+      "name": "lookupInCache",
+      "package": "dl",
+      "file": "dl/ldcache.go",
+      "line": 167,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 22,
+        "code": 15,
+        "comments": 3,
+        "blank": 4
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 128,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "main",
+      "package": "main",
+      "file": "cmd/pgldd/main.go",
+      "line": 17,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 39,
+        "code": 32,
+        "comments": 0,
+        "blank": 7
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "GnuHash",
+      "package": "symbol",
+      "file": "symbol/gnu_hash.go",
+      "line": 12,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 52,
+        "has_example": false,
+        "quality_score": 0.20800000000000002
+      }
+    },
+    {
+      "name": "GnuLookup",
+      "package": "symbol",
+      "file": "symbol/gnu_hash.go",
+      "line": 31,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 65,
+        "code": 48,
+        "comments": 10,
+        "blank": 7
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 8,
+        "cognitive": 8,
+        "nesting_depth": 3,
+        "overall": 11.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 548,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "SysvHash",
+      "package": "symbol",
+      "file": "symbol/sysv_hash.go",
+      "line": 10,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 9,
+        "code": 9,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 2,
+        "overall": 4.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 54,
+        "has_example": false,
+        "quality_score": 0.21600000000000003
+      }
+    },
+    {
+      "name": "SysvLookup",
+      "package": "symbol",
+      "file": "symbol/sysv_hash.go",
+      "line": 27,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 39,
+        "code": 29,
+        "comments": 5,
+        "blank": 5
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 2,
+        "overall": 6.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 213,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "symAtIndex",
+      "package": "symbol",
+      "file": "symbol/sysv_hash.go",
+      "line": 70,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 65,
+        "has_example": false,
+        "quality_score": 0.36
+      }
+    },
+    {
+      "name": "symName",
+      "package": "loader",
+      "file": "loader/reloc.go",
+      "line": 16,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "symBind",
+      "package": "loader",
+      "file": "loader/reloc.go",
+      "line": 25,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 81,
+        "has_example": false,
+        "quality_score": 0.42400000000000004
+      }
+    },
+    {
+      "name": "symAddress",
+      "package": "loader",
+      "file": "loader/reloc.go",
+      "line": 34,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 63,
+        "has_example": false,
+        "quality_score": 0.352
+      }
+    },
+    {
+      "name": "NewTable",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 29,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 58,
+        "has_example": false,
+        "quality_score": 0.23199999999999998
+      }
+    },
+    {
+      "name": "SetVersionTable",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 38,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Table",
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.5
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 66,
+        "has_example": false,
+        "quality_score": 0.264
+      }
+    },
+    {
+      "name": "AddSymbol",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 43,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Table",
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 53,
+        "has_example": false,
+        "quality_score": 0.21200000000000002
+      }
+    },
+    {
+      "name": "Lookup",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 49,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Table",
+      "lines": {
+        "total": 2,
+        "code": 2,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 116,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "LookupVersion",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 57,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Table",
+      "lines": {
+        "total": 15,
+        "code": 11,
+        "comments": 4,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 1,
+        "overall": 5.7
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 204,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "ForEach",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 76,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Table",
+      "lines": {
+        "total": 3,
+        "code": 3,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.5
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 48,
+        "has_example": false,
+        "quality_score": 0.192
+      }
+    },
+    {
+      "name": "LoadFromDynamic",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 113,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Table",
+      "lines": {
+        "total": 58,
+        "code": 43,
+        "comments": 7,
+        "blank": 8
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 10,
+        "cognitive": 10,
+        "nesting_depth": 3,
+        "overall": 14.5
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 144,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "ReadCStringMem",
+      "package": "symbol",
+      "file": "symbol/symbol.go",
+      "line": 175,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 12,
+        "code": 12,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 2,
+        "overall": 4.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 76,
+        "has_example": false,
+        "quality_score": 0.30400000000000005
+      }
+    },
+    {
+      "name": "GlobalManager",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 44,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 7,
+        "code": 7,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 58,
+        "has_example": false,
+        "quality_score": 0.33199999999999996
+      }
+    },
+    {
+      "name": "RegisterModule",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 56,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Manager",
+      "lines": {
+        "total": 22,
+        "code": 18,
+        "comments": 0,
+        "blank": 4
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 131,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "AllocateBlock",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 83,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Manager",
+      "lines": {
+        "total": 40,
+        "code": 29,
+        "comments": 5,
+        "blank": 6
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 2,
+        "overall": 8.8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 143,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "Free",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 127,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Block",
+      "lines": {
+        "total": 8,
+        "code": 7,
+        "comments": 0,
+        "blank": 1
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 35,
+        "has_example": false,
+        "quality_score": 0.13999999999999999
+      }
+    },
+    {
+      "name": "GetModuleTLSOffset",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 140,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Module",
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 112,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "GetThreadPointerOffset",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 147,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Block",
+      "lines": {
+        "total": 5,
+        "code": 1,
+        "comments": 4,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 199,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "GetModuleID",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 156,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Module",
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 58,
+        "has_example": false,
+        "quality_score": 0.33199999999999996
+      }
+    },
+    {
+      "name": "pageAlign",
+      "package": "tls",
+      "file": "internal/tls/tls.go",
+      "line": 161,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 2,
+        "code": 2,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 49,
+        "has_example": false,
+        "quality_score": 0.196
+      }
+    },
+    {
+      "name": "Map",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 26,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 13,
+        "code": 13,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 61,
+        "has_example": false,
+        "quality_score": 0.244
+      }
+    },
+    {
+      "name": "MapAnon",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 43,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 53,
+        "has_example": false,
+        "quality_score": 0.21200000000000002
+      }
+    },
+    {
+      "name": "MapFixed",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 48,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 63,
+        "has_example": false,
+        "quality_score": 0.252
+      }
+    },
+    {
+      "name": "Protect",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 53,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 51,
+        "has_example": false,
+        "quality_score": 0.20400000000000001
+      }
+    },
+    {
+      "name": "Unmap",
+      "package": "mmap",
+      "file": "internal/mmap/mmap.go",
+      "line": 62,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 32,
+        "has_example": false,
+        "quality_score": 0.128
+      }
+    },
+    {
+      "name": "relaSymIdx",
+      "package": "loader",
+      "file": "loader/reloc_amd64.go",
+      "line": 42,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 0,
+        "code": 0,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "relaType",
+      "package": "loader",
+      "file": "loader/reloc_amd64.go",
+      "line": 43,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 0,
+        "code": 0,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "init",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 46,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "Resolve",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 57,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "globalResolver",
+      "lines": {
+        "total": 17,
+        "code": 14,
+        "comments": 2,
+        "blank": 1
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 5,
+        "cognitive": 5,
+        "nesting_depth": 3,
+        "overall": 8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 300,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "Open",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 87,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 8,
+        "comments": 2,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": true,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.6
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 2,
+        "overall": 4.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 536,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "loadLib",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 101,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 14,
+        "code": 12,
+        "comments": 1,
+        "blank": 1
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 66,
+        "has_example": false,
+        "quality_score": 0.264
+      }
+    },
+    {
+      "name": "loadPath",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 120,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 86,
+        "code": 64,
+        "comments": 13,
+        "blank": 9
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 14,
+        "cognitive": 14,
+        "nesting_depth": 2,
+        "overall": 19.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 118,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "Sym",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 212,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 9,
+        "code": 8,
+        "comments": 1,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 156,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "Bind",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 226,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 1,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 141,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "Close",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 236,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 23,
+        "code": 21,
+        "comments": 2,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 7,
+        "cognitive": 7,
+        "nesting_depth": 2,
+        "overall": 10.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 69,
+        "has_example": false,
+        "quality_score": 0.27599999999999997
+      }
+    },
+    {
+      "name": "PrintSymbols",
+      "package": "dl",
+      "file": "dl/dl.go",
+      "line": 263,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*Library",
+      "lines": {
+        "total": 12,
+        "code": 12,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.5
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 60,
+        "has_example": false,
+        "quality_score": 0.24
+      }
+    },
+    {
+      "name": "splitPaths",
+      "package": "dl",
+      "file": "dl/search.go",
+      "line": 21,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 10,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 2,
+        "overall": 6.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 77,
+        "has_example": false,
+        "quality_score": 0.40800000000000003
+      }
+    },
+    {
+      "name": "findLibrary",
+      "package": "dl",
+      "file": "dl/search.go",
+      "line": 45,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 49,
+        "code": 34,
+        "comments": 7,
+        "blank": 8
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 11,
+        "cognitive": 11,
+        "nesting_depth": 2,
+        "overall": 15.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 437,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "NewVersionTable",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 35,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 47,
+        "has_example": false,
+        "quality_score": 0.188
+      }
+    },
+    {
+      "name": "ParseVersionTables",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 53,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*VersionTable",
+      "lines": {
+        "total": 20,
+        "code": 14,
+        "comments": 3,
+        "blank": 3
+      },
+      "signature": {
+        "parameter_count": 7,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 3.8
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 2,
+        "overall": 8.8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 522,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "parseVerneed",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 100,
+      "is_exported": false,
+      "is_method": true,
+      "receiver_type": "*VersionTable",
+      "lines": {
+        "total": 41,
+        "code": 33,
+        "comments": 3,
+        "blank": 5
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.8
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 3,
+        "overall": 9.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 703,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "parseVerdef",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 161,
+      "is_exported": false,
+      "is_method": true,
+      "receiver_type": "*VersionTable",
+      "lines": {
+        "total": 31,
+        "code": 25,
+        "comments": 2,
+        "blank": 4
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.8
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 2,
+        "overall": 6.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 575,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "GetSymbolVersion",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 197,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*VersionTable",
+      "lines": {
+        "total": 4,
+        "code": 4,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 140,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "GetVersionName",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 206,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*VersionTable",
+      "lines": {
+        "total": 9,
+        "code": 7,
+        "comments": 2,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 126,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "ParseVersionInfo",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 220,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 35,
+        "code": 30,
+        "comments": 0,
+        "blank": 5
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 7,
+        "cognitive": 7,
+        "nesting_depth": 1,
+        "overall": 9.6
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 176,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "ParseDynTags",
+      "package": "symbol",
+      "file": "symbol/version.go",
+      "line": 260,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 11,
+        "code": 11,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 2,
+        "overall": 4.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 120,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "GetGlobalRegistry",
+      "package": "tls",
+      "file": "internal/tls/tls_get_addr.go",
+      "line": 32,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 63,
+        "has_example": false,
+        "quality_score": 0.352
+      }
+    },
+    {
+      "name": "CleanupThread",
+      "package": "tls",
+      "file": "internal/tls/tls_get_addr.go",
+      "line": 43,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*ThreadLocalRegistry",
+      "lines": {
+        "total": 17,
+        "code": 14,
+        "comments": 0,
+        "blank": 3
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 2,
+        "overall": 6.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 127,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "GetModuleCount",
+      "package": "tls",
+      "file": "internal/tls/tls_get_addr.go",
+      "line": 65,
+      "is_exported": true,
+      "is_method": true,
+      "receiver_type": "*ThreadLocalRegistry",
+      "lines": {
+        "total": 12,
+        "code": 11,
+        "comments": 0,
+        "blank": 1
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 3,
+        "overall": 6.7
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 129,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "getCurrentThreadID",
+      "package": "tls",
+      "file": "internal/tls/tls_get_addr.go",
+      "line": 83,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 198,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "GetTLSAddr",
+      "package": "tls",
+      "file": "internal/tls/tls_get_addr.go",
+      "line": 91,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 45,
+        "code": 30,
+        "comments": 6,
+        "blank": 9
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 2,
+        "overall": 8.8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 127,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "RegisterTLSGetAddr",
+      "package": "tls",
+      "file": "internal/tls/tls_get_addr.go",
+      "line": 142,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 5,
+        "comments": 3,
+        "blank": 2
+      },
+      "signature": {
+        "parameter_count": 0,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 218,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "PageAlign",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 15,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 59,
+        "has_example": false,
+        "quality_score": 0.236
+      }
+    },
+    {
+      "name": "Parse",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 51,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 38,
+        "code": 30,
+        "comments": 0,
+        "blank": 8
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.1
+      },
+      "complexity": {
+        "cyclomatic": 7,
+        "cognitive": 7,
+        "nesting_depth": 1,
+        "overall": 9.6
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 146,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "validateELFHeader",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 93,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 10,
+        "code": 10,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 1,
+        "overall": 5.7
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 77,
+        "has_example": false,
+        "quality_score": 0.30800000000000005
+      }
+    },
+    {
+      "name": "collectProgramHeaders",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 109,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 41,
+        "code": 38,
+        "comments": 0,
+        "blank": 3
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 3,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.9
+      },
+      "complexity": {
+        "cyclomatic": 8,
+        "cognitive": 8,
+        "nesting_depth": 4,
+        "overall": 12.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 186,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "readDynamicSection",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 155,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 20,
+        "code": 17,
+        "comments": 0,
+        "blank": 3
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 2,
+        "overall": 6.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 101,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "resolveStringReferences",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 180,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 31,
+        "code": 27,
+        "comments": 0,
+        "blank": 4
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.8
+      },
+      "complexity": {
+        "cyclomatic": 8,
+        "cognitive": 8,
+        "nesting_depth": 2,
+        "overall": 11.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 117,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "readBytesAtVAddr",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 216,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 16,
+        "code": 16,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 5,
+        "cognitive": 5,
+        "nesting_depth": 3,
+        "overall": 8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 134,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "readCString",
+      "package": "elf",
+      "file": "elf/parse.go",
+      "line": 236,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 8,
+        "code": 8,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 70,
+        "has_example": false,
+        "quality_score": 0.27999999999999997
+      }
+    },
+    {
+      "name": "elfProt",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 74,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 11,
+        "code": 11,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 1,
+        "overall": 5.7
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 60,
+        "has_example": false,
+        "quality_score": 0.24
+      }
+    },
+    {
+      "name": "pageDown",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 89,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 2,
+        "code": 2,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 46,
+        "has_example": false,
+        "quality_score": 0.18400000000000002
+      }
+    },
+    {
+      "name": "pageUp",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 95,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 2,
+        "code": 2,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 39,
+        "has_example": false,
+        "quality_score": 0.15600000000000003
+      }
+    },
+    {
+      "name": "Load",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 102,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 39,
+        "code": 32,
+        "comments": 0,
+        "blank": 7
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 7,
+        "cognitive": 7,
+        "nesting_depth": 1,
+        "overall": 9.6
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 140,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "mapSegments",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 145,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 62,
+        "code": 57,
+        "comments": 0,
+        "blank": 5
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.8
+      },
+      "complexity": {
+        "cyclomatic": 11,
+        "cognitive": 11,
+        "nesting_depth": 4,
+        "overall": 16.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 76,
+        "has_example": false,
+        "quality_score": 0.30400000000000005
+      }
+    },
+    {
+      "name": "populateDynamicTags",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 213,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 48,
+        "code": 48,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.5
+      },
+      "complexity": {
+        "cyclomatic": 17,
+        "cognitive": 17,
+        "nesting_depth": 1,
+        "overall": 22.6
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 244,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "initializeSymbolTable",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 265,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 22,
+        "code": 20,
+        "comments": 0,
+        "blank": 2
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.5
+      },
+      "complexity": {
+        "cyclomatic": 8,
+        "cognitive": 8,
+        "nesting_depth": 3,
+        "overall": 11.9
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 92,
+        "has_example": false,
+        "quality_score": 0.36800000000000005
+      }
+    },
+    {
+      "name": "setupTLS",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 292,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 30,
+        "code": 29,
+        "comments": 0,
+        "blank": 1
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 4,
+        "overall": 9.8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 135,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "populateObject",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 327,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 8,
+        "code": 7,
+        "comments": 0,
+        "blank": 1
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 141,
+        "has_example": false,
+        "quality_score": 0.4
+      }
+    },
+    {
+      "name": "finalizeObject",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 339,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 29,
+        "code": 26,
+        "comments": 0,
+        "blank": 3
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.8
+      },
+      "complexity": {
+        "cyclomatic": 9,
+        "cognitive": 9,
+        "nesting_depth": 3,
+        "overall": 13.2
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 77,
+        "has_example": false,
+        "quality_score": 0.30800000000000005
+      }
+    },
+    {
+      "name": "processRelocations",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 372,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 7,
+        "code": 7,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 67,
+        "has_example": false,
+        "quality_score": 0.268
+      }
+    },
+    {
+      "name": "applyRelative",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 383,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 1,
+        "code": 1,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.5
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 45,
+        "has_example": false,
+        "quality_score": 0.18000000000000002
+      }
+    },
+    {
+      "name": "apply64",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 388,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 5,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 46,
+        "has_example": false,
+        "quality_score": 0.18400000000000002
+      }
+    },
+    {
+      "name": "applyGlobDat",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 398,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 4,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 44,
+        "has_example": false,
+        "quality_score": 0.17600000000000002
+      }
+    },
+    {
+      "name": "applyJumpSlot",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 408,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 4,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 46,
+        "has_example": false,
+        "quality_score": 0.18400000000000002
+      }
+    },
+    {
+      "name": "applyCopy",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 418,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 16,
+        "code": 13,
+        "comments": 3,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 4,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.3
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 37,
+        "has_example": false,
+        "quality_score": 0.148
+      }
+    },
+    {
+      "name": "apply32",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 438,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 5,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 46,
+        "has_example": false,
+        "quality_score": 0.18400000000000002
+      }
+    },
+    {
+      "name": "apply32S",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 448,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 5,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 45,
+        "has_example": false,
+        "quality_score": 0.18000000000000002
+      }
+    },
+    {
+      "name": "applyPC32",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 458,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 6,
+        "code": 6,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 6,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 3.3
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 67,
+        "has_example": false,
+        "quality_score": 0.268
+      }
+    },
+    {
+      "name": "applyDTPMod64",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 468,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 5,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.8
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 61,
+        "has_example": false,
+        "quality_score": 0.244
+      }
+    },
+    {
+      "name": "applyDTPOff64",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 477,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 27,
+        "code": 21,
+        "comments": 6,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 6,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 3.3
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 4,
+        "overall": 9.8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 74,
+        "has_example": false,
+        "quality_score": 0.296
+      }
+    },
+    {
+      "name": "applyTPOff64",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 508,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 19,
+        "code": 16,
+        "comments": 3,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 6,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 3.3
+      },
+      "complexity": {
+        "cyclomatic": 5,
+        "cognitive": 5,
+        "nesting_depth": 2,
+        "overall": 7.5
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 80,
+        "has_example": false,
+        "quality_score": 0.32000000000000006
+      }
+    },
+    {
+      "name": "applyDTPOff32",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 531,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 21,
+        "code": 21,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 6,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 3.3
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 4,
+        "overall": 9.8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 81,
+        "has_example": false,
+        "quality_score": 0.32400000000000007
+      }
+    },
+    {
+      "name": "applyTPOff32",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 556,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 16,
+        "code": 16,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 6,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 3.3
+      },
+      "complexity": {
+        "cyclomatic": 5,
+        "cognitive": 5,
+        "nesting_depth": 2,
+        "overall": 7.5
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 87,
+        "has_example": false,
+        "quality_score": 0.34800000000000003
+      }
+    },
+    {
+      "name": "applyIRelative",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 576,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 5,
+        "code": 3,
+        "comments": 2,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.5
+      },
+      "complexity": {
+        "cyclomatic": 1,
+        "cognitive": 1,
+        "nesting_depth": 0,
+        "overall": 1.3
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 65,
+        "has_example": false,
+        "quality_score": 0.26
+      }
+    },
+    {
+      "name": "applyRelaTable",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 661,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 34,
+        "code": 29,
+        "comments": 0,
+        "blank": 5
+      },
+      "signature": {
+        "parameter_count": 4,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.3
+      },
+      "complexity": {
+        "cyclomatic": 6,
+        "cognitive": 6,
+        "nesting_depth": 2,
+        "overall": 8.8
+      },
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "applyGottpoff",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 699,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 34,
+        "code": 22,
+        "comments": 12,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 6,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 3.3
+      },
+      "complexity": {
+        "cyclomatic": 5,
+        "cognitive": 5,
+        "nesting_depth": 3,
+        "overall": 8
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 98,
+        "has_example": false,
+        "quality_score": 0.392
+      }
+    },
+    {
+      "name": "allocateGOTEntryPair",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 739,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 28,
+        "code": 20,
+        "comments": 4,
+        "blank": 4
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.6
+      },
+      "complexity": {
+        "cyclomatic": 5,
+        "cognitive": 5,
+        "nesting_depth": 2,
+        "overall": 7.5
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 190,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "applyTlsgd",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 771,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 44,
+        "code": 21,
+        "comments": 16,
+        "blank": 7
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.8
+      },
+      "complexity": {
+        "cyclomatic": 4,
+        "cognitive": 4,
+        "nesting_depth": 1,
+        "overall": 5.7
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 71,
+        "has_example": false,
+        "quality_score": 0.284
+      }
+    },
+    {
+      "name": "applyTlsld",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 819,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 39,
+        "code": 16,
+        "comments": 16,
+        "blank": 7
+      },
+      "signature": {
+        "parameter_count": 2,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 1.3
+      },
+      "complexity": {
+        "cyclomatic": 3,
+        "cognitive": 3,
+        "nesting_depth": 1,
+        "overall": 4.4
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 69,
+        "has_example": false,
+        "quality_score": 0.27599999999999997
+      }
+    },
+    {
+      "name": "resolveSymForReloc",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 864,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 28,
+        "code": 21,
+        "comments": 3,
+        "blank": 4
+      },
+      "signature": {
+        "parameter_count": 3,
+        "return_count": 2,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 2.1
+      },
+      "complexity": {
+        "cyclomatic": 7,
+        "cognitive": 7,
+        "nesting_depth": 2,
+        "overall": 10.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 219,
+        "has_example": false,
+        "quality_score": 0.5
+      }
+    },
+    {
+      "name": "Unload",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 896,
+      "is_exported": true,
+      "is_method": false,
+      "lines": {
+        "total": 26,
+        "code": 20,
+        "comments": 4,
+        "blank": 2
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 1,
+        "has_variadic": false,
+        "returns_error": true,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.8
+      },
+      "complexity": {
+        "cyclomatic": 7,
+        "cognitive": 7,
+        "nesting_depth": 3,
+        "overall": 10.6
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 56,
+        "has_example": false,
+        "quality_score": 0.22400000000000003
+      }
+    },
+    {
+      "name": "zeroMem",
+      "package": "loader",
+      "file": "loader/loader.go",
+      "line": 928,
+      "is_exported": false,
+      "is_method": false,
+      "lines": {
+        "total": 4,
+        "code": 4,
+        "comments": 0,
+        "blank": 0
+      },
+      "signature": {
+        "parameter_count": 1,
+        "return_count": 0,
+        "has_variadic": false,
+        "returns_error": false,
+        "interface_parameters": 0,
+        "generic_parameters": null,
+        "signature_complexity": 0.5
+      },
+      "complexity": {
+        "cyclomatic": 2,
+        "cognitive": 2,
+        "nesting_depth": 1,
+        "overall": 3.1
+      },
+      "documentation": {
+        "has_comment": true,
+        "comment_length": 45,
+        "has_example": false,
+        "quality_score": 0.18000000000000002
+      }
+    }
+  ],
+  "structs": null,
+  "interfaces": null,
+  "packages": [
+    {
+      "name": "dl",
+      "path": "dl",
+      "files": [
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/dl/ldcache.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/dl/dl.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/dl/search.go"
+      ],
+      "lines": {
+        "total": 558,
+        "code": 558,
+        "comments": 0,
+        "blank": 0
+      },
+      "functions": 14,
+      "structs": 6,
+      "interfaces": 0,
+      "dependencies": [
+        "github.com/ebitengine/purego",
+        "github.com/opd-ai/pure-go-dl/elf",
+        "github.com/opd-ai/pure-go-dl/internal/tls",
+        "github.com/opd-ai/pure-go-dl/loader",
+        "github.com/opd-ai/pure-go-dl/symbol"
+      ],
+      "dependents": null,
+      "cohesion_score": 1.3333333333333335,
+      "coupling_score": 2.5,
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "elf",
+      "path": "elf",
+      "files": [
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/elf/parse.go"
+      ],
+      "lines": {
+        "total": 242,
+        "code": 242,
+        "comments": 0,
+        "blank": 0
+      },
+      "functions": 8,
+      "structs": 1,
+      "interfaces": 0,
+      "dependencies": [],
+      "dependents": null,
+      "cohesion_score": 1.8,
+      "coupling_score": 0,
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "loader",
+      "path": "loader",
+      "files": [
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/loader/reloc_arm64.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/loader/call.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/loader/race_on.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/loader/race.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/loader/reloc.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/loader/reloc_amd64.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/loader/loader.go"
+      ],
+      "lines": {
+        "total": 1206,
+        "code": 1206,
+        "comments": 0,
+        "blank": 0
+      },
+      "functions": 42,
+      "structs": 6,
+      "interfaces": 0,
+      "dependencies": [
+        "github.com/ebitengine/purego",
+        "github.com/opd-ai/pure-go-dl/symbol",
+        "github.com/opd-ai/pure-go-dl/elf",
+        "github.com/opd-ai/pure-go-dl/internal/mmap",
+        "github.com/opd-ai/pure-go-dl/internal/tls",
+        "golang.org/x/sys/unix"
+      ],
+      "dependents": null,
+      "cohesion_score": 1.3714285714285714,
+      "coupling_score": 3,
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "main",
+      "path": "main",
+      "files": [
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/cmd/pgldd/main.go"
+      ],
+      "lines": {
+        "total": 51,
+        "code": 51,
+        "comments": 0,
+        "blank": 0
+      },
+      "functions": 1,
+      "structs": 0,
+      "interfaces": 0,
+      "dependencies": [
+        "github.com/opd-ai/pure-go-dl/dl"
+      ],
+      "dependents": null,
+      "cohesion_score": 0.2,
+      "coupling_score": 0.5,
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "mmap",
+      "path": "mmap",
+      "files": [
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/internal/mmap/mmap.go"
+      ],
+      "lines": {
+        "total": 66,
+        "code": 66,
+        "comments": 0,
+        "blank": 0
+      },
+      "functions": 5,
+      "structs": 0,
+      "interfaces": 0,
+      "dependencies": [
+        "golang.org/x/sys/unix"
+      ],
+      "dependents": null,
+      "cohesion_score": 1,
+      "coupling_score": 0.5,
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "symbol",
+      "path": "symbol",
+      "files": [
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/symbol/race.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/symbol/race_on.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/symbol/gnu_hash.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/symbol/sysv_hash.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/symbol/symbol.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/symbol/version.go"
+      ],
+      "lines": {
+        "total": 637,
+        "code": 637,
+        "comments": 0,
+        "blank": 0
+      },
+      "functions": 22,
+      "structs": 6,
+      "interfaces": 0,
+      "dependencies": [],
+      "dependents": null,
+      "cohesion_score": 0.9333333333333333,
+      "coupling_score": 0,
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    },
+    {
+      "name": "tls",
+      "path": "tls",
+      "files": [
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/internal/tls/tls.go",
+        "/home/user/go/src/github.com/opd-ai/pure-go-dl/internal/tls/tls_get_addr.go"
+      ],
+      "lines": {
+        "total": 314,
+        "code": 314,
+        "comments": 0,
+        "blank": 0
+      },
+      "functions": 14,
+      "structs": 5,
+      "interfaces": 0,
+      "dependencies": [
+        "github.com/opd-ai/pure-go-dl/internal/mmap",
+        "golang.org/x/sys/unix",
+        "github.com/ebitengine/purego"
+      ],
+      "dependents": null,
+      "cohesion_score": 1.9,
+      "coupling_score": 1.5,
+      "documentation": {
+        "has_comment": false,
+        "comment_length": 0,
+        "has_example": false,
+        "quality_score": 0
+      }
+    }
+  ],
+  "circular_dependencies": [],
+  "patterns": {
+    "design_patterns": {
+      "singleton": null,
+      "factory": null,
+      "builder": null,
+      "observer": null,
+      "strategy": null
+    },
+    "concurrency_patterns": {
+      "worker_pools": null,
+      "pipelines": null,
+      "fan_out": null,
+      "fan_in": null,
+      "semaphores": null,
+      "goroutines": {
+        "total_count": 0,
+        "anonymous_count": 0,
+        "named_count": 0,
+        "potential_leaks": null,
+        "instances": null
+      },
+      "channels": {
+        "total_count": 0,
+        "buffered_count": 0,
+        "unbuffered_count": 0,
+        "directional_count": 0,
+        "instances": null
+      },
+      "sync_primitives": {
+        "mutexes": null,
+        "rw_mutexes": null,
+        "wait_groups": null,
+        "once": null,
+        "cond": null,
+        "atomic": null
+      }
+    },
+    "anti_patterns": {
+      "god_objects": null,
+      "long_methods": null,
+      "deep_nesting": null,
+      "magic_numbers": null
+    }
+  },
+  "complexity": {
+    "average_function_complexity": 0,
+    "average_struct_complexity": 0,
+    "highest_complexity": null,
+    "complexity_distribution": null
+  },
+  "documentation": {
+    "coverage": {
+      "packages": 100,
+      "functions": 91.66666666666666,
+      "types": 94.11764705882352,
+      "methods": 95.45454545454545,
+      "overall": 93.65079365079364
+    },
+    "quality": {
+      "average_length": 84.82507288629738,
+      "code_examples": 0,
+      "inline_comments": 574,
+      "block_comments": 0,
+      "quality_score": 57.46031746031746
+    },
+    "todo_comments": [],
+    "fixme_comments": [],
+    "hack_comments": [],
+    "bug_comments": [
+      {
+        "file": "/home/user/go/src/github.com/opd-ai/pure-go-dl/dl/ldcache.go",
+        "line": 115,
+        "description": "(disabled)",
+        "severity": "critical"
+      }
+    ],
+    "xxx_comments": [],
+    "deprecated_comments": [],
+    "note_comments": [
+      {
+        "file": "/home/user/go/src/github.com/opd-ai/pure-go-dl/symbol/gnu_hash.go",
+        "line": 26,
+        "description": "This function works with mmap'd ELF file memory. The uintptr→unsafe.Pointer"
+      },
+      {
+        "file": "/home/user/go/src/github.com/opd-ai/pure-go-dl/dl/dl.go",
+        "line": 86,
+        "description": "RTLD_LAZY is not supported; all symbol binding is eager."
+      }
+    ],
+    "stale_annotations": 0,
+    "annotations_by_category": {
+      "BUG": 1,
+      "NOTE": 2
+    }
+  },
+  "generics": {
+    "type_parameters": {
+      "count": 0,
+      "constraints": null,
+      "complexity": null
+    },
+    "instantiations": {
+      "functions": null,
+      "types": null,
+      "methods": null
+    },
+    "constraint_usage": null,
+    "complexity_score": 0
+  },
+  "duplication": {
+    "clone_pairs": 0,
+    "duplicated_lines": 0,
+    "duplication_ratio": 0,
+    "largest_clone_size": 0,
+    "clones": null
+  },
+  "naming": {
+    "file_name_violations": 6,
+    "identifier_violations": 144,
+    "package_name_violations": 0,
+    "overall_naming_score": 0.9525358110723965,
+    "file_name_issues": [
+      {
+        "file": "dl/dl.go",
+        "violation_type": "stuttering",
+        "description": "File name repeats package/directory name (e.g., http/http_client.go should be http/client.go)",
+        "suggested_name": "dl.go",
+        "severity": "low"
+      },
+      {
+        "file": "symbol/symbol.go",
+        "violation_type": "stuttering",
+        "description": "File name repeats package/directory name (e.g., http/http_client.go should be http/client.go)",
+        "suggested_name": "symbol.go",
+        "severity": "low"
+      },
+      {
+        "file": "internal/tls/tls.go",
+        "violation_type": "stuttering",
+        "description": "File name repeats package/directory name (e.g., http/http_client.go should be http/client.go)",
+        "suggested_name": "tls.go",
+        "severity": "low"
+      },
+      {
+        "file": "internal/tls/tls_get_addr.go",
+        "violation_type": "stuttering",
+        "description": "File name repeats package/directory name (e.g., http/http_client.go should be http/client.go)",
+        "suggested_name": "get_addr.go",
+        "severity": "low"
+      },
+      {
+        "file": "loader/loader.go",
+        "violation_type": "stuttering",
+        "description": "File name repeats package/directory name (e.g., http/http_client.go should be http/client.go)",
+        "suggested_name": "loader.go",
+        "severity": "low"
+      },
+      {
+        "file": "internal/mmap/mmap.go",
+        "violation_type": "stuttering",
+        "description": "File name repeats package/directory name (e.g., http/http_client.go should be http/client.go)",
+        "suggested_name": "mmap.go",
+        "severity": "low"
+      }
+    ],
+    "identifier_issues": [
+      {
+        "name": "RTLD_LOCAL",
+        "file": "dl/dl.go",
+        "line": 24,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RTLDLOCAL",
+        "severity": "medium"
+      },
+      {
+        "name": "RTLD_GLOBAL",
+        "file": "dl/dl.go",
+        "line": 25,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RTLDGLOBAL",
+        "severity": "medium"
+      },
+      {
+        "name": "RTLD_NOW",
+        "file": "dl/dl.go",
+        "line": 26,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RTLDNOW",
+        "severity": "medium"
+      },
+      {
+        "name": "TLSIndex",
+        "file": "internal/tls/tls_get_addr.go",
+        "line": 13,
+        "type": "type",
+        "violation_type": "package_stuttering",
+        "description": "Exported name repeats package name (e.g., user.UserService should be user.Service)",
+        "suggested_name": "Index",
+        "severity": "low"
+      },
+      {
+        "name": "R_AARCH64_NONE",
+        "file": "loader/reloc_arm64.go",
+        "line": 7,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64NONE",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ABS64",
+        "file": "loader/reloc_arm64.go",
+        "line": 8,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ABS64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ABS32",
+        "file": "loader/reloc_arm64.go",
+        "line": 9,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ABS32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ABS16",
+        "file": "loader/reloc_arm64.go",
+        "line": 10,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ABS16",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_PREL64",
+        "file": "loader/reloc_arm64.go",
+        "line": 11,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64PREL64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_PREL32",
+        "file": "loader/reloc_arm64.go",
+        "line": 12,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64PREL32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_PREL16",
+        "file": "loader/reloc_arm64.go",
+        "line": 13,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64PREL16",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_UABS_G0",
+        "file": "loader/reloc_arm64.go",
+        "line": 14,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWUABSG0",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_UABS_G0_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 15,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWUABSG0NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_UABS_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 16,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWUABSG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_UABS_G1_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 17,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWUABSG1NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_UABS_G2",
+        "file": "loader/reloc_arm64.go",
+        "line": 18,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWUABSG2",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_UABS_G2_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 19,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWUABSG2NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_UABS_G3",
+        "file": "loader/reloc_arm64.go",
+        "line": 20,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWUABSG3",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_SABS_G0",
+        "file": "loader/reloc_arm64.go",
+        "line": 21,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWSABSG0",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_SABS_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 22,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWSABSG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_MOVW_SABS_G2",
+        "file": "loader/reloc_arm64.go",
+        "line": 23,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64MOVWSABSG2",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LD_PREL_LO19",
+        "file": "loader/reloc_arm64.go",
+        "line": 24,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LDPRELLO19",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ADR_PREL_LO21",
+        "file": "loader/reloc_arm64.go",
+        "line": 25,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ADRPRELLO21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ADR_PREL_PG_HI21",
+        "file": "loader/reloc_arm64.go",
+        "line": 26,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ADRPRELPGHI21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ADR_PREL_PG_HI21_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 27,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ADRPRELPGHI21NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ADD_ABS_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 28,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ADDABSLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LDST8_ABS_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 29,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LDST8ABSLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TSTBR14",
+        "file": "loader/reloc_arm64.go",
+        "line": 30,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TSTBR14",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_CONDBR19",
+        "file": "loader/reloc_arm64.go",
+        "line": 31,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64CONDBR19",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_JUMP26",
+        "file": "loader/reloc_arm64.go",
+        "line": 32,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64JUMP26",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_CALL26",
+        "file": "loader/reloc_arm64.go",
+        "line": 33,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64CALL26",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LDST16_ABS_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 34,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LDST16ABSLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LDST32_ABS_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 35,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LDST32ABSLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LDST64_ABS_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 36,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LDST64ABSLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LDST128_ABS_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 37,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LDST128ABSLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_ADR_GOT_PAGE",
+        "file": "loader/reloc_arm64.go",
+        "line": 38,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64ADRGOTPAGE",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LD64_GOT_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 39,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LD64GOTLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_LD64_GOTPAGE_LO15",
+        "file": "loader/reloc_arm64.go",
+        "line": 40,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64LD64GOTPAGELO15",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSGD_ADR_PREL21",
+        "file": "loader/reloc_arm64.go",
+        "line": 41,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSGDADRPREL21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSGD_ADR_PAGE21",
+        "file": "loader/reloc_arm64.go",
+        "line": 42,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSGDADRPAGE21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSGD_ADD_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 43,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSGDADDLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSGD_MOVW_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 44,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSGDMOVWG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSGD_MOVW_G0_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 45,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSGDMOVWG0NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_ADR_PREL21",
+        "file": "loader/reloc_arm64.go",
+        "line": 46,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDADRPREL21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_ADR_PAGE21",
+        "file": "loader/reloc_arm64.go",
+        "line": 47,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDADRPAGE21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_ADD_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 48,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDADDLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_MOVW_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 49,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDMOVWG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_MOVW_G0_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 50,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDMOVWG0NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LD_PREL19",
+        "file": "loader/reloc_arm64.go",
+        "line": 51,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDPREL19",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_MOVW_DTPREL_G2",
+        "file": "loader/reloc_arm64.go",
+        "line": 52,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDMOVWDTPRELG2",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_MOVW_DTPREL_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 53,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDMOVWDTPRELG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_MOVW_DTPREL_G1_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 54,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDMOVWDTPRELG1NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_MOVW_DTPREL_G0",
+        "file": "loader/reloc_arm64.go",
+        "line": 55,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDMOVWDTPRELG0",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_MOVW_DTPREL_G0_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 56,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDMOVWDTPRELG0NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_ADD_DTPREL_HI12",
+        "file": "loader/reloc_arm64.go",
+        "line": 57,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDADDDTPRELHI12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_ADD_DTPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 58,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDADDDTPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_ADD_DTPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 59,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDADDDTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST8_DTPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 60,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST8DTPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST8_DTPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 61,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST8DTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST16_DTPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 62,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST16DTPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST16_DTPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 63,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST16DTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST32_DTPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 64,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST32DTPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST32_DTPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 65,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST32DTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST64_DTPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 66,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST64DTPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST64_DTPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 67,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST64DTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSIE_MOVW_GOTTPREL_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 68,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSIEMOVWGOTTPRELG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSIE_MOVW_GOTTPREL_G0_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 69,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSIEMOVWGOTTPRELG0NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSIE_ADR_GOTTPREL_PAGE21",
+        "file": "loader/reloc_arm64.go",
+        "line": 70,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSIEADRGOTTPRELPAGE21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSIE_LD64_GOTTPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 71,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSIELD64GOTTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSIE_LD_GOTTPREL_PREL19",
+        "file": "loader/reloc_arm64.go",
+        "line": 72,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSIELDGOTTPRELPREL19",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_MOVW_TPREL_G2",
+        "file": "loader/reloc_arm64.go",
+        "line": 73,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEMOVWTPRELG2",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_MOVW_TPREL_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 74,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEMOVWTPRELG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_MOVW_TPREL_G1_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 75,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEMOVWTPRELG1NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_MOVW_TPREL_G0",
+        "file": "loader/reloc_arm64.go",
+        "line": 76,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEMOVWTPRELG0",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_MOVW_TPREL_G0_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 77,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEMOVWTPRELG0NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_ADD_TPREL_HI12",
+        "file": "loader/reloc_arm64.go",
+        "line": 78,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEADDTPRELHI12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_ADD_TPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 79,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEADDTPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_ADD_TPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 80,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLEADDTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST8_TPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 81,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST8TPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST8_TPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 82,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST8TPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST16_TPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 83,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST16TPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST16_TPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 84,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST16TPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST32_TPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 85,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST32TPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST32_TPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 86,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST32TPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST64_TPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 87,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST64TPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST64_TPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 88,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST64TPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_LD_PREL19",
+        "file": "loader/reloc_arm64.go",
+        "line": 89,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCLDPREL19",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_ADR_PREL21",
+        "file": "loader/reloc_arm64.go",
+        "line": 90,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCADRPREL21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_ADR_PAGE21",
+        "file": "loader/reloc_arm64.go",
+        "line": 91,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCADRPAGE21",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_LD64_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 92,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCLD64LO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_ADD_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 93,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCADDLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_OFF_G1",
+        "file": "loader/reloc_arm64.go",
+        "line": 94,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCOFFG1",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_OFF_G0_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 95,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCOFFG0NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_LDR",
+        "file": "loader/reloc_arm64.go",
+        "line": 96,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCLDR",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_ADD",
+        "file": "loader/reloc_arm64.go",
+        "line": 97,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCADD",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC_CALL",
+        "file": "loader/reloc_arm64.go",
+        "line": 98,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESCCALL",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST128_TPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 99,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST128TPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 100,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLELDST128TPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST128_DTPREL_LO12",
+        "file": "loader/reloc_arm64.go",
+        "line": 101,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST128DTPRELLO12",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSLD_LDST128_DTPREL_LO12_NC",
+        "file": "loader/reloc_arm64.go",
+        "line": 102,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSLDLDST128DTPRELLO12NC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_COPY",
+        "file": "loader/reloc_arm64.go",
+        "line": 103,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64COPY",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_GLOB_DAT",
+        "file": "loader/reloc_arm64.go",
+        "line": 104,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64GLOBDAT",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_JUMP_SLOT",
+        "file": "loader/reloc_arm64.go",
+        "line": 105,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64JUMPSLOT",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_RELATIVE",
+        "file": "loader/reloc_arm64.go",
+        "line": 106,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64RELATIVE",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLS_DTPMOD64",
+        "file": "loader/reloc_arm64.go",
+        "line": 107,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDTPMOD64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLS_DTPREL64",
+        "file": "loader/reloc_arm64.go",
+        "line": 108,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDTPREL64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLS_TPREL64",
+        "file": "loader/reloc_arm64.go",
+        "line": 109,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSTPREL64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_TLSDESC",
+        "file": "loader/reloc_arm64.go",
+        "line": 110,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64TLSDESC",
+        "severity": "medium"
+      },
+      {
+        "name": "R_AARCH64_IRELATIVE",
+        "file": "loader/reloc_arm64.go",
+        "line": 111,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RAARCH64IRELATIVE",
+        "severity": "medium"
+      },
+      {
+        "name": "relaSymIdx",
+        "file": "loader/reloc_arm64.go",
+        "line": 117,
+        "type": "function",
+        "violation_type": "acronym_casing",
+        "description": "Acronyms should be all caps (e.g., URL, HTTP, ID, API, JSON)",
+        "suggested_name": "relaSymIDx",
+        "severity": "low"
+      },
+      {
+        "name": "h",
+        "file": "symbol/sysv_hash.go",
+        "line": 11,
+        "type": "",
+        "violation_type": "single_letter_name",
+        "description": "Single-letter names should be reserved for short loop variables and receivers",
+        "suggested_name": "",
+        "severity": "low"
+      },
+      {
+        "name": "R_X86_64_NONE",
+        "file": "loader/reloc_amd64.go",
+        "line": 7,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664NONE",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_64",
+        "file": "loader/reloc_amd64.go",
+        "line": 8,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX866464",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_PC32",
+        "file": "loader/reloc_amd64.go",
+        "line": 9,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664PC32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_GOT32",
+        "file": "loader/reloc_amd64.go",
+        "line": 10,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664GOT32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_PLT32",
+        "file": "loader/reloc_amd64.go",
+        "line": 11,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664PLT32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_COPY",
+        "file": "loader/reloc_amd64.go",
+        "line": 12,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664COPY",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_GLOB_DAT",
+        "file": "loader/reloc_amd64.go",
+        "line": 13,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664GLOBDAT",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_JUMP_SLOT",
+        "file": "loader/reloc_amd64.go",
+        "line": 14,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664JUMPSLOT",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_RELATIVE",
+        "file": "loader/reloc_amd64.go",
+        "line": 15,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664RELATIVE",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_GOTPCREL",
+        "file": "loader/reloc_amd64.go",
+        "line": 16,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664GOTPCREL",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_32",
+        "file": "loader/reloc_amd64.go",
+        "line": 17,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX866432",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_32S",
+        "file": "loader/reloc_amd64.go",
+        "line": 18,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX866432S",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_16",
+        "file": "loader/reloc_amd64.go",
+        "line": 19,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX866416",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_PC16",
+        "file": "loader/reloc_amd64.go",
+        "line": 20,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664PC16",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_8",
+        "file": "loader/reloc_amd64.go",
+        "line": 21,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX86648",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_PC8",
+        "file": "loader/reloc_amd64.go",
+        "line": 22,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664PC8",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_DTPMOD64",
+        "file": "loader/reloc_amd64.go",
+        "line": 23,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664DTPMOD64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_DTPOFF64",
+        "file": "loader/reloc_amd64.go",
+        "line": 24,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664DTPOFF64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_TPOFF64",
+        "file": "loader/reloc_amd64.go",
+        "line": 25,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664TPOFF64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_TLSGD",
+        "file": "loader/reloc_amd64.go",
+        "line": 26,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664TLSGD",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_TLSLD",
+        "file": "loader/reloc_amd64.go",
+        "line": 27,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664TLSLD",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_DTPOFF32",
+        "file": "loader/reloc_amd64.go",
+        "line": 28,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664DTPOFF32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_GOTTPOFF",
+        "file": "loader/reloc_amd64.go",
+        "line": 29,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664GOTTPOFF",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_TPOFF32",
+        "file": "loader/reloc_amd64.go",
+        "line": 30,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664TPOFF32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_PC64",
+        "file": "loader/reloc_amd64.go",
+        "line": 31,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664PC64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_GOTOFF64",
+        "file": "loader/reloc_amd64.go",
+        "line": 32,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664GOTOFF64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_GOTPC32",
+        "file": "loader/reloc_amd64.go",
+        "line": 33,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664GOTPC32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_SIZE32",
+        "file": "loader/reloc_amd64.go",
+        "line": 34,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664SIZE32",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_SIZE64",
+        "file": "loader/reloc_amd64.go",
+        "line": 35,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664SIZE64",
+        "severity": "medium"
+      },
+      {
+        "name": "R_X86_64_IRELATIVE",
+        "file": "loader/reloc_amd64.go",
+        "line": 36,
+        "type": "const",
+        "violation_type": "underscore_in_name",
+        "description": "Go identifiers should use MixedCaps, not underscores (except Test_ functions)",
+        "suggested_name": "RX8664IRELATIVE",
+        "severity": "medium"
+      },
+      {
+        "name": "relaSymIdx",
+        "file": "loader/reloc_amd64.go",
+        "line": 42,
+        "type": "function",
+        "violation_type": "acronym_casing",
+        "description": "Acronyms should be all caps (e.g., URL, HTTP, ID, API, JSON)",
+        "suggested_name": "relaSymIDx",
+        "severity": "low"
+      },
+      {
+        "name": "applyTlsgd",
+        "file": "loader/loader.go",
+        "line": 771,
+        "type": "function",
+        "violation_type": "acronym_casing",
+        "description": "Acronyms should be all caps (e.g., URL, HTTP, ID, API, JSON)",
+        "suggested_name": "applyTLSgd",
+        "severity": "low"
+      },
+      {
+        "name": "applyTlsld",
+        "file": "loader/loader.go",
+        "line": 819,
+        "type": "function",
+        "violation_type": "acronym_casing",
+        "description": "Acronyms should be all caps (e.g., URL, HTTP, ID, API, JSON)",
+        "suggested_name": "applyTLSld",
+        "severity": "low"
+      }
+    ],
+    "package_name_issues": null
+  },
+  "placement": {
+    "misplaced_functions": 0,
+    "misplaced_methods": 0,
+    "low_cohesion_files": 0,
+    "avg_file_cohesion": 0,
+    "function_issues": null,
+    "method_issues": null,
+    "cohesion_issues": null
+  },
+  "organization": {
+    "oversized_files": null,
+    "oversized_packages": null,
+    "deep_directories": null,
+    "high_fan_in_packages": null,
+    "high_fan_out_packages": null,
+    "avg_package_instability": 0
+  },
+  "burden": {
+    "magic_numbers": null,
+    "dead_code": {
+      "unreferenced_functions": null,
+      "unreachable_code": null,
+      "total_dead_lines": 0,
+      "dead_code_percent": 0
+    },
+    "complex_signatures": null,
+    "deeply_nested_functions": null,
+    "feature_envy_methods": null
+  },
+  "scores": {
+    "file_scores": null,
+    "package_scores": null
+  },
+  "test_coverage": {
+    "function_coverage_rate": 0,
+    "complexity_coverage_rate": 0,
+    "high_risk_functions": null,
+    "coverage_gaps": null
+  },
+  "test_quality": {
+    "total_tests": 0,
+    "avg_assertions_per_test": 0,
+    "test_files": null
+  }
+}

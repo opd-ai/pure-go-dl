@@ -281,3 +281,103 @@ func TestTLSLibraryParsing(t *testing.T) {
 		t.Errorf("After increment, get_tls_counter() = %d, want 43", currentValue)
 	}
 }
+
+// Benchmarks for performance-critical operations
+
+// BenchmarkOpen measures the performance of loading a shared library.
+func BenchmarkOpen(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		lib, err := Open("../testdata/libtest.so")
+		if err != nil {
+			b.Fatalf("Open failed: %v", err)
+		}
+		lib.Close()
+	}
+}
+
+// BenchmarkSym measures the performance of symbol lookup.
+func BenchmarkSym(b *testing.B) {
+	lib, err := Open("../testdata/libtest.so")
+	if err != nil {
+		b.Fatalf("Open failed: %v", err)
+	}
+	defer lib.Close()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_, err := lib.Sym("add")
+		if err != nil {
+			b.Fatalf("Sym failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkBind measures the performance of function binding.
+func BenchmarkBind(b *testing.B) {
+	lib, err := Open("../testdata/libtest.so")
+	if err != nil {
+		b.Fatalf("Open failed: %v", err)
+	}
+	defer lib.Close()
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		var add func(int, int) int
+		err := lib.Bind("add", &add)
+		if err != nil {
+			b.Fatalf("Bind failed: %v", err)
+		}
+	}
+}
+
+// BenchmarkCall measures the performance of calling a bound function.
+func BenchmarkCall(b *testing.B) {
+	lib, err := Open("../testdata/libtest.so")
+	if err != nil {
+		b.Fatalf("Open failed: %v", err)
+	}
+	defer lib.Close()
+
+	var add func(int, int) int
+	err = lib.Bind("add", &add)
+	if err != nil {
+		b.Fatalf("Bind failed: %v", err)
+	}
+
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		result := add(10, 20)
+		if result != 30 {
+			b.Fatalf("add(10, 20) = %d, want 30", result)
+		}
+	}
+}
+
+// BenchmarkOpenBindCall measures end-to-end performance of the complete workflow.
+func BenchmarkOpenBindCall(b *testing.B) {
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		lib, err := Open("../testdata/libtest.so")
+		if err != nil {
+			b.Fatalf("Open failed: %v", err)
+		}
+
+		var add func(int, int) int
+		err = lib.Bind("add", &add)
+		if err != nil {
+			lib.Close()
+			b.Fatalf("Bind failed: %v", err)
+		}
+
+		result := add(5, 7)
+		if result != 12 {
+			b.Fatalf("add(5, 7) = %d, want 12", result)
+		}
+
+		lib.Close()
+	}
+}

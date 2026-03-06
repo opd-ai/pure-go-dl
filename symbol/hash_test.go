@@ -147,3 +147,25 @@ func TestSysvLookup_ZeroHashAddr(t *testing.T) {
 		t.Error("SysvLookup with zero hash address should return error")
 	}
 }
+
+// Benchmarks for hash functions
+
+// BenchmarkSysvHash measures the performance of SysV hash function.
+func BenchmarkSysvHash(b *testing.B) {
+	names := []string{"printf", "malloc", "free", "cos", "sin", "sqrt"}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = symbol.SysvHash(names[i%len(names)])
+	}
+}
+
+// BenchmarkGnuHash measures the performance of GNU hash function.
+func BenchmarkGnuHash(b *testing.B) {
+	names := []string{"printf", "malloc", "free", "cos", "sin", "sqrt"}
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		_ = symbol.GnuHash(names[i%len(names)])
+	}
+}

@@ -397,6 +397,7 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 
 // resolveSymForReloc returns the absolute address of the symbol at symIdx.
 // If symIdx is 0, returns 0 (used for R_X86_64_RELATIVE which has no symbol).
+// Weak symbols (STB_WEAK) resolve to 0 if not found, per ELF specification.
 func resolveSymForReloc(obj *Object, symIdx uint32, resolver SymbolResolver) (uintptr, error) {
 	if symIdx == 0 {
 		return 0, nil
@@ -417,6 +418,12 @@ func resolveSymForReloc(obj *Object, symIdx uint32, resolver SymbolResolver) (ui
 		if err == nil {
 			return addr, nil
 		}
+	}
+
+	// Weak symbols are allowed to be unresolved and resolve to NULL.
+	bind := symBind(obj, symIdx)
+	if bind == 2 { // STB_WEAK = 2
+		return 0, nil
 	}
 
 	return 0, fmt.Errorf("undefined symbol: %q", name)

@@ -56,3 +56,12 @@ func symName(obj *Object, idx uint32) string {
 	sym := (*symbol.Elf64Sym)(unsafePointer(obj.SymtabAddr + uintptr(idx)*24))
 	return symbol.ReadCStringMem(obj.StrtabAddr, uintptr(sym.Name))
 }
+
+// symBind returns the symbol binding type (STB_LOCAL, STB_GLOBAL, STB_WEAK, etc.).
+func symBind(obj *Object, idx uint32) uint8 {
+	if idx == 0 || obj.SymtabAddr == 0 {
+		return 0
+	}
+	sym := (*symbol.Elf64Sym)(unsafePointer(obj.SymtabAddr + uintptr(idx)*24))
+	return sym.Info >> 4 // upper 4 bits = binding
+}

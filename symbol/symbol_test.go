@@ -162,10 +162,10 @@ func TestLoadFromDynamic_BasicSymbols(t *testing.T) {
 	const numSymbols = 100
 	symbolBuf := make([]byte, numSymbols*symEntSize)
 	symbols := unsafe.Slice((*Elf64Sym)(unsafe.Pointer(&symbolBuf[0])), numSymbols)
-	
+
 	// Symbol 0: NULL
 	symbols[0] = Elf64Sym{Name: 0, Info: 0, Other: 0, Shndx: 0, Value: 0, Size: 0}
-	
+
 	// Symbol 1: testfunc (GLOBAL, FUNC, defined in section 1)
 	symbols[1] = Elf64Sym{
 		Name:  1, // offset into strtab
@@ -175,7 +175,7 @@ func TestLoadFromDynamic_BasicSymbols(t *testing.T) {
 		Value: 0x2000,
 		Size:  64,
 	}
-	
+
 	// Symbol 2: testvar (GLOBAL, OBJECT, defined in section 2)
 	symbols[2] = Elf64Sym{
 		Name:  10, // offset into strtab
@@ -185,7 +185,7 @@ func TestLoadFromDynamic_BasicSymbols(t *testing.T) {
 		Value: 0x3000,
 		Size:  8,
 	}
-	
+
 	symtabAddr := uintptr(unsafe.Pointer(&symbols[0]))
 	symtabSize := uint64(3 * symEntSize)
 
@@ -368,4 +368,3 @@ func TestLoadFromDynamic_WithVersionInfo(t *testing.T) {
 		t.Errorf("Symbol version name = %q, want GLIBC_2.2.5", sym.VerName)
 	}
 }
-

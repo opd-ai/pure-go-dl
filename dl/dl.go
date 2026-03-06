@@ -74,7 +74,8 @@ func loadLib(name string, flag Flag, visiting map[string]bool) (*Library, error)
 	}
 	mu.Unlock()
 
-	path, err := findLibrary(name)
+	// Initial load has no parent RUNPATH/RPATH
+	path, err := findLibrary(name, "", "")
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +133,8 @@ func loadPath(path, soname string, flag Flag, visiting map[string]bool) (*Librar
 		if visiting[dep] {
 			continue // already on this call stack → cycle, skip
 		}
-		depPath, findErr := findLibrary(dep)
+		// Use parent's RUNPATH/RPATH to resolve dependencies
+		depPath, findErr := findLibrary(dep, parsed.Runpath, parsed.Rpath)
 		if findErr != nil {
 			continue // non-fatal: system library may not be present
 		}

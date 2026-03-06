@@ -33,6 +33,10 @@ type ParsedObject struct {
 	// DT_NEEDED library names
 	Needed []string
 
+	// DT_RUNPATH and DT_RPATH search paths (colon-separated, may be empty)
+	Runpath string // DT_RUNPATH (modern, preferred)
+	Rpath   string // DT_RPATH (legacy)
+
 	// Raw dynamic data
 	DynData  []byte
 	DynVAddr uint64
@@ -147,6 +151,14 @@ func Parse(path string) (*ParsedObject, error) {
 				name := readCString(strtabData, nameOff)
 				obj.Needed = append(obj.Needed, name)
 			}
+		}
+
+		// Parse DT_RUNPATH and DT_RPATH from the string table.
+		if runpathOff, ok := obj.DynEntries[elf.DT_RUNPATH]; ok {
+			obj.Runpath = readCString(strtabData, int(runpathOff))
+		}
+		if rpathOff, ok := obj.DynEntries[elf.DT_RPATH]; ok {
+			obj.Rpath = readCString(strtabData, int(rpathOff))
 		}
 	}
 

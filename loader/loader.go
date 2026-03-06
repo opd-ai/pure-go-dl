@@ -294,7 +294,7 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 					// data starts at an offset due to page alignment.
 					alignedVAddr := pageDown(loadSeg.Vaddr)
 					leading := loadSeg.Vaddr - alignedVAddr
-					
+
 					// Calculate offset from the segment's actual start (not page-aligned start)
 					offset := tlsSeg.Vaddr - loadSeg.Vaddr
 					tlsInitData = seg.Addr + uintptr(leading) + uintptr(offset)

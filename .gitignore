@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# Exception: Include pre-compiled test libraries for reproducibility
+!testdata/*.so
+
 # Test binary, built with `go test -c`
 *.test
 

@@ -81,7 +81,7 @@ func TestCompatibility_libm(t *testing.T) {
 
 		// Additional test cases
 		result = cos(math.Pi)
-		if math.Abs(result - (-1.0)) > 1e-10 {
+		if math.Abs(result-(-1.0)) > 1e-10 {
 			t.Errorf("cos(π) = %f, want -1.0", result)
 		}
 

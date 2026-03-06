@@ -129,7 +129,7 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 		// to avoid checkptr issues in tests
 		symPtr := unsafe.Add(unsafe.Pointer(symtabAddr), i*symEntSize)
 		s := (*Elf64Sym)(symPtr)
-		
+
 		bind := elf.SymBind(s.Info >> 4)
 		symType := elf.SymType(s.Info & 0xf)
 

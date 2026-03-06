@@ -245,6 +245,17 @@ func Load(path string, resolver SymbolResolver) (*Object, error) {
 			}
 		}
 	}
+
+	// Parse version information before loading symbols.
+	symCount := symtabSize / 24
+	if symCount > 0 && obj.StrtabAddr != 0 {
+		vt, err := symbol.ParseVersionInfo(dynTags, base, obj.StrtabAddr, symCount)
+		if err == nil && vt != nil {
+			obj.Symbols.SetVersionTable(vt)
+		}
+		// Non-fatal: continue even if version parsing fails.
+	}
+
 	if obj.SymtabAddr != 0 && obj.StrtabAddr != 0 {
 		if err := obj.Symbols.LoadFromDynamic(obj.SymtabAddr, obj.StrtabAddr, symtabSize); err != nil {
 			// Non-fatal: continue without full symbol table.

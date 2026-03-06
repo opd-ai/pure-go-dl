@@ -8,26 +8,35 @@ import (
 
 // Symbol represents a single ELF symbol after loading.
 type Symbol struct {
-	Name    string
-	Value   uintptr // absolute address (base + st_value)
-	Size    uint64
-	Bind    elf.SymBind
-	Type    elf.SymType
-	Section elf.SectionIndex // mirrors st_shndx; use elf.SHN_* constants
+	Name       string
+	Value      uintptr // absolute address (base + st_value)
+	Size       uint64
+	Bind       elf.SymBind
+	Type       elf.SymType
+	Section    elf.SectionIndex // mirrors st_shndx; use elf.SHN_* constants
+	VerIdx     uint16            // version index from DT_VERSYM
+	VerName    string            // version name (e.g., "GLIBC_2.2.5")
 }
 
 // Table is a name-to-Symbol index for a loaded shared object.
 type Table struct {
-	symbols map[string]*Symbol
-	base    uintptr
+	symbols  map[string]*Symbol
+	base     uintptr
+	versions *VersionTable // symbol version information (may be nil)
 }
 
 // NewTable creates an empty Table with the given load base.
 func NewTable(base uintptr) *Table {
 	return &Table{
-		symbols: make(map[string]*Symbol),
-		base:    base,
+		symbols:  make(map[string]*Symbol),
+		base:     base,
+		versions: nil,
 	}
+}
+
+// SetVersionTable assigns version information to this symbol table.
+func (t *Table) SetVersionTable(vt *VersionTable) {
+	t.versions = vt
 }
 
 // AddSymbol inserts or replaces a symbol in the table.
@@ -36,9 +45,31 @@ func (t *Table) AddSymbol(name string, s *Symbol) {
 }
 
 // Lookup returns the Symbol with the given name, if present.
+// If multiple versions exist, returns the default version.
 func (t *Table) Lookup(name string) (*Symbol, bool) {
 	s, ok := t.symbols[name]
 	return s, ok
+}
+
+// LookupVersion returns the Symbol with the given name and version.
+// If version is empty, behaves like Lookup (returns default version).
+// Version string should be like "GLIBC_2.2.5" or empty for unversioned.
+func (t *Table) LookupVersion(name, version string) (*Symbol, bool) {
+	if version == "" {
+		return t.Lookup(name)
+	}
+	// For now, we only support exact name matches since we store one symbol per name.
+	// In a full implementation, we'd maintain name@version keys.
+	// This is sufficient for the common case where the library provides one version.
+	s, ok := t.symbols[name]
+	if !ok {
+		return nil, false
+	}
+	// If version matches or symbol is unversioned, return it.
+	if s.VerName == version || s.VerName == "" {
+		return s, true
+	}
+	return nil, false
 }
 
 // ForEach calls fn for every symbol in the table.
@@ -111,6 +142,16 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 			Type:    symType,
 			Section: elf.SectionIndex(s.Shndx),
 		}
+
+		// Add version information if available.
+		if t.versions != nil {
+			verIdx := t.versions.GetSymbolVersion(uint32(i))
+			sym.VerIdx = verIdx
+			if verIdx > 1 { // 0=local, 1=global/default, >1=specific version
+				sym.VerName = t.versions.GetVersionName(verIdx)
+			}
+		}
+
 		t.symbols[name] = sym
 	}
 	return nil

@@ -98,6 +98,16 @@ type Elf64Sym struct {
 
 const symEntSize = 24
 
+// maxFallbackSymbols is the upper bound for symbol table size when DT_HASH/DT_GNU_HASH
+// is absent and we cannot determine the actual size. 4096 symbols (98,304 bytes) handles:
+//   - Small libraries: glibc (~2000 symbols), libm (~500), libpthread (~400)
+//   - Most application libraries: <1000 symbols typical
+//   - Early termination: loop stops at first all-zero entry (name=0, value=0)
+//
+// This may be insufficient for mega-libraries (libLLVM.so ~50K symbols, libQt5Core.so ~10K),
+// but those cases are rare and typically provide DT_HASH or DT_GNU_HASH for size computation.
+const maxFallbackSymbols = 4096
+
 // LoadFromDynamic reads Elf64_Sym entries from the in-memory symbol table and
 // populates t. symtabSize is the total byte size of the symbol table.
 func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint64) error {
@@ -106,9 +116,10 @@ func (t *Table) LoadFromDynamic(symtabAddr, strtabAddr uintptr, symtabSize uint6
 	}
 	if symtabSize == 0 {
 		// DT_SYMENT tells the entry size but DT_STRSZ is for the string table.
-		// Without a reliable size we do a best-effort scan until we hit a null
-		// entry; 4096 symbols is a sane upper bound for this fallback.
-		symtabSize = symEntSize * 4096
+		// Without DT_HASH or DT_GNU_HASH, we cannot compute the exact table size.
+		// Use maxFallbackSymbols as an upper bound and rely on early termination
+		// when we encounter the first all-zero entry (see continue below).
+		symtabSize = symEntSize * maxFallbackSymbols
 	}
 
 	n := symtabSize / symEntSize

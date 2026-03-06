@@ -381,7 +381,7 @@ version requirement, match it during lookup.
 
 **Priority: High** — needed for loading anything that depends on libc.
 
-### 7.2 IFUNC Resolution
+### 7.2 IFUNC Resolution ✅ COMPLETE
 
 `STT_GNU_IFUNC` symbols point to a resolver function that must
 be called to obtain the real address. The resolver typically
@@ -391,6 +391,12 @@ loading — use your Phase 4 calling bridge.
 
 **Priority: High** — glibc uses IFUNC extensively for string and
 memory functions.
+
+**Status: COMPLETE** — Implemented in commit 5c7ba99:
+- R_X86_64_IRELATIVE relocation handling in loader
+- STT_GNU_IFUNC symbol resolution in dl package
+- CallIfuncResolver() using purego for C ABI compliance
+- Comprehensive tests with libifunc.so test library
 
 ### 7.3 TLS Support
 
@@ -505,13 +511,14 @@ it's a bug in the project, not the test.
 
 ## Milestones Summary
 
-| Milestone | Phase | Definition of Done |
-|---|---|---|
-| M0: Foundations | 0 | Syscall helpers work in CGO_ENABLED=0; repo structure exists |
-| M1: Memory Map | 1 | A .so is loaded and a global variable is read from mapped memory |
-| M2: Symbols | 2 | GNU hash lookup resolves `cos` in `libm.so.6` to a nonzero address |
-| M3: Relocations | 3 | All GLOB_DAT/JUMP_SLOT/RELATIVE entries process without error |
-| **M4: First Call** | **4** | **`cos(0) == 1.0` from a CGO_ENABLED=0 binary — announce the project** |
-| M5: Dependencies | 5 | `libcurl.so` loads with full dependency chain |
-| M6: Init/Fini | 6 | Constructors and destructors run in correct order |
-| M7: Versioning | 7 | Versioned symbols in libc resolve correctly |
+| Milestone | Phase | Definition of Done | Status |
+|---|---|---|---|
+| M0: Foundations | 0 | Syscall helpers work in CGO_ENABLED=0; repo structure exists | ✅ COMPLETE |
+| M1: Memory Map | 1 | A .so is loaded and a global variable is read from mapped memory | ✅ COMPLETE |
+| M2: Symbols | 2 | GNU hash lookup resolves `cos` in `libm.so.6` to a nonzero address | ✅ COMPLETE |
+| M3: Relocations | 3 | All GLOB_DAT/JUMP_SLOT/RELATIVE entries process without error | ✅ COMPLETE |
+| **M4: First Call** | **4** | **`cos(0) == 1.0` from a CGO_ENABLED=0 binary — announce the project** | ✅ COMPLETE |
+| M5: Dependencies | 5 | `libcurl.so` loads with full dependency chain | ✅ COMPLETE |
+| M6: Init/Fini | 6 | Constructors and destructors run in correct order | ✅ COMPLETE |
+| M7: Versioning | 7.1 | Versioned symbols in libc resolve correctly | ✅ COMPLETE |
+| M7.2: IFUNC | 7.2 | IFUNC resolvers execute and return optimized implementations | ✅ COMPLETE |

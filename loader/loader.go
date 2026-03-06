@@ -581,6 +581,83 @@ func applyIRelative(obj *Object, offsetPtr unsafe.Pointer, addend int64) {
 	*(*uintptr)(offsetPtr) = resolvedAddr
 }
 
+// relocContext contains the pre-computed values needed for relocation processing.
+type relocContext struct {
+	obj       *Object
+	r         *relaEntry
+	symIdx    uint32
+	offset    uintptr
+	offsetPtr unsafe.Pointer
+	addend    int64
+	resolver  SymbolResolver
+}
+
+// relocHandler processes a specific type of relocation.
+type relocHandler func(ctx *relocContext) error
+
+// relocHandlers maps relocation types to their handler functions.
+var relocHandlers = map[uint32]relocHandler{
+	relocNone: func(ctx *relocContext) error {
+		return nil
+	},
+	relocRelative: func(ctx *relocContext) error {
+		applyRelative(ctx.obj, ctx.offsetPtr, ctx.addend)
+		return nil
+	},
+	reloc64: func(ctx *relocContext) error {
+		return apply64(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	relocGlobDat: func(ctx *relocContext) error {
+		return applyGlobDat(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.resolver)
+	},
+	relocJumpSlot: func(ctx *relocContext) error {
+		return applyJumpSlot(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.resolver)
+	},
+	relocCopy: func(ctx *relocContext) error {
+		return applyCopy(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.resolver)
+	},
+	reloc32: func(ctx *relocContext) error {
+		return apply32(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	reloc32S: func(ctx *relocContext) error {
+		return apply32S(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	relocPC32: func(ctx *relocContext) error {
+		return applyPC32(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.addend, ctx.offset, ctx.resolver)
+	},
+	relocPLT32: func(ctx *relocContext) error {
+		return applyPC32(ctx.obj, ctx.symIdx, ctx.offsetPtr, ctx.addend, ctx.offset, ctx.resolver)
+	},
+	relocDTPMod64: func(ctx *relocContext) error {
+		return applyDTPMod64(ctx.obj, ctx.r, ctx.offsetPtr)
+	},
+	relocDTPOff64: func(ctx *relocContext) error {
+		return applyDTPOff64(ctx.obj, ctx.symIdx, ctx.r, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	relocTPOff64: func(ctx *relocContext) error {
+		return applyTPOff64(ctx.obj, ctx.symIdx, ctx.r, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	relocDTPOff32: func(ctx *relocContext) error {
+		return applyDTPOff32(ctx.obj, ctx.symIdx, ctx.r, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	relocTPOff32: func(ctx *relocContext) error {
+		return applyTPOff32(ctx.obj, ctx.symIdx, ctx.r, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	relocGOTTPOff: func(ctx *relocContext) error {
+		return applyGottpoff(ctx.obj, ctx.r, ctx.symIdx, ctx.offsetPtr, ctx.addend, ctx.resolver)
+	},
+	relocTLSGD: func(ctx *relocContext) error {
+		return applyTlsgd(ctx.obj, ctx.r, ctx.resolver)
+	},
+	relocTLSLD: func(ctx *relocContext) error {
+		return applyTlsld(ctx.obj, ctx.r)
+	},
+	relocIRelative: func(ctx *relocContext) error {
+		applyIRelative(ctx.obj, ctx.offsetPtr, ctx.addend)
+		return nil
+	},
+}
+
 func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver SymbolResolver) error {
 	if tableAddr == 0 || tableSize == 0 {
 		return nil
@@ -591,102 +668,28 @@ func applyRelaTable(obj *Object, tableAddr uintptr, tableSize uint64, resolver S
 
 	for i := uint64(0); i < n; i++ {
 		r := &rels[i]
-		symIdx := relaSymIdx(r.Info)
-		relocType := relaType(r.Info)
 		if r.Offset < obj.Parsed.BaseVAddr {
 			return fmt.Errorf("relocation offset %#x is before base virtual address %#x", r.Offset, obj.Parsed.BaseVAddr)
 		}
-		offset := obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr)
-		offsetPtr := unsafe.Pointer(offset)
-		addend := r.Addend
 
-		switch relocType {
-		case relocNone:
-			// nothing
+		ctx := &relocContext{
+			obj:       obj,
+			r:         r,
+			symIdx:    relaSymIdx(r.Info),
+			offset:    obj.Base + uintptr(r.Offset-obj.Parsed.BaseVAddr),
+			addend:    r.Addend,
+			resolver:  resolver,
+		}
+		ctx.offsetPtr = unsafe.Pointer(ctx.offset)
 
-		case relocRelative:
-			applyRelative(obj, offsetPtr, addend)
-
-		case reloc64:
-			if err := apply64(obj, symIdx, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case relocGlobDat:
-			if err := applyGlobDat(obj, symIdx, offsetPtr, resolver); err != nil {
-				return err
-			}
-
-		case relocJumpSlot:
-			if err := applyJumpSlot(obj, symIdx, offsetPtr, resolver); err != nil {
-				return err
-			}
-
-		case relocCopy:
-			if err := applyCopy(obj, symIdx, offsetPtr, resolver); err != nil {
-				return err
-			}
-
-		case reloc32:
-			if err := apply32(obj, symIdx, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case reloc32S:
-			if err := apply32S(obj, symIdx, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case relocPC32, relocPLT32:
-			if err := applyPC32(obj, symIdx, offsetPtr, addend, offset, resolver); err != nil {
-				return err
-			}
-
-		case relocDTPMod64:
-			if err := applyDTPMod64(obj, r, offsetPtr); err != nil {
-				return err
-			}
-
-		case relocDTPOff64:
-			if err := applyDTPOff64(obj, symIdx, r, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case relocTPOff64:
-			if err := applyTPOff64(obj, symIdx, r, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case relocDTPOff32:
-			if err := applyDTPOff32(obj, symIdx, r, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case relocTPOff32:
-			if err := applyTPOff32(obj, symIdx, r, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case relocGOTTPOff:
-			if err := applyGottpoff(obj, r, symIdx, offsetPtr, addend, resolver); err != nil {
-				return err
-			}
-
-		case relocTLSGD:
-			if err := applyTlsgd(obj, r, resolver); err != nil {
-				return err
-			}
-
-		case relocTLSLD:
-			if err := applyTlsld(obj, r); err != nil {
-				return err
-			}
-
-		case relocIRelative:
-			applyIRelative(obj, offsetPtr, addend)
-
-		default:
+		relocType := relaType(r.Info)
+		handler, ok := relocHandlers[relocType]
+		if !ok {
 			return fmt.Errorf("unknown relocation type %d at offset %#x", relocType, r.Offset)
+		}
+
+		if err := handler(ctx); err != nil {
+			return err
 		}
 	}
 	return nil

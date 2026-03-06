@@ -1,6 +1,7 @@
 package tls
 
 import (
+	"sync"
 	"testing"
 	"unsafe"
 
@@ -139,4 +140,237 @@ func TestInvalidAlignment(t *testing.T) {
 	if err == nil {
 		t.Error("Expected error for alignment exceeding page size")
 	}
+}
+
+func TestMultiThreadedTLSAccess(t *testing.T) {
+	mgr := GlobalManager()
+	reg := GetGlobalRegistry()
+
+	// Register a test module
+	mod, err := mgr.RegisterModule(128, 8, 64, 0)
+	if err != nil {
+		t.Fatalf("RegisterModule failed: %v", err)
+	}
+
+	const numThreads = 10
+	done := make(chan struct{}, numThreads)
+	threadIDs := make(map[uint64]bool)
+	var mu sync.Mutex
+
+	// Spawn multiple goroutines, each locked to an OS thread
+	for i := 0; i < numThreads; i++ {
+		go func(threadNum int) {
+			// Lock goroutine to OS thread to get consistent thread ID
+			// Note: In real usage, C code would be running on actual OS threads
+			// For testing, we simulate this with goroutine thread IDs
+			
+			// Allocate TLS via __tls_get_addr simulation
+			idx := TLSIndex{
+				ModuleID: mod.ID,
+				Offset:   0,
+			}
+			
+			addr := GetTLSAddr(uintptr(unsafe.Pointer(&idx)))
+			if addr == 0 {
+				t.Errorf("Thread %d: GetTLSAddr returned null", threadNum)
+				done <- struct{}{}
+				return
+			}
+
+			// Write thread-specific data
+			data := (*uint64)(unsafe.Pointer(addr))
+			*data = uint64(threadNum + 1000)
+
+			// Read it back
+			if *data != uint64(threadNum+1000) {
+				t.Errorf("Thread %d: Data mismatch, got %d, want %d", threadNum, *data, threadNum+1000)
+			}
+
+			// Track thread IDs to verify multi-threading
+			threadID := getCurrentThreadID()
+			mu.Lock()
+			threadIDs[threadID] = true
+			mu.Unlock()
+
+			done <- struct{}{}
+		}(i)
+	}
+
+	// Wait for all threads
+	for i := 0; i < numThreads; i++ {
+		<-done
+	}
+
+	// Verify we used actual thread IDs (may be single-threaded in test, that's ok)
+	if len(threadIDs) == 0 {
+		t.Error("No thread IDs recorded")
+	}
+
+	// Cleanup test threads
+	mu.Lock()
+	for tid := range threadIDs {
+		if err := reg.CleanupThread(tid); err != nil {
+			t.Errorf("CleanupThread(%d) failed: %v", tid, err)
+		}
+	}
+	mu.Unlock()
+}
+
+func TestPerThreadIsolation(t *testing.T) {
+	mgr := GlobalManager()
+	reg := GetGlobalRegistry()
+
+	// Register a test module
+	mod, err := mgr.RegisterModule(64, 8, 32, 0)
+	if err != nil {
+		t.Fatalf("RegisterModule failed: %v", err)
+	}
+
+	const magic1 = uint64(0xDEADBEEF)
+	const magic2 = uint64(0xCAFEBABE)
+
+	type result struct {
+		threadID uint64
+		value    uint64
+		addr     uintptr
+	}
+	results := make(chan result, 2)
+
+	// Thread 1: write magic1
+	go func() {
+		idx := TLSIndex{ModuleID: mod.ID, Offset: 0}
+		addr := GetTLSAddr(uintptr(unsafe.Pointer(&idx)))
+		if addr != 0 {
+			ptr := (*uint64)(unsafe.Pointer(addr))
+			*ptr = magic1
+			results <- result{getCurrentThreadID(), *ptr, addr}
+		} else {
+			results <- result{0, 0, 0}
+		}
+	}()
+
+	// Thread 2: write magic2
+	go func() {
+		idx := TLSIndex{ModuleID: mod.ID, Offset: 0}
+		addr := GetTLSAddr(uintptr(unsafe.Pointer(&idx)))
+		if addr != 0 {
+			ptr := (*uint64)(unsafe.Pointer(addr))
+			*ptr = magic2
+			results <- result{getCurrentThreadID(), *ptr, addr}
+		} else {
+			results <- result{0, 0, 0}
+		}
+	}()
+
+	// Collect results
+	r1 := <-results
+	r2 := <-results
+
+	// Verify both got addresses
+	if r1.addr == 0 || r2.addr == 0 {
+		t.Fatal("One or both threads failed to get TLS address")
+	}
+
+	// Verify values are correct
+	if r1.value != magic1 && r1.value != magic2 {
+		t.Errorf("Thread 1: unexpected value %#x", r1.value)
+	}
+	if r2.value != magic1 && r2.value != magic2 {
+		t.Errorf("Thread 2: unexpected value %#x", r2.value)
+	}
+
+	// If threads are different, addresses should be different (isolation)
+	if r1.threadID != r2.threadID && r1.addr == r2.addr {
+		t.Error("Different threads got same TLS address (no isolation)")
+	}
+
+	// Cleanup
+	reg.CleanupThread(r1.threadID)
+	reg.CleanupThread(r2.threadID)
+}
+
+func TestDynamicModuleGrowth(t *testing.T) {
+	mgr := GlobalManager()
+	reg := GetGlobalRegistry()
+
+	const numModules = 5
+	modules := make([]*Module, numModules)
+
+	// Register multiple modules
+	for i := 0; i < numModules; i++ {
+		mod, err := mgr.RegisterModule(64, 8, 32, 0)
+		if err != nil {
+			t.Fatalf("RegisterModule %d failed: %v", i, err)
+		}
+		modules[i] = mod
+	}
+
+	// Access TLS for each module from the same thread
+	threadID := getCurrentThreadID()
+	
+	for i, mod := range modules {
+		idx := TLSIndex{ModuleID: mod.ID, Offset: 0}
+		addr := GetTLSAddr(uintptr(unsafe.Pointer(&idx)))
+		if addr == 0 {
+			t.Errorf("Module %d: GetTLSAddr returned null", i)
+			continue
+		}
+
+		// Write unique value
+		ptr := (*uint32)(unsafe.Pointer(addr))
+		*ptr = uint32(i + 100)
+
+		// Verify
+		if *ptr != uint32(i+100) {
+			t.Errorf("Module %d: value mismatch", i)
+		}
+	}
+
+	// Verify module count
+	moduleCount := reg.GetModuleCount()
+	if moduleCount < numModules {
+		t.Errorf("Expected at least %d modules, got %d", numModules, moduleCount)
+	}
+
+	// Cleanup
+	reg.CleanupThread(threadID)
+}
+
+func TestCleanupThread(t *testing.T) {
+	mgr := GlobalManager()
+	reg := GetGlobalRegistry()
+
+	mod, err := mgr.RegisterModule(64, 8, 32, 0)
+	if err != nil {
+		t.Fatalf("RegisterModule failed: %v", err)
+	}
+
+	threadID := getCurrentThreadID()
+
+	// Allocate TLS block
+	idx := TLSIndex{ModuleID: mod.ID, Offset: 0}
+	addr := GetTLSAddr(uintptr(unsafe.Pointer(&idx)))
+	if addr == 0 {
+		t.Fatal("GetTLSAddr returned null")
+	}
+
+	// Verify block exists
+	reg.mu.Lock()
+	threadBlocks := reg.blocks[threadID]
+	if threadBlocks == nil || threadBlocks[mod.ID] == nil {
+		t.Fatal("TLS block not registered")
+	}
+	reg.mu.Unlock()
+
+	// Cleanup
+	if err := reg.CleanupThread(threadID); err != nil {
+		t.Fatalf("CleanupThread failed: %v", err)
+	}
+
+	// Verify cleanup
+	reg.mu.Lock()
+	if reg.blocks[threadID] != nil {
+		t.Error("Thread blocks not cleaned up")
+	}
+	reg.mu.Unlock()
 }

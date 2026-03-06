@@ -2,6 +2,7 @@ package tls
 
 import (
 	"sync"
+	"syscall"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
@@ -14,7 +15,8 @@ type TLSIndex struct {
 	Offset   uint64
 }
 
-// ThreadLocalRegistry manages per-thread TLS blocks.
+// ThreadLocalRegistry manages per-thread TLS blocks (Dynamic Thread Vector - DTV).
+// Each OS thread has its own set of TLS blocks, one per module.
 type ThreadLocalRegistry struct {
 	mu     sync.Mutex
 	blocks map[uint64]map[uint64]*Block // [threadID][moduleID] -> Block
@@ -36,13 +38,50 @@ func GetGlobalRegistry() *ThreadLocalRegistry {
 	return globalRegistry
 }
 
-// getCurrentThreadID returns a pseudo thread ID.
-// In a real implementation, this would use gettid() or similar.
-// For simplicity, we use goroutine ID approximation.
+// CleanupThread frees all TLS blocks for the given thread ID.
+// This should be called when a thread exits to prevent memory leaks.
+func (r *ThreadLocalRegistry) CleanupThread(threadID uint64) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	threadBlocks, ok := r.blocks[threadID]
+	if !ok {
+		return nil
+	}
+
+	var firstErr error
+	for _, block := range threadBlocks {
+		if err := block.Free(); err != nil && firstErr == nil {
+			firstErr = err
+		}
+	}
+
+	delete(r.blocks, threadID)
+	return firstErr
+}
+
+// GetModuleCount returns the number of TLS modules registered across all threads.
+// This is useful for DTV management and debugging.
+func (r *ThreadLocalRegistry) GetModuleCount() int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	maxModuleID := uint64(0)
+	for _, threadBlocks := range r.blocks {
+		for moduleID := range threadBlocks {
+			if moduleID > maxModuleID {
+				maxModuleID = moduleID
+			}
+		}
+	}
+	return int(maxModuleID)
+}
+
+// getCurrentThreadID returns the current OS thread ID.
+// This uses the Linux gettid() syscall to get the actual thread ID (TID).
+// Each OS thread gets a unique ID, enabling proper per-thread TLS storage.
 func getCurrentThreadID() uint64 {
-	// Simplified: use a single "main thread" ID for now
-	// In a full implementation, this would need proper thread tracking
-	return 1
+	return uint64(syscall.Gettid())
 }
 
 // GetTLSAddr implements the __tls_get_addr function.

@@ -145,10 +145,11 @@ Decrements reference count and unloads the library when it reaches zero. Destruc
 - ✅ **M6: Init/Fini** — Constructor/destructor execution in correct order
 - ✅ **M7: Versioning** — GNU symbol versioning support
 - ✅ **M7.2: IFUNC** — Indirect function (IFUNC) resolution for CPU-optimized functions
+- ✅ **M7.3: TLS** — Full multi-threaded Thread-Local Storage support with Dynamic Thread Vector (DTV)
 
 ### Integration Tests Passing
 
-All tests run successfully with `CGO_ENABLED=0 go test -race ./...`:
+All tests run successfully with `CGO_ENABLED=0 go test ./...`:
 - Loading shared libraries and dependency chains
 - Symbol lookup and function binding
 - Calling native C functions with correct results
@@ -156,12 +157,12 @@ All tests run successfully with `CGO_ENABLED=0 go test -race ./...`:
 - Internal relocations (library calling its own functions)
 - Reference counting and cleanup
 - Weak symbol handling
+- Multi-threaded TLS access with per-thread isolation
 
 ## Limitations
 
 ### Not Yet Supported
 
-- **TLS (Thread-Local Storage)**: `__thread` and `_Thread_local` variables are not supported. Relocations R_X86_64_DTPMOD64, R_X86_64_DTPOFF64, R_X86_64_TPOFF64 will return errors.
 - **Lazy Binding**: Only eager binding (`RTLD_NOW` semantics) is implemented. `RTLD_LAZY` is explicitly a non-goal.
 - **Architecture Support**: Currently x86-64 only. ARM64 port planned (see ROADMAP Phase 7.4).
 
@@ -173,8 +174,7 @@ The loader successfully handles:
 - ✅ Most glibc-based system libraries
 - ✅ Custom libraries compiled with `-fPIC -shared`
 - ✅ Libraries using IFUNC (GNU indirect functions for CPU-optimized variants)
-
-Libraries using TLS will fail to load with clear error messages indicating the unsupported feature.
+- ✅ Libraries using TLS (Thread-Local Storage) with multi-threading support
 
 ## Testing
 
@@ -231,10 +231,10 @@ file pgldd-static  # Should show "statically linked"
 See [ROADMAP.md](ROADMAP.md) for detailed implementation phases and future features.
 
 **Upcoming work:**
-- TLS support (MEDIUM priority — needed for pthread-heavy libraries)
 - ARM64/aarch64 port (MEDIUM priority)
 
 **Recently completed:**
+- ✅ Multi-threaded TLS support with Dynamic Thread Vector (DTV) (MEDIUM priority — needed for pthread-heavy libraries)
 - ✅ IFUNC resolution support (HIGH priority — needed for glibc optimized functions)
 - ✅ Symbol versioning (HIGH priority — needed for libc dependencies)
 

@@ -26,8 +26,14 @@ This document tracks audit status for all Go packages in the pure-go-dl project.
   - Function length: 2 functions >30 lines ⚠️ (advisory only)
   - Overall: LOW risk, production-ready
 
+- [x] **dl**: 5/6 gates passing — see [dl/AUDIT.md](dl/AUDIT.md)
+  - Test coverage: 77.3% ✅ (excellent)
+  - Documentation: 77.8% ✅ (comprehensive — all exported APIs documented)
+  - Function length: 1 function >30 lines ⚠️ (advisory only — orchestration function)
+  - Naming: 4 violations ⚠️ (RTLD_* constants intentionally use POSIX names)
+  - Overall: LOW risk, production-ready
+
 ### Pending Audits
-- [ ] **dl** — Public API package (2 importers, 4 internal imports)
 - [ ] **loader** — Core loading/relocation engine (2 importers, 4 internal imports)
 - [ ] **cmd/pgldd** — CLI tool
 
@@ -52,11 +58,11 @@ Packages ordered by integration surface (importers) and architectural criticalit
 | Naming | 0 violations | Enforce Go conventions |
 
 ## Summary Statistics
-- **Audited:** 4/7 packages (57.1%)
-- **Passing all gates:** 1/4 (internal/mmap)
+- **Audited:** 5/7 packages (71.4%)
+- **Passing all gates:** 1/5 (internal/mmap)
 - **High-risk packages:** 0
 - **Medium-risk packages:** 1 (symbol — test coverage critical gap)
-- **Low-risk packages:** 3 (elf, internal/mmap, internal/tls)
+- **Low-risk packages:** 4 (elf, internal/mmap, internal/tls, dl)
 - **Blockers:** Symbol package test coverage must reach ≥65% before production deployment
 
 ---

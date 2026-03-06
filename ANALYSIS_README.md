@@ -122,7 +122,7 @@ Prevent silent failures:
 ### Phase 3: Test Coverage (Week 3, ~6 hours)
 Increase test coverage from 36% to 65%+:
 - [x] Bounds violation tests (16 test functions, 38+ test cases)
-- [ ] Malformed ELF test suite (10+)
+- [x] Malformed ELF test suite (13 test functions)
 - [ ] Error handling tests (8+)
 - [ ] Edge case tests (8+)
 

@@ -705,12 +705,44 @@ func applyTlsgd(obj *Object, r *relaEntry, resolver SymbolResolver) error {
 // applyTlsld handles R_X86_64_TLSLD relocations (Local Dynamic TLS model).
 func applyTlsld(obj *Object, r *relaEntry) error {
 	// PC-relative reference to GOT entries for Local Dynamic TLS model.
-	// Similar to TLSGD but for module-local symbols.
+	// Code: leaq symbol@tlsld(%rip), %rdi; call __tls_get_addr
+	// The relocation patches the leaq instruction's PC-relative offset
+	// to point to a pair of GOT entries containing [DTPMOD64, 0].
+	// Unlike TLSGD, TLSLD doesn't reference a specific symbol - it gets
+	// the base address of the module's TLS block.
 	if obj.TLSModule == nil {
 		return fmt.Errorf("R_X86_64_TLSLD relocation at %#x but library has no PT_TLS segment", r.Offset)
 	}
-	// Same limitations as TLSGD.
-	return fmt.Errorf("R_X86_64_TLSLD relocation at offset %#x is not yet fully supported. This is a code-sequence relocation that requires GOT entry management. Most libraries use R_X86_64_DTPMOD64/DTPOFF64 instead, which are fully supported. Try compiling with -mtls-dialect=gnu2 or use -ftls-model=initial-exec.", r.Offset)
+
+	// For TLSLD, symIdx is typically 0 (no specific symbol).
+	// Use a special marker (0xFFFFFFFF) to avoid collision with real symbol indices.
+	const tlsldMarker = uint32(0xFFFFFFFF)
+	
+	// Allocate or retrieve GOT entry pair for TLSLD.
+	gotEntry, err := allocateGOTEntryPair(obj, tlsldMarker)
+	if err != nil {
+		return fmt.Errorf("R_X86_64_TLSLD at %#x: %w", r.Offset, err)
+	}
+
+	// Populate GOT entries: [DTPMOD64, 0].
+	// DTPMOD64 = module ID
+	moduleID := obj.TLSModule.GetModuleID()
+	*(*uint64)(unsafe.Pointer(gotEntry)) = moduleID
+	
+	// Second entry is 0 (no symbol-specific offset for Local Dynamic)
+	*(*uint64)(unsafe.Pointer(gotEntry + 8)) = 0
+
+	// Compute PC-relative offset from relocation site to GOT entry.
+	// The instruction is: leaq symbol@tlsld(%rip), %rdi
+	// We patch the 32-bit PC-relative offset in the instruction.
+	relocSite := obj.Base + uintptr(r.Offset)
+	pcRelOffset := int64(gotEntry) - int64(relocSite+4) // +4 for instruction size
+
+	// Write the PC-relative offset to the relocation site.
+	offsetPtr := unsafe.Pointer(relocSite)
+	*(*int32)(offsetPtr) = int32(pcRelOffset)
+
+	return nil
 }
 
 // resolveSymForReloc returns the absolute address of the symbol at symIdx.

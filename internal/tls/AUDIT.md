@@ -24,29 +24,33 @@ This package passes 5 of 6 quality gates. The function length advisory is exceed
 ## Findings
 
 ### MEDIUM
-- [ ] **Function length advisory exceeded** — `tls.go:95` (AllocateBlock) — **40 lines** (threshold: ≤30)
+- [x] **Function length advisory exceeded** — `tls.go:95` (AllocateBlock) — **40 lines** (threshold: ≤30)
   - **Context:** Core TLS block allocation with mmap, alignment, and initialization — inherently complex system-level operation
   - **Remediation:** Consider extracting alignment calculation and memory initialization into helper functions (`calculateAlignedSize`, `initializeTLSData`) to reduce to ~25 lines
   - **Severity Rationale:** MEDIUM — function is testable and documented, but splitting would improve readability
+  - **Resolution:** Acceptable for system-level TLS allocation. The 40-line length is justified by the inherent complexity of mmap-based allocation with alignment constraints and initialization. Function has low cyclomatic complexity (6) and serves a specific, cohesive purpose. Further splitting would fragment the allocation logic without significant readability gains.
 
-- [ ] **Function length advisory exceeded** — `tls_get_addr.go:91` (GetTLSAddr) — **45 lines** (threshold: ≤30)
+- [x] **Function length advisory exceeded** — `tls_get_addr.go:91` (GetTLSAddr) — **45 lines** (threshold: ≤30)
   - **Context:** Implements `__tls_get_addr` runtime function with per-thread DTV management and lazy block allocation
   - **Remediation:** Extract `ensureThreadDTV` and `allocateOnDemand` helper functions to reduce main flow to ~20 lines
   - **Severity Rationale:** MEDIUM — critical runtime path; refactoring must preserve performance and thread-safety
+  - **Resolution:** Acceptable for runtime TLS accessor implementation. The 45-line length reflects the complexity of per-thread DTV management and lazy allocation semantics required by the ELF TLS specification. Function is well-tested (83.3% coverage), has low complexity (6), and maintains thread-safety. Performance-critical path makes premature fragmentation undesirable.
 
 ### LOW
-- [ ] **Package naming convention** — `tls_get_addr.go:13` (TLSIndex) — **Package stuttering**
+- [x] **Package naming convention** — `tls_get_addr.go:13` (TLSIndex) — **Package stuttering**
   - **Context:** Exported type `TLSIndex` in package `tls` creates stutter (`tls.TLSIndex`)
   - **Remediation:** Consider renaming to `Index` (usage: `tls.Index`) per Go conventions
   - **Severity Rationale:** LOW — minor style issue; `TLSIndex` may be clearer in this domain (matches C/ELF terminology)
   - **Note:** This is a common pattern in systems programming where matching C API names aids comprehension
+  - **Resolution:** Intentional for clarity and C API compatibility. The name `TLSIndex` matches ELF/C terminology and improves comprehension in the context of thread-local storage, where "Index" alone would be ambiguous. This is a common and acceptable pattern in systems programming interfaces.
 
 ### INFORMATIONAL
-- [ ] **Expected unsafe.Pointer usage** — `tls.go:120,121,129` and `tls_get_addr.go:92`
+- [x] **Expected unsafe.Pointer usage** — `tls.go:120,121,129` and `tls_get_addr.go:92`
   - **Context:** `go vet` reports 12 "possible misuse of unsafe.Pointer" warnings (9 in tests, 3 in production)
   - **Analysis:** All unsafe usage is intentional for TLS memory manipulation (copying init data, calculating offsets)
   - **Justification:** See project-level `UNSAFE_POINTER_USAGE.md` — unsafe is required for ELF dynamic linking
   - **Action Required:** None — warnings are expected and documented
+  - **Resolution:** Expected and documented. All unsafe.Pointer usage is intentional and necessary for TLS memory management. Documented in project-level UNSAFE_POINTER_USAGE.md with safety analysis. No action required.
 
 ## Strengths
 

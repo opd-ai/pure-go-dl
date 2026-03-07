@@ -23,16 +23,18 @@ The `dl` package demonstrates excellent code quality with strong test coverage, 
 ## Findings
 
 ### MEDIUM
-- [ ] **RTLD_* constant naming** — dl.go:24-26 — naming: 3 underscore violations (RTLD_LOCAL, RTLD_GLOBAL, RTLD_NOW)
+- [x] **RTLD_* constant naming** — dl.go:24-26 — naming: 3 underscore violations (RTLD_LOCAL, RTLD_GLOBAL, RTLD_NOW)
   - **Rationale:** These identifiers intentionally use POSIX-standard names (`RTLD_LOCAL`, `RTLD_GLOBAL`, `RTLD_NOW`) to match the conventional `dlopen()` API from `<dlfcn.h>`, making the library immediately familiar to users with C/POSIX experience.
   - **Remediation:** NOT RECOMMENDED — the naming convention is a deliberate compatibility decision documented in the API reference (README.md lines 111-118). Changing to `RTLDLocal`, `RTLDGlobal`, `RTLDNow` would reduce API familiarity.
   - **Verdict:** ACCEPTED as idiomatic for POSIX-compatible APIs.
+  - **Resolution:** Intentional naming for POSIX API compliance. Maintains consistency with C `dlopen()` API and improves usability for developers familiar with dynamic linking conventions.
 
-- [ ] **Function length advisory** — dl.go:173-209 — function: `loadPath` is 35 lines (threshold: ≤30)
+- [x] **Function length advisory** — dl.go:173-209 — function: `loadPath` is 35 lines (threshold: ≤30)
   - **Rationale:** `loadPath` orchestrates the complete library loading workflow: cycle detection, cache coordination, parsing, dependency loading, object loading, and registration. The function is well-structured with clear helper function calls and early returns.
   - **Complexity:** Cyclomatic complexity is 4 (well below the 10 threshold), indicating simple control flow despite the length.
   - **Remediation:** NOT REQUIRED — the function is already decomposed into well-named helpers (`checkLoadingCache`, `loadDependencies`, `registerLibrary`, etc.). Further splitting would fragment the loading sequence logic without improving readability.
   - **Verdict:** ACCEPTED — length is reasonable for an orchestration function with low complexity.
+  - **Resolution:** Acceptable for an orchestration function with low cyclomatic complexity (4). The function serves a specific purpose (coordinating the complete load workflow) and is already well-decomposed with clear helper calls.
 
 ## Strengths
 

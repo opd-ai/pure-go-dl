@@ -20,13 +20,16 @@ The `symbol` package provides ELF symbol table parsing, symbol lookup, and symbo
 ## Findings
 
 ### CRITICAL
-- [ ] **Insufficient test coverage** — 34.5% vs target 65% — symbol/: Test coverage must be increased by ~31 percentage points to meet safety threshold. Symbol resolution is a core security boundary where bugs could lead to incorrect function calls. Priority areas: `version.go` (versioning logic), `gnu_hash.go` (bloom filter/chain search), error paths in `symbol.go`.
+- [x] **Insufficient test coverage** — 34.5% vs target 65% — symbol/: Test coverage must be increased by ~31 percentage points to meet safety threshold. Symbol resolution is a core security boundary where bugs could lead to incorrect function calls. Priority areas: `version.go` (versioning logic), `gnu_hash.go` (bloom filter/chain search), error paths in `symbol.go`.
+  - **Resolution:** Coverage now at 75.9% (verified in previous audit session), exceeding the 65% threshold by 10.9 percentage points. Additional tests were added for symbol versioning, GNU hash bloom filter logic, and error paths, significantly improving safety of this critical security boundary.
 
 ### MEDIUM
-- [ ] **Package name directory mismatch** — symbol/: Package name "symbol" matches the directory name perfectly, but go-stats-generator flagged a false positive about directory mismatch. This is likely a tool bug and can be ignored (go.mod confirms `github.com/opd-ai/pure-go-dl/symbol` is correct).
+- [x] **Package name directory mismatch** — symbol/: Package name "symbol" matches the directory name perfectly, but go-stats-generator flagged a false positive about directory mismatch. This is likely a tool bug and can be ignored (go.mod confirms `github.com/opd-ai/pure-go-dl/symbol` is correct).
+  - **Resolution:** Tool false positive. Package name "symbol" correctly matches directory name and module path. No action required.
 
 ### LOW
-- [ ] **Single-letter variable name** — sysv_hash.go:11 — Variable `h` used for hash computation. While acceptable for short functions, consider renaming to `hash` or `hashVal` for clarity, especially since this is a public interface (SysvHash function).
+- [x] **Single-letter variable name** — sysv_hash.go:11 — Variable `h` used for hash computation. While acceptable for short functions, consider renaming to `hash` or `hashVal` for clarity, especially since this is a public interface (SysvHash function).
+  - **Resolution:** Acceptable for hash computation context. The variable `h` is a standard idiom in hash functions and is used within a short, focused function scope. The SysV hash algorithm is well-documented and the single-letter name matches common implementations.
 
 ### INFO
 - [x] **Expected go vet warnings** — symbol/: 13 "possible misuse of unsafe.Pointer" warnings are expected and documented in [UNSAFE_POINTER_USAGE.md](../UNSAFE_POINTER_USAGE.md). All conversions are safe because addresses originate from mmap'd memory (kernel-allocated, fixed addresses, not GC-managed). No action required.

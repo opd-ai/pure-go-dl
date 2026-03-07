@@ -1,6 +1,6 @@
 module github.com/opd-ai/pure-go-dl
 
-go 1.24.13
+go 1.24.0
 
 require (
 	github.com/ebitengine/purego v0.10.0

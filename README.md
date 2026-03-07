@@ -39,6 +39,55 @@ A CGO-free ELF dynamic linker that enables loading native shared libraries (`.so
 go get github.com/opd-ai/pure-go-dl
 ```
 
+## Architecture Support
+
+**pure-go-dl** provides native support for **x86-64** and **ARM64** (aarch64) architectures on Linux. Architecture-specific code is automatically selected at build time using Go build tags.
+
+### Supported Architectures
+
+| Architecture | Build Tags | Status | Notes |
+|--------------|------------|--------|-------|
+| **x86-64** (AMD64) | `amd64` or `(linux && !arm64)` | ✅ Fully supported | Default for most Linux systems |
+| **ARM64** (aarch64) | `arm64 && linux` | ✅ Fully supported | Linux ARM servers, Raspberry Pi 64-bit |
+
+### Architecture-Specific Features
+
+All core functionality works identically across both architectures:
+- ✅ ELF parsing and memory mapping
+- ✅ Symbol resolution (GNU hash, SysV hash)
+- ✅ Relocation processing (architecture-specific relocation types)
+- ✅ TLS (Thread-Local Storage) support
+- ✅ IFUNC (indirect function) resolution
+- ✅ Constructor/destructor execution
+
+**Relocation Types:**
+- **x86-64**: Implements 40+ relocation types including `R_X86_64_RELATIVE`, `R_X86_64_GLOB_DAT`, `R_X86_64_JUMP_SLOT`, TLS relocations, and `R_X86_64_IRELATIVE` (IFUNC)
+- **ARM64**: Implements 80+ relocation types including `R_AARCH64_RELATIVE`, `R_AARCH64_GLOB_DAT`, `R_AARCH64_JUMP_SLOT`, TLS relocations, `R_AARCH64_IRELATIVE`, and `R_AARCH64_TLSDESC` (TLS descriptors)
+
+### Build Behavior
+
+The Go toolchain automatically selects the correct architecture-specific code at compile time:
+
+```bash
+# Build for current architecture (automatic)
+go build ./...
+
+# Cross-compile for ARM64 from x86-64
+GOARCH=arm64 go build ./...
+
+# Cross-compile for x86-64 from ARM64
+GOARCH=amd64 go build ./...
+```
+
+**Note:** While you can cross-compile the Go code with `CGO_ENABLED=0`, the resulting binaries are **not statically linked** and will only run on Linux systems with glibc available for the target architecture.
+
+### Unsupported Architectures
+
+- **32-bit systems** (x86, ARM32): Not supported (requires 64-bit pointers for ELF64)
+- **Windows**: Not supported (Windows uses PE format, not ELF)
+- **macOS**: Not supported (macOS uses Mach-O format, not ELF)
+- **BSD variants**: Not tested (may work on FreeBSD/NetBSD but not validated)
+
 ## Quick Start
 
 ### Basic Usage

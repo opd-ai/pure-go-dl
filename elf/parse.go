@@ -61,6 +61,9 @@ func calculateMemoryLayout(obj *ParsedObject, minVAddr, maxVAddr uint64) error {
 	return nil
 }
 
+// Parse parses an ELF shared object file and extracts metadata needed for loading.
+// Returns a ParsedObject containing program headers, dynamic entries, and memory layout info.
+// This is the first step in loading a shared library - the returned object is then passed to loader.Load().
 func Parse(path string) (*ParsedObject, error) {
 	f, ef, err := openAndValidateELF(path)
 	if err != nil {

@@ -339,6 +339,9 @@ func removeFromGlobals(l *Library) {
 	}
 }
 
+// Close decrements the library's reference count and unloads it when the count reaches zero.
+// Destructors are run in reverse dependency order during unload.
+// Returns an error if unloading fails.
 func (l *Library) Close() error {
 	mu.Lock()
 	defer mu.Unlock()
